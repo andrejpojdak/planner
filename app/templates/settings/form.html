@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+{% block content %}
+</div>
+<form method="post">
+	{{ form.hidden_tag() }}
+	<p>{{ form.seafreight.label }}<br>{{ form.seafreight(size=10) }}</p>
+	<p>{{ form.railfreight.label }}<br>{{ form.railfreight(size=10) }}</p>
+	<p>{{ form.airfreight.label }}<br>{{ form.airfreight(size=10) }}</p>
+	<p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

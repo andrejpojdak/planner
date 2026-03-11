@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Deliveries{% endblock %}
+
+{% block content %}
+<div class="menu">
+	<div id="flex-left">
+		<a href="{{ url_for('deliveries.create_delivery') }}">Create new delivery</a> |
+		<a href="{{ url_for('deliveries.import_csv') }}">Import from CSV</a>
+		<form method="post" action="{{ url_for('deliveries.delete_all_deliveries') }}" onsubmit="return confirm('Delete ALL deliveries? This cannot be undone.');">
+			<button type="submit">Delete all deliveries</button>
+		</form>
+	</div>
+</div>
+<br>
+ <table>
+    <thead>
+		<tr>
+			<th>Sales Order Number</th>
+			<th>Sales Order Position</th>
+			<th>Buyer Plant</th>
+			<th>Plant Name</th>
+			<th>Unloading Point</th>
+			<th>Buyer Article Number</th>
+			<th>SAP Article Description</th>
+			<th>Delivery Date</th>
+			<th>Delivery Quantity</th>
+			<th>ECV</th>
+			<th>EDS</th>
+			<th>Actions</th></tr></thead>
+    <tbody>
+      {% for d in deliveries %}
+      <tr>
+        <td>{{ d.order_number.lstrip('0') }}</td>
+        <td>{{ d.order_position }}</td>
+        <td>{{ d.buyer_plant_id }}</td>
+        <td>{{ d.plant_name }}</td>
+        <td>{{ d.unloading_point }}</td>
+        <td>{{ d.buyer_article_number }}</td>
+        <td>{{ d.article_description }}</td>
+        <td>{{ d.delivery_date.strftime('%d.%m.%Y') }}</td>
+        <td>{{ '%.0f'|format(d.delivery_quantity) if d.delivery_quantity is not none else '' }}</td>
+        <td>{{ d.ecv }}</td>
+        <td>{{ d.eds }}</td>
+        <td class="actions">
+          <div id="menu-container">
+            <div id="menu-icon">&#9776;</div>
+            <div id="menu">
+              <a href="{{ url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number ) }}">Plan</a><br>
+              <a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id) }}">Edit</a><br>
+              <a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number ) }}">Create new PO</a><br>
+              <form method="post" action="{{ url_for('deliveries.delete_delivery', delivery_id=d.id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="13">No deliveries yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+<script>
+
+const table = document.querySelector("table");
+const thead = document.querySelector("thead");
+
+thead.addEventListener("click", function () {
+
+  if (table.querySelector(".filter-row")) return;
+
+  const headerCells = document.querySelectorAll("th");
+  const filterRow = document.createElement("tr");
+  filterRow.classList.add("filter-row");
+
+  headerCells.forEach((th, index) => {
+    const td = document.createElement("td");
+    const input = document.createElement("input");
+ 
+    input.type = "text";
+    input.placeholder = "Filter...";
+    input.dataset.column = index;
+
+    input.addEventListener("input", filterTable);
+
+    td.appendChild(input);
+    filterRow.appendChild(td);
+  });
+
+  table.querySelector("tbody").prepend(filterRow);
+
+});
+
+function filterTable() {
+
+  const filters = table.querySelectorAll(".filter-row input");
+  const rows = table.querySelectorAll("tbody tr:not(.filter-row)");
+
+  rows.forEach(row => {
+
+    let visible = "";
+
+    filters.forEach(input => {
+
+      const colIndex = input.dataset.column;
+      const cellText = row.cells[colIndex].textContent.toLowerCase();
+      const filterValue = input.value.toLowerCase();
+
+      if (!cellText.includes(filterValue)) {
+        visible = "none";
+      }
+
+    });
+
+    row.style.display = visible;
+
+  });
+}
+
+colorRows(document.querySelectorAll("tbody tr"), 6);
+
+</script>
+  {% endblock %}

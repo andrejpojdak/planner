@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Materials{% endblock %}
+
+{% block content %}
+
+{% if import_only %}
+    <form method="post" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+      <p>{{ form.html_file.label }}<br>{{ form.html_file() }}</p>
+      <p>{{ form.submit() }}</p>
+    </form>
+    <p><a href="{{ url_for('materials.list_materials') }}">Back to list</a></p>
+  {% else %}
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <p>{{ form.material_code.label }}<br>{{ form.material_code(size=50, disabled=disabled) }}</p>
+      <p>{{ form.short_text.label }}<br>{{ form.short_text(size=80) }}</p>
+      <p>{{ form.gross_weight.label }}<br>{{ form.gross_weight() }}</p>
+      <p>{{ form.manufacturer.label }}<br>{{ form.manufacturer(size=80) }}</p>
+      <p>{{ form.box_qty.label }}<br>{{ form.box_qty(size=80) }}</p>
+      <p>{{ form.submit() }}</p>
+    </form>
+    <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+  {% endif %}
+{% endblock %}

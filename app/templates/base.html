@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>{% block title %}Bridge-EU{% endblock %}</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Shippori+Antique&family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+	<script src="{{ url_for('static', filename='js/color.row.js')  }}"></script>
+	<script src="{{ url_for('static', filename='js/filter.table.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/material.fetch.js') }}"></script>
+</head>
+<body>
+
+<h1>{{ title }}</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		{% for category, msg in messages %}
+			<div class="flash {{ category }}">{{ msg }}</div>
+		{% endfor %}
+	{% endif %}
+{% endwith %}
+
+<div class="menu">
+	<p id="flex-left">
+		<a href="{{ url_for('deliveries.list_deliveries') }}">Deliveries</a>|
+		<a href="{{ url_for('orders.list_orders') }}">Orders</a> |
+		<a href="{{ url_for('materials.list_materials') }}">Materials</a> |
+		<a href="{{ url_for('planning.list_plans') }}">Planning</a> |
+		<a href="{{ url_for('settings.edit_settings') }}">Settings</a>
+	</p>
+</div>
+{% block content %}{% endblock %}
+</body>
+</html>

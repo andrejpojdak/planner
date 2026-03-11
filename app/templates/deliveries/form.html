@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+<h1>{{ title }}</h1>
+
+{% block content %}
+
+{% if import_only %}
+    <form method="post" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+      <p>{{ form.csv_file.label }}<br>{{ form.csv_file() }}</p>
+      <p>{{ form.submit() }}</p>
+    </form>
+    <p><a href="{{ url_for('deliveries.list_deliveries') }}">Back to list</a></p>
+  {% else %}
+    <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <p>{{ form.submit() }}</p>
+      <p>{{ form.article_description.label }}<br>{{ form.article_description(size=80) }} *</p>
+      <div id="results"></div>
+      <p>{{ form.buyer_article_number.label }}<br>{{ form.buyer_article_number(size=80) }} *</p>
+      <p>{{ form.plant_name.label }}<br>{{ form.plant_name(size=80) }} *</p>
+      <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40) }} *</p>
+      <p>{{ form.order_position.label }}<br>{{ form.order_position(size=20) }} *</p>
+      <p>{{ form.delivery_date.label }}<br>{{ form.delivery_date() }} *</p>
+      <p>{{ form.delivery_quantity.label }}<br>{{ form.delivery_quantity() }} *</p>
+      <p>{{ form.buyer_plant_id.label }}<br>{{ form.buyer_plant_id(size=40) }}</p>
+      <p>{{ form.unloading_point.label }}<br>{{ form.unloading_point(size=80) }}</p>
+      <p>{{ form.engineering_change_level.label }}<br>{{ form.engineering_change_level(size=40) }}</p>
+      <p>{{ form.delivery_instruction_number.label }}<br>{{ form.delivery_instruction_number(size=40) }}</p>
+      <p>{{ form.additional_information.label }}<br>{{ form.additional_information(size=120) }}</p>
+      <p>{{ form.ecv.label }}<br>{{ form.ecv(size=120) }}</p>
+      <p>{{ form.eds.label }}<br>{{ form.eds(size=120) }}</p>
+      <p>{{ form.submit() }}</p>
+    </form>
+    <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+  {% endif %}
+<script>
+
+const article_description = document.getElementById("article_description");
+const buyer_article_number = document.getElementById("buyer_article_number");
+const plant_name = document.getElementById("plant_name");
+const results = document.getElementById("results");
+
+article_description.addEventListener("input", (e) => {
+  
+  a = e.target.value;
+  
+  getMaterials(a).then(data => {
+    results.innerHTML = '';
+    results.style.display = 'block';
+    data.forEach(element => {
+      let li = document.createElement("li");
+      li.textContent = `${element.plant_name} : ${element.buyer_article_number} : ${element.article_descritption}`;
+      li.addEventListener("click", () => {
+        results.style.display = 'none';
+        article_description.value = element.article_descritption;
+        buyer_article_number.value = element.buyer_article_number;
+        plant_name.value = element.plant_name;
+        console.log(li.textContent);
+      });
+      results.appendChild(li);
+    });
+
+  });
+
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Planning{% endblock %}
+
+{% block content %}
+
+	<table id="planning">
+    <thead>
+		<tr>
+			<th>Plant Name</th>
+			<th>ECV EDS</th>
+			<th>SO Number</th>
+			<th>SAP Article Description</th>
+			<th>Req. Qty</th>
+			<th>Req. Date</th>
+			<th>Req. Week</th>
+			<th>Conf. Date</th>
+			<th>Conf. Week</th>
+			<th>Stock</th>
+			<th>Conf. Qty</th>
+			<th>Sales Price</th>
+			<th>ETA</th>
+			<th>Frgt</th>
+			<th>Sup</th>
+			<th>PO No.</th>
+			<th>ECV EDS</th>
+			<th>FOB</th>
+			<th></th></tr></thead>
+		</tr>
+	</thead>
+    <tbody>
+	{% for b in buyer_article_numbers_list %}
+      {% for d in b[0] %}
+		{% for c in d.confirmations %}
+			{% if loop.first %}
+			<tr>
+				<td>{{ d.plant_name }}</td>
+				<td>{{ d.ecv  }}<br>{{ d.eds  }}</td>
+				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
+				<td id="{{ d.article_description }}">{{ d.article_description }}</td>
+				<td>{{ d.original_qty }}</td>
+				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') }}</td>
+				<td>{{ d.delivery_date.strftime('CW%V/%g') }}</td>
+				{% if c.order_confirmed is none %}
+				<td>?</td>
+				<td>?</td>
+				{% else %}
+				<td class="confirmed">{{ c.order_confirmed.strftime('%d.%m.%Y') }}</td>
+				<td class="confirmedwk">{{ c.order_confirmed.strftime('CW%V/%g') }}</td>
+				{% endif %}
+				{% if c.order_orig_qty is none %}
+				<td>?</td>
+				{% else %}
+				<td>{{ c.order_orig_qty }}</td>
+				{% endif %}
+				{% if c.order_qty is none %}
+				<td>?</td>
+				{% else %}
+				<td>{{ c.order_qty }}</td>
+				{% endif %}
+				{% if c.order_sales_price is none %}
+				<td></td>
+				{% else %}
+				<td>{{ '%.4f' % c.order_sales_price }}</td>
+				{% endif %}
+				{% if c.order_eta is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_eta.strftime('CW%V/%g') }}</td>
+				{% endif %}
+				{% if c.order_transport is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_transport }}</td>
+				{% endif %}
+				{% if c.order_supplier is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_supplier }}</td>
+				{% endif %}
+				{% if c.id is none %}
+				<td></td>
+				{% else %}
+				<td><a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">{{ c.order_number }}</a></td>
+				{% endif %}
+				{% if c.order_ecv is none or c.order_eds is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_ecv }}<br>{{ c.order_eds }}</td>			
+				{% endif %}
+				{% if c.order_fob is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_fob.strftime('%d.%m.%Y') }}</td>
+				{% endif %}
+				{% if c.id is none %}
+				<td class="actions">
+					<div id="menu-container">
+						<div id="menu-icon">&#9776;</div>
+						<div id="menu">
+							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
+						</div>
+					</div>
+				</td>
+				{% else %}
+				<td class="actions">
+					<div id="menu-container">
+						<div id="menu-icon">&#9776;</div>
+						<div id="menu">
+							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
+							<a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">Edit {{ c.order_number }}</a><br>
+							<a href="{{ url_for('orders.split_order', order_id=c.id, next=request.full_path) }}">Split {{ c.order_number }}</a><br>
+							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}">Delete {{ c.order_number }}</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
+						</div>
+					</div>
+				</td>
+				{% endif %}
+			</tr>
+			{% else %}
+			<tr>
+				<td>{{ d.plant_name }}</td>
+				<td>{{ d.ecv  }}<br>{{ d.eds  }}</td>
+				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
+				<td>{{ d.article_description }}</td>
+				<td></td>
+				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') }}</td>
+				<td>{{ d.delivery_date.strftime('CW%V/%g') }}</td>
+				{% if c.order_confirmed is none %}
+				<td>?</td>
+				<td>?</td>
+				{% else %}
+				<td class="confirmed">{{ c.order_confirmed.strftime('%d.%m.%Y') }}</td>
+				<td class="confirmedwk">{{ c.order_confirmed.strftime('CW%V/%g') }}</td>
+				{% endif %}
+				{% if c.order_orig_qty is none %}
+				<td>?</td>
+				{% else %}
+				<td>{{ c.order_orig_qty }}</td>
+				{% endif %}
+				{% if c.order_qty is none %}
+				<td>?</td>
+				{% else %}
+				<td>{{ c.order_qty }}</td>
+				{% endif %}
+				{% if c.order_sales_price is none %}
+				<td></td>
+				{% else %}
+				<td>{{ '%.4f' % c.order_sales_price }}</td>
+				{% endif %}
+				{% if c.order_eta is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_eta.strftime('CW%V/%g') }}</td>
+				{% endif %}
+				{% if c.order_transport is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_transport }}</td>
+				{% endif %}
+				{% if c.order_supplier is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_supplier }}</td>
+				{% endif %}
+				{% if c.id is none %}
+				<td></td>
+				{% else %}
+				<td><a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">{{ c.order_number }}</a></td>
+				{% endif %}
+				{% if c.order_ecv is none or c.order_eds is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_ecv }}<br>{{ c.order_eds }}</td>			
+				{% endif %}
+				{% if c.order_fob is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_fob.strftime('%d.%m.%Y') }}</td>
+				{% endif %}
+				{% if c.id is none %}
+				<td class="actions">
+					<div id="menu-container">
+						<div id="menu-icon">&#9776;</div>
+						<div id="menu">
+							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
+						</div>
+					</div>
+				</td>
+				{% else %}
+				<td class="actions">
+					<div id="menu-container">
+						<div id="menu-icon">&#9776;</div>
+						<div id="menu">
+							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
+							<a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">Edit {{ c.order_number }}</a><br>
+							<a href="{{ url_for('orders.split_order', order_id=c.id, next=request.full_path) }}">Split {{ c.order_number }}</a><br>
+							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}">Delete {{ c.order_number }}</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<span>-------</span><br>
+							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
+						</div>
+					</div>
+				</td>
+				{% endif %}
+			</tr>
+			{% endif %}
+		{% endfor %}
+      {% else %}
+      <tr><td colspan=15">No orders yet.</td></tr>
+      {% endfor %}
+	  {% for s in b[1] %}
+		<tr>			
+			<td>{{ b[0][0].plant_name }}</td>
+			<td>{{ b[0][0].ecv  }}<br>{{ b[0][0].eds  }}</td>
+			<td>{{ b[0][0].order_number.lstrip('0') }}-{{ b[0][0].order_position }}</td>
+			<td>{{ b[0][0].article_description }}</td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td>stock</td>
+			<td>{{ s.quantity}}</td>
+			{% if s.sales_price is none %}
+			<td></td>
+			{% else %}
+			<td>{{ '%.4f' % s.sales_price }}</td>
+			{% endif %}
+			<td>{{ s.eta.strftime('CW%V/%g') if s.eta is not none else '?' }}</td>
+			<td>{{ s.transport }}</td>
+			<td>{{ s.supplier }}</td>
+			<td><a href="{{ url_for('orders.edit_order', order_id=s.id, next=request.full_path) }}">{{ s.order_number }}</a></td>
+			{% if s.ecv is none or s.eds is none %}
+			<td></td>
+			{% else %}
+			<td>{{ s.ecv }}<br>{{ s.eds }}</td>			
+			{% endif %}
+			<td>{{ s.fob.strftime('%d.%m.%Y') }}</td>
+		</tr>
+	  {% endfor %}
+	{% endfor %}
+    </tbody>
+  </table>
+  <br>
+  <br>
+  <br>
+<script>
+function parseDateDMY(dateStr) {
+  const [day, month, year] = dateStr.split('.');
+  return new Date(`20${year}`, month - 1, day);
+}
+
+document.querySelectorAll('#planning tbody tr').forEach(row => {
+  const requestedCell = row.querySelector('.requested')
+  const confirmedCell = row.querySelector('.confirmed')
+  const confirmedWkCell = row.querySelector('.confirmedwk')
+
+  if (!confirmedCell || !requestedCell || !confirmedWkCell) return;
+
+  const requestedText = requestedCell.textContent.trim();
+  const confirmedText = confirmedCell.textContent.trim();
+
+
+  const requestedDate = parseDateDMY(requestedText);
+  const confirmedDate = parseDateDMY(confirmedText);
+
+  const requestedPlus7 = new Date(requestedDate);
+  requestedPlus7.setDate(requestedPlus7.getDate() + 7);
+
+  if (confirmedDate > requestedDate && confirmedDate <= requestedPlus7) {
+    confirmedCell.style.color = 'orange';
+	confirmedWkCell.style.color = 'orange';
+    confirmedCell.style.fontWeight = 'bold';
+    confirmedWkCell.style.fontWeight = 'bold';
+  } else if (confirmedDate > requestedPlus7) {
+    confirmedCell.style.color = 'red';
+	confirmedWkCell.style.color = 'red';
+    confirmedCell.style.fontWeight = 'bold';
+    confirmedWkCell.style.fontWeight = 'bold';
+  }
+});
+
+
+
+const table = document.querySelector("table");
+const thead = document.querySelector("thead");
+
+thead.addEventListener("click", function () {
+
+  if (table.querySelector(".filter-row")) return;
+
+  const headerCells = document.querySelectorAll("th");
+  const filterRow = document.createElement("tr");
+  filterRow.classList.add("filter-row");
+
+  const filterRowButtonTr = document.createElement("tr");
+  filterRowButtonTr.classList.add("filter-row-button");
+  const filterRowButtonTd = document.createElement("td");
+  filterRowButtonTd.id = "apply";
+  filterRowButtonTr.appendChild(filterRowButtonTd);
+  filterRowButtonTd.colSpan = 15;
+
+  const applyButton = document.createElement("button");
+  applyButton.textContent = "Apply filter";
+  const clearButton = document.createElement("button");
+  clearButton.textContent = "Clear filter";
+
+  filterRowButtonTd.appendChild(applyButton);
+  filterRowButtonTd.appendChild(clearButton);
+  applyButton.addEventListener("click", filterTable);
+  clearButton.addEventListener("click", clearTable);
+
+  headerCells.forEach((th, index) => {
+
+    const td = document.createElement("td");
+    const input = document.createElement("input");
+ 
+    input.type = "text";
+    input.placeholder = "Filter...";
+    input.dataset.column = index;
+
+	if (index === headerCells.length - 1) {
+    	filterRow.appendChild(td);
+		return;
+	} else {
+		td.appendChild(input);
+	    filterRow.appendChild(td);
+	}
+  });
+
+  table.querySelector("tbody").prepend(filterRowButtonTr);
+  table.querySelector("tbody").prepend(filterRow);
+
+});
+
+colorRows(document.querySelectorAll("tbody tr"), 3);
+
+</script>
+{% endblock %}

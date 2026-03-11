@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+<form method="post">
+  {{ form.hidden_tag() }}
+  <p>{{ form.submit() }}</p>
+
+  {% if page == 'split' %}
+  <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40) }}</p>
+  {% elif page == 'create' %}
+  <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40, minlength=3) }} *</p>
+  {% else %}
+  <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40) }}<a href="{{ url_for('orders.split_order', order_id=order_id) }}">Split</a></p>
+  {% endif %}
+
+  <p>{{ form.article_description.label }}<br>{{ form.article_description(size=40) }} *</p>
+  <div id="results"></div>
+  <p>{{ form.buyer_article_number.label }}<br>{{ form.buyer_article_number(size=40) }} *</p>
+  <p>{{ form.fob.label }}<br>{{ form.fob(size=40) }} *</p>
+  <p>{{ form.transport.label }}<br>{{ form.transport() }} *</p>
+  <p>{{ form.quantity.label }}<br>{{ form.quantity(size=40) }} *</p>
+  <p>{{ form.supplier.label }}<br>{{ form.supplier() }} *</p>
+  <p>{{ form.unit_weight.label }}<br>{{ form.unit_weight(size=40) }}</p>
+  <p>{{ form.overall_weight.label }}<br>{{ form.overall_weight(size=40) }}</p>
+  <p>{{ form.ecv.label }}<br>{{ form.ecv(size=40) }}</p>
+  <p>{{ form.eds.label }}<br>{{ form.eds(size=40) }}</p>
+  <p>{{ form.purchase_price.label }}<br>{{ form.purchase_price(size=40, value='%.4f'|format(form.purchase_price.data) if form.purchase_price.data is not none else '') }}</p>
+  <p>{{ form.sales_price.label }}<br>{{ form.sales_price(size=40, value='%.4f'|format(form.sales_price.data) if form.sales_price.data is not none else '') }}</p>
+  <p>{{ form.rmb.label }}<br>{{ form.rmb(size=40) }}</p>
+  <p>{{ form.submit() }}</p>
+</form>
+<p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+
+<script>
+function parseEU(value) {
+  if (!value) return 0;
+  return parseFloat(
+    value
+      .replace(/\s/g, '')
+      .replace('kg', '')
+      .replace(',', '.')
+  ) || 0;
+}
+
+function formatEU(value) {
+  return value
+    .toFixed(2)
+    .replace('.', ',') + ' kg';
+}
+
+function updateOverallWeight() {
+  const unitInput = document.getElementById('unit_weight');
+  const quantityInput = document.getElementById('quantity');
+  const overallInput = document.getElementById('overall_weight');
+
+  const unitWeight = parseEU(unitInput.value);
+  const quantity = parseInt(quantityInput.value, 10) || 0;
+  const overallWeight = unitWeight * quantity;
+
+  if (unitWeight) {
+    unitInput.value = formatEU(unitWeight);
+  }
+
+  overallInput.value = formatEU(overallWeight);
+}
+updateOverallWeight();
+
+document.getElementById('unit_weight')
+  .addEventListener('blur', updateOverallWeight);
+
+document.getElementById('quantity')
+  .addEventListener('input', updateOverallWeight);
+
+
+const article_description = document.getElementById("article_description");
+const buyer_article_number = document.getElementById("buyer_article_number");
+const results = document.getElementById("results");
+
+article_description.addEventListener("input", (e) => {
+  
+  a = e.target.value;
+  
+  getMaterials(a).then(data => {
+    results.innerHTML = '';
+    results.style.display = 'block';
+    data.forEach(element => {
+      let li = document.createElement("li");
+      li.textContent = `${element.plant_name} : ${element.buyer_article_number} : ${element.article_descritption}`;
+      li.addEventListener("click", () => {
+        results.style.display = 'none';
+        article_description.value = element.article_descritption;
+        buyer_article_number.value = element.buyer_article_number;
+      });
+      results.appendChild(li);
+    });
+
+  });
+
+});
+
+</script>
+{% endblock %}
+

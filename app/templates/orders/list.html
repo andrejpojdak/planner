@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Orders{% endblock %}
+
+{% block content %}
+
+<div id="flex-left">
+	<a href="{{ url_for('orders.create_order') }}">Create new</a>
+	<form method="post" action="{{ url_for('orders.delete_all_orders') }}" onsubmit="return confirm('Delete ALL orders? This cannot be undone.');">
+		<button type="submit">Delete all orders</button>
+	</form>
+</div>
+<br>
+<table>
+    <thead>
+		<tr>
+			<th>Purchase Order Number</th>
+			<th>Buyer Article Number</th>
+			<th>SAP Article Description</th>
+			<th>FOB china</th>
+			<th>Transport</th>
+			<th>Quantity</th>
+			<th>ECV</th>
+			<th>EDS</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>{{ o.order_number }}</td>
+        <td>{{ o.buyer_article_number }}</td>
+        <td>{{ o.sap_article_description }}</td>
+        <td>{{ o.fob.strftime('%d.%m.%Y') }}</td>
+        <td>{{ o.transport }}</td>
+        <td>{{ o.quantity }}</td>
+        <td>{{ o.ecv }}</td>
+        <td>{{ o.eds }}</td>
+		<td class="actions">
+			<div id="menu-container">
+            	<div id="menu-icon">&#9776;</div>
+            	<div id="menu">
+					<a href="{{ url_for('orders.edit_order', order_id=o.id) }}">Edit</a><br>
+					<a href="{{ url_for('orders.split_order', order_id=o.id) }}">Split</a><br>
+					<form method="post" action="{{ url_for('orders.delete_order', order_id=o.id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
+				</div>
+			</div>
+		</td>
+	  </tr>
+      {% else %}
+      <tr><td colspan=11">No orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+</table>
+
+<script>
+const trs = document.querySelectorAll("tbody tr");
+colorRows(trs, 3);
+</script>
+{% endblock %}
