@@ -1,6 +1,8 @@
+const API_BASE = window.location.origin;
+
 async function getMaterials(text) {
   try {
-    const fetchUrl =  "http://192.168.99.14:5000/materials/query?text=" + encodeURIComponent(text);
+    const fetchUrl =  API_BASE + "/materials/query?text=" + encodeURIComponent(text);
     const response = await fetch(fetchUrl);
 
     if (!response.ok) {
