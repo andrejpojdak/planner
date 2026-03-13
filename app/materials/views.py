@@ -222,7 +222,8 @@ def delete_all_materials():
 @bp.route('/query', methods=['GET','POST'])
 def query_material():
     text = request.args.get('text', '')
-    material_list = Material.query.with_entities(Material.material_code, Material.short_text, Material.gross_weight, Material.manufacturer).filter(Material.short_text.ilike(f'%{text}%')).all()
+    print(text)
+    material_list = Material.query.with_entities(Material.material_code, Material.short_text, Material.gross_weight, Material.manufacturer, Material.box_qty).filter(Material.short_text.ilike(f'%{text}%')).all()
     return jsonify([
         {
             "buyer_article_number"    :   material_code,

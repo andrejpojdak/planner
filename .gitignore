@@ -1,1 +1,15 @@
 /instance
+app/__pycache__/__init__.cpython-313.pyc
+.gitignore
+run.py
+app/__pycache__/__init__.cpython-313.pyc
+app/__pycache__/models.cpython-313.pyc
+app/deliveries/__pycache__/__init__.cpython-313.pyc
+app/deliveries/__pycache__/views.cpython-313.pyc
+app/materials/__pycache__/__init__.cpython-313.pyc
+app/materials/__pycache__/views.cpython-313.pyc
+app/orders/__pycache__/__init__.cpython-313.pyc
+app/orders/__pycache__/views.cpython-313.pyc
+app/planning/__pycache__/__init__.cpython-313.pyc
+app/planning/__pycache__/views.cpython-313.pyc
+app/settings/__pycache__/views.cpython-313.pyc
