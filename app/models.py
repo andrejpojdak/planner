@@ -53,6 +53,7 @@ class Order(db.Model):
 	sales_price = db.Column(db.Float, nullable=True)
 	rmb = db.Column(db.Integer, nullable=True)
 	supplier = db.Column(db.String(15), nullable=True)
+	comment = db.Column(db.String(120), nullable=True)
 	created_at = db.Column(db.Date, default=datetime.datetime.utcnow)
 	
 	def __repr__(self):

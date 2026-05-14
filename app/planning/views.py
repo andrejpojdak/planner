@@ -25,7 +25,7 @@ class FilterForm(FlaskForm):
 
 class Confirmations():
 	
-	def __init__(self, id, order_number, order_qty, order_fob, order_transport, order_eta, order_confirmed, order_sales_prices, order_supplier, order_orig_qty, order_ecv, order_eds):
+	def __init__(self, id, order_number, order_qty, order_fob, order_transport, order_eta, order_confirmed, order_sales_prices, order_supplier, order_orig_qty, order_ecv, order_eds, order_comment):
 		self.id = id
 		self.order_number = order_number
 		self.order_qty = order_qty
@@ -38,6 +38,7 @@ class Confirmations():
 		self.order_orig_qty = order_orig_qty
 		self.order_ecv = order_ecv
 		self.order_eds = order_eds
+		self.order_comment = order_comment
 
 def iso_week_range(isoweek_cwMMYY_format):
 
@@ -83,7 +84,7 @@ def deliveries_confirm(deliveries, orders, box = 35):
 	while (len(deliveries) > 0):
 			
 			if len(orders) == 0:
-				deliveries[0].confirmations.append(Confirmations(None,None,None,None, None, None,None,None, None, None, None, None))
+				deliveries[0].confirmations.append(Confirmations(None,None,None,None,None, None, None,None,None, None, None, None, None))
 				confirmed_deliveries.append(deliveries.pop(0))
 				continue
 
@@ -107,7 +108,8 @@ def deliveries_confirm(deliveries, orders, box = 35):
 						orders[0].supplier,
 						orders[0].orig_qty,
 						orders[0].ecv,
-						orders[0].eds
+						orders[0].eds,
+						orders[0].comment
 					)
 				)
 				deliveries[0].delivery_quantity -= orders[0].quantity
@@ -136,7 +138,8 @@ def deliveries_confirm(deliveries, orders, box = 35):
 						orders[0].supplier,
 						orders[0].orig_qty,
 						orders[0].ecv,
-						orders[0].eds
+						orders[0].eds,
+						orders[0].comment
 					)
 				)
 				orders[0].orig_qty = ''
@@ -162,7 +165,8 @@ def deliveries_confirm(deliveries, orders, box = 35):
 						orders[0].supplier,
 						orders[0].orig_qty,
 						orders[0].ecv,
-						orders[0].eds
+						orders[0].eds,
+						orders[0].comment
 					)
 				)
 				confirmed_deliveries.append(deliveries.pop(0))

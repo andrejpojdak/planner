@@ -20,6 +20,7 @@
 			<th>Conf. Qty</th>
 			<th>Sales Price</th>
 			<th>ETA</th>
+			<th>Comment</th>
 			<th>Frgt</th>
 			<th>Sup</th>
 			<th>PO No.</th>
@@ -67,6 +68,11 @@
 				<td></td>
 				{% else %}
 				<td>{{ c.order_eta.strftime('CW%V/%g') }}</td>
+				{% endif %}
+				{% if c.order_comment is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_comment }}</td>
 				{% endif %}
 				{% if c.order_transport is none %}
 				<td></td>
@@ -162,6 +168,11 @@
 				{% else %}
 				<td>{{ c.order_eta.strftime('CW%V/%g') }}</td>
 				{% endif %}
+				{% if c.order_comment is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_comment }}</td>
+				{% endif %}
 				{% if c.order_transport is none %}
 				<td></td>
 				{% else %}
@@ -244,6 +255,7 @@
 			<td>{{ '%.4f' % s.sales_price }}</td>
 			{% endif %}
 			<td>{{ s.eta.strftime('CW%V/%g') if s.eta is not none else '?' }}</td>
+			<td>{{ s.comment }}</td>
 			<td>{{ s.transport }}</td>
 			<td>{{ s.supplier }}</td>
 			<td><a href="{{ url_for('orders.edit_order', order_id=s.id, next=request.full_path) }}">{{ s.order_number }}</a></td>

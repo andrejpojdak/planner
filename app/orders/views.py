@@ -6,7 +6,7 @@ from ..models import Material
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, DecimalField, SubmitField, IntegerField, SelectField, DateField
-from wtforms.validators import Optional, DataRequired
+from wtforms.validators import Optional, DataRequired, Length
 import os, csv, re
 
 bp = Blueprint('orders', __name__)
@@ -25,7 +25,8 @@ class OrderForm(FlaskForm):
 	rmb = IntegerField('RMB', validators=[Optional()])
 	ecv = StringField('ECV', validators=[Optional()])
 	eds = StringField('EDS', validators=[Optional()])
-	supplier = SelectField('Supplier', choices=[('SANX', 'SANX'),('BRCN', 'BRCN'),('JCSK', 'JCSK'),('JWCO', 'JWCO')], default='', validators=[DataRequired()])
+	supplier = SelectField('Supplier', choices=[('SANX', 'SANX'),('BRCN', 'BRCN'),('JCSK', 'JCSK'),('JWCO', 'JWCO'),('XINT', 'XINT')], default='', validators=[DataRequired()])
+	comment = StringField('Comment', validators=[Optional(), Length(max=120)], render_kw={"maxlength": 120})
 	submit = SubmitField('Save')
 
 @bp.route('/', methods=['GET'])
@@ -67,7 +68,8 @@ def create_order():
 			rmb = form.rmb.data,
 			ecv = form.ecv.data.strip(),
 			eds = form.eds.data.strip(),
-			supplier = form.supplier.data.strip()
+			supplier = form.supplier.data.strip(),
+			comment = form.comment.data.strip()
 		)
 
 		if Order.query.filter(Order.order_number == d.order_number).filter(Order.buyer_article_number == d.buyer_article_number).first():
@@ -107,6 +109,7 @@ def edit_order(order_id):
 		o.ecv = form.ecv.data.strip()
 		o.eds = form.eds.data.strip()
 		o.supplier = form.supplier.data.strip()
+		o.comment = form.comment.data.strip()
 		
 		db.session.commit()
 		flash('Order updated.', 'success')
@@ -140,7 +143,8 @@ def split_order(order_id):
 			rmb = form.rmb.data,
 			ecv = form.ecv.data.strip(),
 			eds = form.eds.data.strip(),
-			supplier = form.supplier.data.strip()
+			supplier = form.supplier.data.strip(),
+			comment = form.comment.data.strip()
 		)
 		if Order.query.filter(Order.order_number == d.order_number).filter(Order.buyer_article_number == d.buyer_article_number).first():
 			flash(f'Order {d.order_number}, {d.article_description} already exists.', 'danger')

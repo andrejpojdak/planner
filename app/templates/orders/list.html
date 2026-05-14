@@ -22,6 +22,7 @@
 			<th>Quantity</th>
 			<th>ECV</th>
 			<th>EDS</th>
+			<th>Comment</th>
 			<th>Actions</th>
 		</tr>
 	</thead>
@@ -36,6 +37,11 @@
         <td>{{ o.quantity }}</td>
         <td>{{ o.ecv }}</td>
         <td>{{ o.eds }}</td>
+		{% if o.comment is none %}
+        <td></td>
+    	{% else %}
+		<td>{{ o.comment }}</td>
+		{% endif %}
 		<td class="actions">
 			<div id="menu-container">
             	<div id="menu-icon">&#9776;</div>

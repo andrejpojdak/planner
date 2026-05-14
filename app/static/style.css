@@ -17,7 +17,17 @@ table {
 	width:100%;
 	table-layout: auto;
 	border-top: 2px solid black;
-	}
+}
+th {
+	font-size: 10px;
+	font-weight: bold;
+}
+th,td {
+	border:1px solid #ccc;
+	padding:6px;
+	text-align:left;
+    /*white-space: nowrap;*/
+}
 tr.filter-row td input {
 	width: 50%;
 }
@@ -41,11 +51,6 @@ a:hover {
 td#apply {
 	text-align: center;
 }
-th,td {
-	border:1px solid #ccc;
-	padding:6px;
-	text-align:left;
-	}
 .actions {
 	white-space:nowrap;
 }
