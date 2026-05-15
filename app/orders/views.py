@@ -18,6 +18,7 @@ class OrderForm(FlaskForm):
 	fob = DateField('Delivery date', validators=[DataRequired()])
 	transport = SelectField('Transport type', choices=[('SEA', 'SEA'),('RAIL', 'RAIL'),('AIR', 'AIR'),('UNCONFIRMED', 'UNCONFIRMED')], default='UNCONFIRMED', validators=[DataRequired()])
 	quantity = IntegerField('Quantity', validators=[DataRequired()])
+	orig_quantity = IntegerField('Orig.Quantity', validators=[Optional()], render_kw={"disabled": True})
 	unit_weight = StringField('Unit weight', validators=[Optional()], render_kw={'readonly': True})
 	overall_weight = StringField('Overall weight', validators=[Optional()], render_kw={'readonly': True})
 	purchase_price = DecimalField('Purchase price', validators=[Optional()])
@@ -63,6 +64,7 @@ def create_order():
 			fob = form.fob.data,
 			transport = form.transport.data.strip(),
 			quantity = form.quantity.data,
+			orig_quantity = form.quantity.data,
 			purchase_price = form.purchase_price.data,
 			sales_price = form.sales_price.data,
 			rmb = form.rmb.data,
@@ -80,6 +82,7 @@ def create_order():
 		db.session.commit()
 		flash('Order created.', 'success')
 		return redirect(next_url or url_for('orders.list_orders'))
+
 	return render_template('orders/form.html', title="Create new order", form=form, action='Create', page="create")
 
 @bp.route('/edit/<int:order_id>', methods=['GET','POST'])
@@ -103,6 +106,7 @@ def edit_order(order_id):
 		o.fob = form.fob.data
 		o.transport = form.transport.data.strip()
 		o.quantity = form.quantity.data
+		o.orig_quantity = form.orig_quantity.data
 		o.purchase_price = form.purchase_price.data
 		o.sales_price = form.sales_price.data
 		o.rmb = form.rmb.data
@@ -125,6 +129,7 @@ def split_order(order_id):
 	o.article_description = material.short_text if material else '<material_not_found>'
 	weight = material.gross_weight if material else ''
 	o.unit_weight = weight
+	#o.orig_quantity = None
 
 	form = OrderForm(obj=o)
 	form.buyer_article_number.render_kw = { "readonly": True}
@@ -138,6 +143,7 @@ def split_order(order_id):
 			fob = form.fob.data,
 			transport = form.transport.data.strip(),
 			quantity = form.quantity.data,
+			orig_quantity = None,
 			purchase_price = form.purchase_price.data,
 			sales_price = form.sales_price.data,
 			rmb = form.rmb.data,

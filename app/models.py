@@ -47,6 +47,7 @@ class Order(db.Model):
 	fob = db.Column(db.Date)
 	transport = db.Column(db.String(120), nullable=True)
 	quantity = db.Column(db.Integer, nullable=True)
+	orig_quantity = db.Column(db.Integer, nullable=True)
 	ecv = db.Column(db.String(120), nullable=True)
 	eds = db.Column(db.String(120), nullable=True)
 	purchase_price = db.Column(db.Float, nullable=True)
