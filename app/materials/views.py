@@ -86,17 +86,24 @@ def create_material():
     args_short_text=request.args.get('short_text', '')
     args_gross_weight=float(request.args.get('gross_weight', 0))
     args_manufacturer=request.args.get('manufacturer', '')
-    
-    form = MaterialForm(material_code=args_material_code,
-                        short_text=args_short_text,
-                        gross_weight=args_gross_weight,
-                        manufacturer=args_manufacturer)
+    args_box_qty=request.args.get('box_qty', '')
+  
+    form = MaterialForm(
+        material_code=args_material_code,
+        short_text=args_short_text,
+        gross_weight=args_gross_weight,
+        manufacturer=args_manufacturer,
+        box_qty=args_box_qty
+        )
 
     if form.validate_on_submit():
-        m = Material(material_code=form.material_code.data,
-                     short_text=form.short_text.data,
-                     gross_weight=float(form.gross_weight.data) if form.gross_weight.data is not None else None,
-                     manufacturer=form.manufacturer.data)
+        m = Material(
+            material_code=form.material_code.data,
+            short_text=form.short_text.data,
+            gross_weight=float(form.gross_weight.data) if form.gross_weight.data is not None else None,
+            manufacturer=form.manufacturer.data,
+            box_qty=form.box_qty.data
+            )
         if Material.query.filter(Material.material_code == m.material_code).first():
             flash(f'Material code {m.material_code} already exists.', 'danger')
             return redirect(url_for('materials.create_material', material_code=m.material_code, short_text=m.short_text, gross_weight=m.gross_weight, manufacturer=m.manufacturer))
@@ -124,6 +131,7 @@ def edit_material():
         m.short_text = form.short_text.data
         m.gross_weight = float(form.gross_weight.data) if form.gross_weight.data is not None else None
         m.manufacturer = form.manufacturer.data
+        m.box_qty = form.box_qty.data
         db.session.commit()
         flash('Material updated.', 'success')
         return redirect(next_url or url_for('materials.list_materials'))

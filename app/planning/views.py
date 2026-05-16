@@ -50,7 +50,7 @@ def iso_week_range(isoweek_cwMMYY_format):
 
 	return monday, sunday
 
-def deliveries_confirm(deliveries, orders, box = 35):
+def deliveries_confirm(deliveries, orders, box_qty):
 
 	def compute_eta(fob, transport):
 		
@@ -82,7 +82,8 @@ def deliveries_confirm(deliveries, orders, box = 35):
 	confirmed_deliveries = []
 
 	while (len(deliveries) > 0):
-			
+			if len(orders) > 0:
+				print(deliveries[0].delivery_quantity, orders[0].quantity)
 			if len(orders) == 0:
 				deliveries[0].confirmations.append(Confirmations(None,None,None,None,None, None, None,None,None, None, None, None, None))
 				confirmed_deliveries.append(deliveries.pop(0))
@@ -118,34 +119,40 @@ def deliveries_confirm(deliveries, orders, box = 35):
 				continue
 			
 			elif deliveries[0].delivery_quantity < orders[0].quantity:
-	
 				if ( orders[0].eta is None ):
 					orders[0].confirmed_date = None
 				elif ( orders[0].eta < deliveries[0].delivery_date ):
 					orders[0].confirmed_date = deliveries[0].delivery_date
 				else:
 					orders[0].confirmed_date = orders[0].eta
-				deliveries[0].confirmations.append(
-					Confirmations(
-						orders[0].id,
-						orders[0].order_number,
-						deliveries[0].delivery_quantity,
-						orders[0].fob,
-						orders[0].transport,
-						orders[0].eta,
-						orders[0].confirmed_date,
-						orders[0].sales_price,
-						orders[0].supplier,
-						orders[0].orig_qty,
-						orders[0].ecv,
-						orders[0].eds,
-						orders[0].comment
+				
+				import math
+				if(math.ceil(deliveries[0].delivery_quantity/box_qty)*box_qty > orders[0].quantity):
+					deliveries[0].delivery_quantity = orders[0].quantity
+					continue
+				else:
+					deliveries[0].delivery_quantity = math.ceil(deliveries[0].delivery_quantity/box_qty)*box_qty
+					deliveries[0].confirmations.append(
+						Confirmations(
+							orders[0].id,
+							orders[0].order_number,
+							deliveries[0].delivery_quantity,
+							orders[0].fob,
+							orders[0].transport,
+							orders[0].eta,
+							orders[0].confirmed_date,
+							orders[0].sales_price,
+							orders[0].supplier,
+							orders[0].orig_qty,
+							orders[0].ecv,
+							orders[0].eds,
+							orders[0].comment
+						)
 					)
-				)
-				orders[0].orig_qty = ''
-				orders[0].quantity -= deliveries[0].delivery_quantity
-				confirmed_deliveries.append(deliveries.pop(0))
-				continue
+					orders[0].orig_qty = ''
+					orders[0].quantity -= deliveries[0].delivery_quantity
+					confirmed_deliveries.append(deliveries.pop(0))
+					continue
 
 			else:
 				if ( orders[0].eta < deliveries[0].delivery_date ):
@@ -194,13 +201,14 @@ def list_plans():
 
 		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
-
+		
 		for d in deliveries:
 			material = Material.query.filter(Material.material_code == d.buyer_article_number).first()
+			box_qty = material.box_qty
 			d.article_description = material.short_text if material else '<material_not_found>'
 			d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders))
+		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty))
 
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list)
 
@@ -213,8 +221,9 @@ def list_plans_buyer_article_number(buyer_article_number):
 	
 	for d in deliveries:
 		material = Material.query.filter(Material.material_code == d.buyer_article_number).first()
+		box_qty = material.box_qty
 		d.article_description = material.short_text if material else '<material_not_found>'
 		d.plant_name = material.manufacturer if material else '<material_not_found>'
 	
-	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders))
+	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty))
 	return render_template('planning/list.html', title=f"{buyer_article_number} - Planning", orders=orders, buyer_article_numbers_list=buyer_article_numbers_list)
