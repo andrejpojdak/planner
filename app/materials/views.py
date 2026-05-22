@@ -4,7 +4,7 @@ from .. import db
 from ..models import Material
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import StringField, DecimalField, SubmitField
+from wtforms import StringField, DecimalField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Optional, NumberRange
 from bs4 import BeautifulSoup
 import os
@@ -17,7 +17,7 @@ class MaterialForm(FlaskForm):
     short_text = StringField('Short text', validators=[DataRequired()])
     gross_weight = DecimalField('Gross weight', validators=[DataRequired(), NumberRange(min=0.000001, message="Gross weight must be greater than 0")], places=3)
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
-    box_qty = StringField('Box Qty', validators=[Optional()])
+    box_qty = IntegerField('Box Qty', validators=[Optional(), NumberRange(min=1)])
     submit = SubmitField('Save')
 
 class ImportForm(FlaskForm):
@@ -165,19 +165,10 @@ def import_html():
         existing_list = []
 
         for row in parsed:
-            
-            na = [
-                'nepou',
-                'nepoužívať',
-                'nepopuživať',
-                'nepopuživat',
-                'nepouzivat'
-            ]
 
-            pattern = re.compile(r'nepou[zž][ií]va[tť]', re.IGNORECASE)
+            pattern = re.compile(r'(nepou[zž][ií]va[tť]?|nepopu[zž][ií]va[tť]?|bez typu ocenenia|bez karty nakup|nepou)', re.IGNORECASE)
             combined = f"{row['material_code']} {row['short_text']}"
             if pattern.search(combined):
-                print(row['material_code'], row['short_text'])
                 continue
 
             current_material = Material.query.filter(Material.material_code == row['material_code']).first()
@@ -202,7 +193,7 @@ def import_html():
                          short_text=row['short_text'],
                          gross_weight=row['gross_weight'],
                          manufacturer=manufacturer,
-                         box_qty=0)
+                         box_qty=1)
 
             db.session.add(m)
             added += 1
@@ -230,7 +221,6 @@ def delete_all_materials():
 @bp.route('/query', methods=['GET','POST'])
 def query_material():
     text = request.args.get('text', '')
-    print(text)
     material_list = Material.query.with_entities(Material.material_code, Material.short_text, Material.gross_weight, Material.manufacturer, Material.box_qty).filter(Material.short_text.ilike(f'%{text}%')).all()
     return jsonify([
         {

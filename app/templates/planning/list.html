@@ -26,11 +26,16 @@
 			<th>PO No.</th>
 			<th>ECV EDS</th>
 			<th>FOB</th>
-			<th></th></tr></thead>
+			<th></th>
 		</tr>
 	</thead>
     <tbody>
 	{% for b in buyer_article_numbers_list %}
+			<tr class="status">
+				<td colspan="9"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</a></td>
+				<td colspan="2"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box</a></td>
+				<td colspan="9"></td>
+			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}
 			{% if loop.first %}
@@ -121,7 +126,7 @@
 							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
 							<a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">Edit {{ c.order_number }}</a><br>
 							<a href="{{ url_for('orders.split_order', order_id=c.id, next=request.full_path) }}">Split {{ c.order_number }}</a><br>
-							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}">Delete {{ c.order_number }}</a><br>
+							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}" onclick="return confirm('Delete this order?');">Delete {{ c.order_number }}</a><br>
 							<span>-------</span><br>
 							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
 							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
@@ -220,7 +225,7 @@
 							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
 							<a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">Edit {{ c.order_number }}</a><br>
 							<a href="{{ url_for('orders.split_order', order_id=c.id, next=request.full_path) }}">Split {{ c.order_number }}</a><br>
-							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}">Delete {{ c.order_number }}</a><br>
+							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}" onclick="return confirm('Delete this order?');">Delete {{ c.order_number }}</a><br>
 							<span>-------</span><br>
 							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
 							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>

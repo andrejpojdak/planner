@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Assignments{% endblock %}
+
+{% block content %}
+
+<div id="flex-left">
+	<form method="post" action="{{ url_for('assignments.delete_all_assignments') }}" onsubmit="return confirm('Delete ALL assignments? This cannot be undone.');">
+		<button type="submit">Delete all assignments</button>
+	</form>
+</div>
+<br>
+<table>
+    <thead>
+      <tr>
+        <th>SO Number</th>
+        <th>SAP Article Description</th>
+        <th>Req. Qty</th>
+        <th>Req. Date</th>
+        <th>Req. Week</th>
+        <th>Conf. Qty</th>
+        <th>PO No.</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in assignments %}
+      <tr>
+        <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
+        <td>{{ a.short_text }}</td>
+        <td>{{ a.delivery_quantity }}</td>
+				<td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
+				<td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
+        <td>{{ a.order_qty }}</td>
+        <td>{{ a.order_number }}</td>
+        <td class="actions">
+          <div id="menu-container">
+            <div id="menu-icon">&#9776;</div>
+            <div id="menu">
+              <form method="post" action="{{ url_for('assignments.delete_assignment', delivery_id=a.delivery_id, order_id=a.order_id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
+            </div>
+          </div>
+        </td>
+	  </tr>
+      {% else %}
+      <tr><td colspan=8">No assignments yet.</td></tr>
+      {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

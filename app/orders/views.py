@@ -3,10 +3,12 @@ from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Order
 from ..models import Material
+from ..models import Delivery
+from ..models import Assignments
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, DecimalField, SubmitField, IntegerField, SelectField, DateField
-from wtforms.validators import Optional, DataRequired, Length
+from wtforms.validators import Optional, DataRequired, Length, NumberRange
 import os, csv, re
 
 bp = Blueprint('orders', __name__)
@@ -17,13 +19,13 @@ class OrderForm(FlaskForm):
 	article_description = StringField('Short text', validators=[DataRequired()])
 	fob = DateField('Delivery date', validators=[DataRequired()])
 	transport = SelectField('Transport type', choices=[('SEA', 'SEA'),('RAIL', 'RAIL'),('AIR', 'AIR'),('UNCONFIRMED', 'UNCONFIRMED')], default='UNCONFIRMED', validators=[DataRequired()])
-	quantity = IntegerField('Quantity', validators=[DataRequired()])
-	orig_quantity = IntegerField('Orig.Quantity', validators=[Optional()], render_kw={"disabled": True})
+	quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1, message="Qty must be greater than 0")])
+	ordered_quantity = IntegerField('Ordered Quantity', validators=[Optional(), NumberRange(min=1, message="Qty must be greater than 0")], render_kw={"disabled": True})
 	unit_weight = StringField('Unit weight', validators=[Optional()], render_kw={'readonly': True})
 	overall_weight = StringField('Overall weight', validators=[Optional()], render_kw={'readonly': True})
-	purchase_price = DecimalField('Purchase price', validators=[Optional()])
-	sales_price = DecimalField('Sales price', validators=[Optional()])
-	rmb = IntegerField('RMB', validators=[Optional()])
+	purchase_price = DecimalField('Purchase price', validators=[Optional(), NumberRange(min=0.00001, message="Price must be greater than 0")])
+	sales_price = DecimalField('Sales price', validators=[Optional(), NumberRange(min=0.00001, message="Price must be greater than 0")])
+	rmb = IntegerField('RMB', validators=[Optional(), NumberRange(min=1, message="RMB must be greater than 0")])
 	ecv = StringField('ECV', validators=[Optional()])
 	eds = StringField('EDS', validators=[Optional()])
 	supplier = SelectField('Supplier', choices=[('SANX', 'SANX'),('BRCN', 'BRCN'),('JCSK', 'JCSK'),('JWCO', 'JWCO'),('XINT', 'XINT')], default='', validators=[DataRequired()])
@@ -64,7 +66,7 @@ def create_order():
 			fob = form.fob.data,
 			transport = form.transport.data.strip(),
 			quantity = form.quantity.data,
-			orig_quantity = form.quantity.data,
+			ordered_quantity = form.quantity.data,
 			purchase_price = form.purchase_price.data,
 			sales_price = form.sales_price.data,
 			rmb = form.rmb.data,
@@ -87,6 +89,25 @@ def create_order():
 
 @bp.route('/edit/<int:order_id>', methods=['GET','POST'])
 def edit_order(order_id):
+	assignment_list = []
+	assignment_list = (
+		db.session.query(
+			Delivery.order_number.label("delivery_order_number"),
+			Delivery.order_position.label("delivery_order_position"),
+			Material.short_text.label("short_text"),
+			Delivery.delivery_date.label("delivery_date"),
+			Delivery.delivery_quantity.label("delivery_quantity"),
+			Order.order_number.label("order_number"),
+			Assignments.qty.label("order_qty"),
+			Assignments.delivery_id.label("delivery_id"),
+			Assignments.order_id.label("order_id")
+		)
+		.join(Delivery, Delivery.id == Assignments.delivery_id)
+		.join(Order, Order.id == Assignments.order_id)
+		.join(Material, Material.material_code == Delivery.buyer_article_number)
+		.all()
+	)
+
 	next_url = request.args.get('next')
 	o = Order.query.get_or_404(order_id)
 	material = Material.query.filter(Material.material_code == o.buyer_article_number).first()
@@ -106,7 +127,7 @@ def edit_order(order_id):
 		o.fob = form.fob.data
 		o.transport = form.transport.data.strip()
 		o.quantity = form.quantity.data
-		o.orig_quantity = form.orig_quantity.data
+		o.ordered_quantity = form.ordered_quantity.data
 		o.purchase_price = form.purchase_price.data
 		o.sales_price = form.sales_price.data
 		o.rmb = form.rmb.data
@@ -118,7 +139,7 @@ def edit_order(order_id):
 		db.session.commit()
 		flash('Order updated.', 'success')
 		return redirect(next_url or url_for('orders.list_orders'))
-	return render_template('orders/form.html', title="Edit", form=form, action='Edit', order_id=order_id, next_url=next_url, page="edit")
+	return render_template('orders/form.html', title="Edit", form=form, action='Edit', order_id=order_id, next_url=next_url, page="edit", assignment_list=assignment_list)
 
 @bp.route('/split/<int:order_id>', methods=['GET','POST'])
 def split_order(order_id):
@@ -143,7 +164,7 @@ def split_order(order_id):
 			fob = form.fob.data,
 			transport = form.transport.data.strip(),
 			quantity = form.quantity.data,
-			orig_quantity = None,
+			ordered_quantity = None,
 			purchase_price = form.purchase_price.data,
 			sales_price = form.sales_price.data,
 			rmb = form.rmb.data,

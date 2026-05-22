@@ -13,7 +13,7 @@ class Material(db.Model):
 	created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 	def __repr__(self):
-		return f"<Material {self.material_code}>"
+		return f"<Material {self.material_code}, {self.short_text} >"
 
 class Delivery(db.Model):
 	__tablename__ = "deliveries"
@@ -33,9 +33,10 @@ class Delivery(db.Model):
 	ecv = db.Column(db.String(120), nullable=True)
 	eds = db.Column(db.String(120), nullable=True)
 	created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+	delivery_orders = db.relationship("Assignments", back_populates="delivery")
 
 	def __repr__(self):
-		return f"<Delivery {self.order_number}:{self.order_position}>"
+		return f"<Delivery {self.id} {self.order_number}-{self.order_position}, {self.article_description}, {self.delivery_quantity}, {self.delivery_date}>"
 
 class Order(db.Model):
 	__tablename__ = "orders"
@@ -47,7 +48,7 @@ class Order(db.Model):
 	fob = db.Column(db.Date)
 	transport = db.Column(db.String(120), nullable=True)
 	quantity = db.Column(db.Integer, nullable=True)
-	orig_quantity = db.Column(db.Integer, nullable=True)
+	ordered_quantity = db.Column(db.Integer, nullable=True)
 	ecv = db.Column(db.String(120), nullable=True)
 	eds = db.Column(db.String(120), nullable=True)
 	purchase_price = db.Column(db.Float, nullable=True)
@@ -56,9 +57,10 @@ class Order(db.Model):
 	supplier = db.Column(db.String(15), nullable=True)
 	comment = db.Column(db.String(120), nullable=True)
 	created_at = db.Column(db.Date, default=datetime.datetime.utcnow)
+	delivery_orders = db.relationship("Assignments", back_populates="order")
 	
 	def __repr__(self):
-		return f"<Order {self.order_number}:{self.order_position}>"
+		return f"<Order {self.id} {self.order_number}-{self.order_position}, {self.article_description} {self.quantity} {self.fob}>"
 
 class Settings(db.Model):
 	__tablename__ = "settings"
@@ -67,3 +69,15 @@ class Settings(db.Model):
 	
 	def __repr__(self):
 		return f"<Settings for {self.key}>"
+
+class Assignments(db.Model):
+	__tablename__ = "assignments"
+	delivery_id = db.Column(db.Integer, db.ForeignKey("deliveries.id"), primary_key=True)
+	order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), primary_key=True)
+	qty = db.Column(db.Integer)
+
+	delivery = db.relationship("Delivery", back_populates="delivery_orders")
+	order = db.relationship("Order", back_populates="delivery_orders")
+
+	def __repr__(self):
+		return f"<Settings for {self.delivery_id}:{self.order_id}>"

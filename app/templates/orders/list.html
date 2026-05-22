@@ -20,7 +20,7 @@
 			<th>FOB china</th>
 			<th>Transport</th>
 			<th>Quantity</th>
-			<th>Orig.Quantity</th>
+			<th>Ordered Quantity</th>
 			<th>ECV</th>
 			<th>EDS</th>
 			<th>Comment</th>
@@ -36,10 +36,10 @@
         <td>{{ o.fob.strftime('%d.%m.%Y') }}</td>
         <td>{{ o.transport }}</td>
         <td>{{ o.quantity }}</td>
-		{% if o.orig_quantity is none %}
+		{% if o.ordered_quantity is none %}
         <td></td>
     	{% else %}
-		<td>{{ o.orig_quantity }}</td>
+		<td>{{ o.ordered_quantity }}</td>
 		{% endif %}
 		<td>{{ o.ecv }}</td>
         <td>{{ o.eds }}</td>

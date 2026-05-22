@@ -12,7 +12,12 @@
 	gap: 10px;
 	display:	flex;
 }
-table {
+table.assignment_list {
+	width: auto;
+}
+table.assignment_list td {
+	color: blue;
+}table {
 	border-collapse:collapse;
 	width:100%;
 	table-layout: auto;
@@ -28,6 +33,12 @@ th,td {
 	text-align:left;
     /*white-space: nowrap;*/
 }
+.status {
+	background-color: lightgrey;
+}
+tr.status {
+	font-size: 14px;
+}
 tr.filter-row td input {
 	width: 50%;
 }
@@ -36,6 +47,7 @@ tr.filter-row td input:not(:placeholder-shown) {
 }
 table thead {
 	font-size: 14px;
+	border-bottom: solid black 2px;
 }
 table tbody {
 	font-size: 12px;

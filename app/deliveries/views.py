@@ -3,10 +3,12 @@ from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Delivery
 from ..models import Material
+from ..models import Assignments
+from ..models import Order
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, DecimalField, SubmitField, IntegerField, DateField
-from wtforms.validators import Optional, DataRequired
+from wtforms.validators import Optional, DataRequired, NumberRange
 import os, csv, re
 from datetime import datetime
 
@@ -23,7 +25,7 @@ class DeliveryForm(FlaskForm):
 	order_number = StringField('Order Number', validators=[DataRequired()])
 	order_position = StringField('Order Position', validators=[DataRequired()])
 	delivery_date = DateField('Delivery date', validators=[DataRequired()])
-	delivery_quantity = IntegerField('Delivery quantity', validators=[DataRequired()])
+	delivery_quantity = IntegerField('Delivery quantity', validators=[DataRequired(), NumberRange(min=1, message="Qty must be greater than 0")])
 	additional_information = StringField('Additional information', validators=[Optional()])
 	ecv = StringField('ECV', validators=[Optional()])
 	eds = StringField('EDS', validators=[Optional()])
@@ -89,7 +91,26 @@ def create_delivery():
 def edit_delivery(delivery_id):
 
 	next_url = request.args.get('next')
-	
+
+	assignment_list = []
+	assignment_list = (
+		db.session.query(
+			Delivery.order_number.label("delivery_order_number"),
+			Delivery.order_position.label("delivery_order_position"),
+			Material.short_text.label("short_text"),
+			Delivery.delivery_date.label("delivery_date"),
+			Delivery.delivery_quantity.label("delivery_quantity"),
+			Order.order_number.label("order_number"),
+			Assignments.qty.label("order_qty"),
+			Assignments.delivery_id.label("delivery_id"),
+			Assignments.order_id.label("order_id")
+		)
+		.join(Delivery, Delivery.id == Assignments.delivery_id)
+		.join(Order, Order.id == Assignments.order_id)
+		.join(Material, Material.material_code == Delivery.buyer_article_number)
+		.all()
+	)
+
 	d = Delivery.query.get_or_404(delivery_id)
 	material = Material.query.filter(Material.material_code == d.buyer_article_number).first()
 	d.article_description = material.short_text if material else '<material_not_found>'
@@ -113,7 +134,7 @@ def edit_delivery(delivery_id):
 		db.session.commit()
 		flash('Delivery updated.', 'success')
 		return redirect(next_url or url_for('deliveries.list_deliveries'))
-	return render_template('deliveries/form.html', title="Edit delivery", form=form, action='Edit')
+	return render_template('deliveries/form.html', title="Edit delivery", form=form, action='Edit', assignment_list=assignment_list)
 
 @bp.route('/delete/<int:delivery_id>', methods=['POST'])
 def delete_delivery(delivery_id):
@@ -214,8 +235,10 @@ def import_csv():
 					eds = version[0]
 			
 			sap_material = Material.query.filter(Material.material_code == buyer_article_number).first()
-			plant_name = sap_material.manufacturer
-
+			if sap_material:
+				plant_name = sap_material.manufacturer
+			else:
+				flash(f'Create material {buyer_article_number} - {article_description} in "Materials" section!', 'danger')
 			d = Delivery(
 				buyer_plant_id=buyer_plant_id,
 				plant_name=plant_name,

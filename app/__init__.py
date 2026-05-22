@@ -38,7 +38,10 @@ def create_app(config=None):
 	
 	from .planning.views import bp as planning_bp
 	app.register_blueprint(planning_bp, url_prefix="/planning")
-		
+	
+	from .assignments.views import bp as assignments_bp
+	app.register_blueprint(assignments_bp, url_prefix="/assignments")
+
 	# create DB tables for quick start
 	with app.app_context():
 		db.create_all()
@@ -46,9 +49,9 @@ def create_app(config=None):
 		from .models import Settings
 		
 		data = {
-			"SEA": 50,
-			"RAIL": 25,
-			"AIR": 12
+			"seafreight": 50,
+			"railfreight": 25,
+			"airfreight": 12
 		}
 
 		for k, v in data.items():

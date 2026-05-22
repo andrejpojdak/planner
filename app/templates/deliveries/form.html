@@ -18,6 +18,36 @@
     <form method="post">
       {{ form.hidden_tag() }}
       <p>{{ form.submit() }}</p>
+
+    {% if assignment_list %}
+    <h3>Assignments</h3>
+      <table class="assignment_list">
+        <thead>
+          <th>SO Number</th>
+          <th>SAP Article Description</th>
+          <th>Req. Qty</th>
+          <th>Req. Date</th>
+          <th>Req. Week</th>
+          <th>Ass. Qty</th>
+          <th>PO Order</th>
+        </thead>
+        <tbody>
+          <tr>
+          {% for a in assignment_list %}
+            <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
+            <td>{{ a.short_text }}</td>
+            <td>{{ a.delivery_quantity }}</td>
+            <td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
+            <td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
+            <td>{{ a.order_qty }}</td>
+            <td>{{ a.order_number }}</td>
+          {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    {% else %}
+    {% endif %}
+
       <p>{{ form.article_description.label }}<br>{{ form.article_description(size=80) }} *</p>
       <div id="results"></div>
       <p>{{ form.buyer_article_number.label }}<br>{{ form.buyer_article_number(size=80) }} *</p>

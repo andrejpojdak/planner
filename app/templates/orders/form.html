@@ -9,6 +9,35 @@
   {{ form.hidden_tag() }}
   <p>{{ form.submit() }}</p>
 
+  {% if assignment_list %}
+  <h3>Assignments</h3>
+    <table class="assignment_list">
+      <thead>
+        <th>SO Number</th>
+        <th>SAP Article Description</th>
+        <th>Req. Qty</th>
+        <th>Req. Date</th>
+        <th>Req. Week</th>
+        <th>Ass. Qty</th>
+        <th>PO Order</th>
+      </thead>
+      <tbody>
+        <tr>
+        {% for a in assignment_list %}
+          <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
+          <td>{{ a.short_text }}</td>
+          <td>{{ a.delivery_quantity }}</td>
+          <td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
+          <td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
+          <td>{{ a.order_qty }}</td>
+          <td>{{ a.order_number }}</td>
+        {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  {% else %}
+  {% endif %}
+
   {% if page == 'split' %}
   <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40) }}</p>
   {% elif page == 'create' %}
@@ -24,7 +53,7 @@
   <p>{{ form.fob.label }}<br>{{ form.fob(size=40) }} *</p>
   <p>{{ form.transport.label }}<br>{{ form.transport() }} *</p>
   <p>{{ form.quantity.label }}<br>{{ form.quantity(size=40) }} *</p>
-  <p>{{ form.orig_quantity.label }}<br>{{ form.orig_quantity(size=40) }} *</p>
+  <p>{{ form.ordered_quantity.label }}<br>{{ form.ordered_quantity(size=40) }} *</p>
   <p>{{ form.supplier.label }}<br>{{ form.supplier() }} *</p>
   <p>{{ form.unit_weight.label }}<br>{{ form.unit_weight(size=40) }}</p>
   <p>{{ form.overall_weight.label }}<br>{{ form.overall_weight(size=40) }}</p>
