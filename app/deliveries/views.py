@@ -157,8 +157,7 @@ def delete_all_deliveries():
 
 @bp.route('/import', methods=['GET','POST'])
 def import_csv():
-	missing_materials = []
-	missing_materials = []
+	missing_materials = ()
 	form = ImportCSVForm()
 	if form.validate_on_submit():
 		f = form.csv_file.data
