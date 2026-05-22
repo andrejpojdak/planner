@@ -158,6 +158,7 @@ def delete_all_deliveries():
 @bp.route('/import', methods=['GET','POST'])
 def import_csv():
 	missing_materials = []
+	missing_materials = []
 	form = ImportCSVForm()
 	if form.validate_on_submit():
 		f = form.csv_file.data
@@ -262,6 +263,7 @@ def import_csv():
 		for m in missing_materials:
 			flash(f'Create material {m(0)} - {m(1)} in "Materials" section!', 'danger')
 		flash(f'Imported {added} deliveries. Previous matching entries removed.', 'success')
+		
 		
 		return redirect(url_for('deliveries.list_deliveries'))
 	return render_template('deliveries/form.html', title="Import", import_only=True, form=form)
