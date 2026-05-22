@@ -157,7 +157,7 @@ def delete_all_deliveries():
 
 @bp.route('/import', methods=['GET','POST'])
 def import_csv():
-	missing_materials = ()
+	missing_materials = {}
 	form = ImportCSVForm()
 	if form.validate_on_submit():
 		f = form.csv_file.data
@@ -237,7 +237,8 @@ def import_csv():
 			
 			sap_material = Material.query.filter(Material.material_code == buyer_article_number).first()
 			if not sap_material:
-				missing_materials.append((buyer_article_number, article_description))
+				if not missing_materials.get(buyer_article_number):
+					missing_materials[buyer_article_number] = article_description
 			
 			d = Delivery(
 				buyer_plant_id=buyer_plant_id,
@@ -259,8 +260,8 @@ def import_csv():
 			added += 1
 		db.session.commit()
 
-		for m in missing_materials:
-			flash(f'Create material {m[0]} - {m[1]} in "Materials" section!', 'danger')
+		for k, v in missing_materials.items():
+			flash(f'Create material {k} - {v} in "Materials" section!', 'danger')
 		flash(f'Imported {added} deliveries. Previous matching entries removed.', 'success')
 		
 		return redirect(url_for('deliveries.list_deliveries'))

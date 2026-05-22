@@ -1,5 +1,11 @@
 from app import create_app
 from flask import Flask, url_for, render_template_string
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+SERVER_IP = os.getenv("SERVER_IP")
+print(SERVER_IP)
 
 app = create_app()
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
@@ -15,4 +21,4 @@ def index():
 	''')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='192.168.99.205')
+    app.run(debug=True, host=SERVER_IP)
