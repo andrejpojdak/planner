@@ -2,6 +2,7 @@ from app import create_app
 from flask import Flask, url_for, render_template_string
 
 app = create_app()
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
 @app.route('/')
 def index():
@@ -14,4 +15,4 @@ def index():
 	''')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5555)
+    app.run(debug=True, host='192.168.99.205')
