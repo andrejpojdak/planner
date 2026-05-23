@@ -157,6 +157,17 @@ def delete_all_deliveries():
 
 @bp.route('/import', methods=['GET','POST'])
 def import_csv():
+	schaeffler_mappings = {
+		"0701": "BRASIL",
+		"0254": "PORTUGAL",
+		"0200": "SCHWEINFURT",
+		"0097": "BRASOV",
+		"0095": "SKALICA",
+		"0072": "HOCHSTADT",
+		"0045": "KYSUCE",
+		"0012": "STEINHAGEN",
+		"0002": "LAHR"
+	}
 	missing_materials = {}
 	form = ImportCSVForm()
 	if form.validate_on_submit():
@@ -181,11 +192,27 @@ def import_csv():
 			return redirect(url_for('deliveries.list_deliveries'))
 		# Collect keys to delete
 		keys = set()
+		version_to_avoid = {}
 		for r in rows:
 			on = (r.get('Order Number') or r.get('OrderNumber') or '').strip()
 			op = (r.get('Order Position') or r.get('OrderPosition') or '').strip()
 			if on or op:
 				keys.add((on, op))
+			din = (r.get('Delivery Instruction Number') or r.get('DeliveryInstructionNumber') or '').strip()
+			#breakpoint()
+			if not version_to_avoid.get((on, op)):
+				version_to_avoid[(on, op)] = [int(din)]
+			else:
+				if int(din) not in version_to_avoid.get((on, op)):
+					version_to_avoid[(on, op)].append(int(din))
+
+		version_to_avoid = {k: v for k, v in version_to_avoid.items() if len(v) != 1}
+		for k, v in version_to_avoid.items():
+			if len(v) > 1:
+				newest = v.pop(0)
+				flash(f"Only newest version {newest} processed for {k[0]}-{k[1]} delivery schedule. Older versions {v} ignored.", 'danger')			
+				v.sort(reverse=True)
+		
 		# Delete existing entries matching keys
 		for on, op in keys:
 			q = Delivery.query
@@ -212,10 +239,12 @@ def import_csv():
 			delivery_instruction_number = get(['Delivery Instruction Number','DeliveryInstructionNumber'])
 			order_number = get(['Order Number','OrderNumber'])
 			order_position = get(['Order Position','OrderPosition'])
+			#breakpoint()
+			if version_to_avoid.get((order_number, order_position)) and int(delivery_instruction_number) in version_to_avoid.get((order_number, order_position)):
+				continue
 			delivery_date = get(['Delivery date','Delivery Date','DeliveryDate'])
 			delivery_quantity = get(['Delivery quantity','Delivery Quantity','DeliveryQuantity'])
 			additional_information = get(['Additional information'])
-			#delivery_quantity = None
 			#breakpoint()
 			if int(delivery_quantity) == 0:
 				continue
@@ -240,6 +269,10 @@ def import_csv():
 				if not missing_materials.get(buyer_article_number):
 					missing_materials[buyer_article_number] = article_description
 			
+			if 'schaeffler' in plant_name.casefold():
+				if schaeffler_mappings.get(buyer_plant_id):
+					plant_name = 'SCHAEFFLER' + ' ' + schaeffler_mappings[buyer_plant_id]
+
 			d = Delivery(
 				buyer_plant_id=buyer_plant_id,
 				plant_name=plant_name,

@@ -18,6 +18,7 @@
 		<tr>
 			<th>Sales Order Number</th>
 			<th>Sales Order Position</th>
+			<th>Plan Version</th>
 			<th>Buyer Plant</th>
 			<th>Plant Name</th>
 			<th>Unloading Point</th>
@@ -33,6 +34,7 @@
       <tr>
         <td>{{ d.order_number.lstrip('0') }}</td>
         <td>{{ d.order_position }}</td>
+        <td>{{ d.delivery_instruction_number }}</td>
         <td>{{ d.buyer_plant_id }}</td>
         <td>{{ d.plant_name }}</td>
         <td>{{ d.unloading_point }}</td>

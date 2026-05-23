@@ -336,7 +336,7 @@ def list_plans():
 		gross_weight = material.gross_weight if material else 0		
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
-			d.plant_name = material.manufacturer if material else '<material_not_found>'
+			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
 

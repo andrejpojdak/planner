@@ -3,9 +3,9 @@ from flask import Flask, url_for, render_template_string
 from dotenv import load_dotenv
 import os
 
+#loaded from .env variable
 load_dotenv()
 SERVER_IP = os.getenv("SERVER_IP")
-print(SERVER_IP)
 
 app = create_app()
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
