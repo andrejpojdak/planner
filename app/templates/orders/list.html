@@ -60,7 +60,9 @@
 		</td>
 	  </tr>
       {% else %}
-      <tr><td colspan=11">No orders yet.</td></tr>
+      <tr class="empty">
+		<td colspan=11">No orders yet.</td>
+	  </tr>
       {% endfor %}
     </tbody>
 </table>

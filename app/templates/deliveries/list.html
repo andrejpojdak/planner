@@ -3,6 +3,7 @@
 {% block title %}Deliveries{% endblock %}
 
 {% block content %}
+
 <div class="menu">
 	<div id="flex-left">
 		<a href="{{ url_for('deliveries.create_delivery') }}">Create new delivery</a> |
@@ -13,22 +14,177 @@
 	</div>
 </div>
 <br>
+<div>
+  Quick filters:
+  <select name="plant_name" class="filter quickfilter">
+    <option value="">Plant Name</option>
+    {% for plant in plant_names %}
+      {% if filters %}
+        {% if filters.get('plant_name') %}
+        <option value="{{ plant }}" {% if plant in filters.get('plant_name') %} selected{% endif %}>{{ plant }}</option>
+        {% else %}
+        <option value="{{ plant }}">{{ plant }}</option>
+        {% endif %}
+      {% else %}
+      <option value="{{ plant }}">{{ plant }}</option>
+      {% endif %}
+  {% endfor %}
+  </select>
+</div>
+<br>
  <table>
     <thead>
-		<tr>
-			<th>Sales Order Number</th>
-			<th>Sales Order Position</th>
-			<th>Plan Version</th>
-			<th>Buyer Plant</th>
-			<th>Plant Name</th>
-			<th>Unloading Point</th>
-			<th>Buyer Article Number</th>
-			<th>SAP Article Description</th>
-			<th>Delivery Date</th>
-			<th>Delivery Quantity</th>
-			<th>ECV</th>
-			<th>EDS</th>
-			<th>Actions</th></tr></thead>
+		<tr class="filter-row">
+			<th>SO Number
+        <br>
+        {% if filters %}
+          {% if filters.get('order_number') %}
+          <input name="order_number" class="filter normal" value="{{ filters.get('order_number') }}"></input>
+          {% else %}          
+          <input name="order_number" placeholder=" " class="filter normal" value=""></input>
+          {% endif %}
+        {% else %} 
+        <input name="order_number" placeholder=" " class="filter normal" value=""></input>
+        {% endif %}
+      </th>
+			<th>SO Pos.
+        <br>
+        {% if filters %}
+          {% if filters.get('order_position') %}
+          <input name="order_position" class="filter narrow" value="{{ filters.get('order_position') }}"></input>
+          {% else %}          
+          <input name="order_position" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        {% else %} 
+        <input name="order_position" placeholder=" " class="filter narrow" value=""></input>
+        {% endif %}
+      </th>
+			<th>Plan Ver.
+        <br>
+        {% if filters %}
+          {% if filters.get('delivery_instruction_number') %}
+          <input name="delivery_instruction_number" class="filter narrow" value="{{ filters.get('delivery_instruction_number') }}"></input>
+          {% else %}          
+          <input name="delivery_instruction_number" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        {% else %} 
+        <input name="delivery_instruction_number" placeholder=" " class="filter narrow" value=""></input>
+        {% endif %}
+      </th>
+			<th>Buyer Plant
+        <br>
+        {% if filters %}
+          {% if filters.get('buyer_plant_id') %}
+          <input name="buyer_plant_id" class="filter narrow" value="{{ filters.get('buyer_plant_id') }}"></input>
+          {% else %}
+          <input name="buyer_plant_id" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="buyer_plant_id" placeholder=" " class="filter narrow" value=""></input>
+        {% endif %}
+      </th>
+			<th>Plant Name
+        <br>
+        {% if filters %}
+          {% if filters.get('plant_name') %}
+          <input name="plant_name" class="quickfilter wide" value="{{ filters.get('plant_name') }}" disabled></input>
+          {% else %}
+          <input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
+          {% endif %}
+        {% else %}
+        <input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
+        {% endif %}
+      </th>
+			<th>Unloading Point
+        <br>
+        {% if filters %}
+          {% if filters.get('unloading_point') %}
+          <input name="unloading_point" class="filter wide" value="{{ filters.get('unloading_point') }}"></input>
+          {% else %}
+          <input name="unloading_point" placeholder=" " class="filter wide" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="unloading_point" placeholder=" " class="filter wide" value=""></input>
+        {% endif %}
+      </th>
+			<th>Buyer Article Number
+        <br>
+        {% if filters %}
+          {% if filters.get('buyer_article_number') %}
+          <input name="buyer_article_number" class="filter wide" value="{{ filters.get('buyer_article_number') }}"></input>
+          {% else %}
+          <input name="buyer_article_number" placeholder=" " class="filter wide" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="buyer_article_number" placeholder=" " class="filter wide" value=""></input>
+        {% endif %}
+      </th>
+			<th>SAP Article Description
+        <br>
+        {% if filters %}
+          {% if filters.get('article_description') %}
+          <input name="article_description" class="filter wide" value="{{ filters.get('article_description') }}"></input>
+          {% else %}
+          <input name="article_description" placeholder=" " class="filter wide" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="article_description" placeholder=" " class="filter wide" value=""></input>
+        {% endif %}
+      </th>
+			<th>Delivery Date
+        <br>
+        {% if filters %}
+          {% if filters.get('delivery_date') %}
+          <input type="date" name="delivery_date" class="filter normal" value="{{ filters.get('delivery_date') }}"></input>
+          {% else %}
+          <input type="date" name="delivery_date" class="filter normal" value=""></input>
+          {% endif %}
+        {% else %}
+        <input type="date" name="delivery_date" class="filter normal" value=""></input>
+        {% endif %}
+      </th>
+			<th>Delivery Quantity
+        <br>
+        {% if filters %}
+          {% if filters.get('delivery_quantity') %}
+          <input name="delivery_quantity" class="filter narrow" value="{{ filters.get('delivery_quantity') }}"></input>
+          {% else %}
+          <input name="delivery_quantity" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="delivery_quantity" placeholder=" " class="filter narrow" value=""></input>
+        {% endif %}
+      </th>
+			<th>ECV
+        <br>
+        {% if filters %}
+          {% if filters.get('ecv') %}
+          <input name="ecv" class="filter verynarrow" value="{{ filters.get('ecv') }}"></input>
+          {% else %}
+          <input name="ecv" placeholder=" " class="filter verynarrow" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="ecv" placeholder=" " class="filter verynarrow" value=""></input>
+        {% endif %}
+      </th>
+			<th>EDS
+        <br>
+        {% if filters %}
+          {% if filters.get('eds') %}
+          <input name="eds" class="filter verynarrow" value="{{ filters.get('eds') }}"></input>
+          {% else %}
+          <input name="eds" placeholder=" " class="filter verynarrow" value=""></input>
+          {% endif %}
+        {% else %}
+        <input name="eds" placeholder=" " class="filter verynarrow" value=""></input>
+        {% endif %}
+      </th>
+			<th>Actions
+        <br>
+        <input class="filter verynarrow" placeholder=" " disabled>
+      </th>
+    </tr>
+  </thead>
     <tbody>
       {% for d in deliveries %}
       <tr>
@@ -57,7 +213,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="13">No deliveries yet.</td></tr>
+      <tr class="empty"><td colspan="13">No deliveries yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -88,7 +244,7 @@ thead.addEventListener("click", function () {
     filterRow.appendChild(td);
   });
 
-  table.querySelector("tbody").prepend(filterRow);
+  //table.querySelector("tbody").prepend(filterRow);
 
 });
 
@@ -118,7 +274,32 @@ function filterTable() {
   });
 }
 
-colorRows(document.querySelectorAll("tbody tr"), 6);
+colorRows(document.querySelectorAll("tbody tr"), 7);
 
+
+//filter
+function filter() {
+  const params = new URLSearchParams();
+
+  document.querySelectorAll(".filter").forEach(el => {
+    if (el.value) {
+      params.append(el.name, el.value);
+    }
+  });
+
+  window.location.href = "/deliveries/filter?" + params.toString();
+}
+
+document.querySelectorAll(".quickfilter").forEach(el => {
+  el.addEventListener("change", filter);
+});
+
+document.querySelectorAll(".filter").forEach(el => {
+  el.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      filter();
+    }
+  });
+});
 </script>
   {% endblock %}

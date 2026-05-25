@@ -11,6 +11,7 @@ from wtforms import StringField, DecimalField, SubmitField, IntegerField, DateFi
 from wtforms.validators import Optional, DataRequired, NumberRange
 import os, csv, re
 from datetime import datetime
+from sqlalchemy import text
 
 bp = Blueprint('deliveries', __name__)
 
@@ -40,8 +41,18 @@ class ImportCSVForm(FlaskForm):
 
 @bp.route('/', methods=['GET'])
 def list_deliveries():
+	plant_names = [
+		row.plant_name
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.plant_name)
+			.distinct()
+			.order_by(Delivery.plant_name)
+			.all()
+		)
+	]
 	deliveries = Delivery.query.order_by(Delivery.plant_name).all()
-	return render_template('deliveries/list.html', title="Deliveries", deliveries=deliveries)
+	return render_template('deliveries/list.html', title="Deliveries", deliveries=deliveries, plant_names=plant_names)
 
 @bp.route('/create', methods=['GET','POST'])
 def create_delivery():
@@ -300,8 +311,36 @@ def import_csv():
 		return redirect(url_for('deliveries.list_deliveries'))
 	return render_template('deliveries/form.html', title="Import", import_only=True, form=form)
 
+@bp.route('/filter', methods=['GET','POST'])
+def filter():
+	
+	if not request.args.to_dict():
+		return redirect(url_for('deliveries.list_deliveries'))
+	
+	filters = request.args.to_dict()
+
+	plant_names = [
+		row.plant_name
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.plant_name)
+			.distinct()
+			.order_by(Delivery.plant_name)
+			.all()
+		)
+	]
+
+	query = Delivery.query
+
+	for key, value in request.args.items():
+		if value and hasattr(Delivery, key):
+			query = query.filter(getattr(Delivery, key).like(f"%{value}%"))
+
+	deliveries = query.order_by(Delivery.plant_name).all()
+	print(filters)
+	return render_template('deliveries/list.html', title="Deliveries", deliveries=deliveries, plant_names=plant_names, filters=filters)
+
 @bp.route('/query/<buyer_article_number>', methods=['GET','POST'])
 def query(buyer_article_number):
 	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_date.asc()).all()
 	return render_template('deliveries/list.html', deliveries=deliveries)
-	

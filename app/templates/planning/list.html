@@ -18,6 +18,7 @@
 			<th>Conf. Week</th>
 			<th>Stock</th>
 			<th>Conf. Qty</th>
+			<th>TL</th>
 			<th>Sales Price</th>
 			<th>ETA</th>
 			<th>Comment</th>
@@ -32,7 +33,7 @@
     <tbody>
 	{% for b in buyer_article_numbers_list %}
 			<tr class="status">
-				<td colspan="9"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</a></td>
+				<td colspan="9">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</td>
 				<td colspan="2"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box</a></td>
 				<td colspan="9"></td>
 			</tr>
@@ -64,6 +65,9 @@
 				{% else %}
 				<td>{{ c.order_qty }}</td>
 				{% endif %}
+				<td class="tl">
+					<input type="checkbox">
+				</td>
 				{% if c.order_sales_price is none %}
 				<td></td>
 				{% else %}
@@ -163,6 +167,9 @@
 				{% else %}
 				<td>{{ c.order_qty }}</td>
 				{% endif %}
+				<td class="tl">
+					<input type="checkbox">
+				</td>
 				{% if c.order_sales_price is none %}
 				<td></td>
 				{% else %}
@@ -259,6 +266,7 @@
 			{% else %}
 			<td>{{ '%.4f' % s.sales_price }}</td>
 			{% endif %}
+			<td></td>
 			<td>{{ s.eta.strftime('CW%V/%g') if s.eta is not none else '?' }}</td>
 			<td>{{ s.comment }}</td>
 			<td>{{ s.transport }}</td>
@@ -367,7 +375,7 @@ thead.addEventListener("click", function () {
 
 });
 
-colorRows(document.querySelectorAll("tbody tr"), 3);
+colorRows(document.querySelectorAll("tbody tr:not(.status)"), 4);
 
 </script>
 {% endblock %}

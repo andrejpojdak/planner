@@ -30,20 +30,42 @@ th {
 th,td {
 	border:1px solid #ccc;
 	padding:6px;
-	text-align:left;
-    /*white-space: nowrap;*/
+	vertical-align: bottom;
+	text-align: left;
 }
 .status {
 	background-color: lightgrey;
 }
 tr.status {
 	font-size: 14px;
+	border-top: 2px solid black;
+	border-bottom: 2px solid black;
 }
-tr.filter-row td input {
-	width: 50%;
+th {
+	vertical-align: bottom;	
 }
-tr.filter-row td input:not(:placeholder-shown) {
+.verynarrow {
+    width: 20px;
+}
+.narrow {
+    width: 45px;
+}
+.normal {
+    width: 90px;
+}
+.wide {
+    width: 150px;
+}
+tr.filter-row th input {
+    box-sizing: border-box;
+	/*display: none;*/
+}
+tr.filter-row th input:not(:placeholder-shown) {
 	border-color: lime;
+}
+tr.filter-row th input[type="date"] {
+	border-color: rgb(118, 118, 118);
+	border-width: 1px;
 }
 table thead {
 	font-size: 14px;
