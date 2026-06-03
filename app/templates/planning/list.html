@@ -4,10 +4,39 @@
 
 {% block content %}
 
+	<div>
+	Quick filters:
+	<select name="plant_name" class="filter quickfilter">
+		<option value="">Plant Name</option>
+		{% for plant in plant_names %}
+		{% if filters %}
+			{% if filters.get('plant_name') %}
+			<option value="{{ plant }}" {% if plant in filters.get('plant_name') %} selected{% endif %}>{{ plant }}</option>
+			{% else %}
+			<option value="{{ plant }}">{{ plant }}</option>
+			{% endif %}
+		{% else %}
+		<option value="{{ plant }}">{{ plant }}</option>
+		{% endif %}
+	{% endfor %}
+	</select>
+	</div>
+	<br>
 	<table id="planning">
     <thead>
 		<tr>
-			<th>Plant Name</th>
+			<th>Plant Name
+				<br>
+				{% if filters %}
+				{% if filters.get('plant_name') %}
+				<input name="plant_name" class="quickfilter wide" value="{{ filters.get('plant_name') }}" disabled></input>
+				{% else %}
+				<input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
+				{% endif %}
+				{% else %}
+				<input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
+				{% endif %}
+			</th>
 			<th>ECV EDS</th>
 			<th>SO Number</th>
 			<th>SAP Article Description</th>
@@ -35,7 +64,7 @@
 			<tr class="status">
 				<td colspan="9">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</td>
 				<td colspan="2"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box</a></td>
-				<td colspan="9"></td>
+				<td colspan="10"></td>
 			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}
@@ -376,6 +405,32 @@ thead.addEventListener("click", function () {
 });
 
 colorRows(document.querySelectorAll("tbody tr:not(.status)"), 4);
+
+document.querySelectorAll(".quickfilter").forEach(el => {
+  el.addEventListener("change", filter);
+});
+
+document.querySelectorAll(".filter").forEach(el => {
+  el.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      filter();
+    }
+  });
+});
+
+function filter() {
+  
+  const params = new URLSearchParams();
+
+  document.querySelectorAll(".filter").forEach(el => {
+    if (el.value) {
+      params.append(el.name, el.value);
+    }
+  });
+
+  window.location.href = "/planning/filter?" + params.toString();
+
+}
 
 </script>
 {% endblock %}

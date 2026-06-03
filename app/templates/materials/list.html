@@ -14,13 +14,72 @@
 <br>
  <table>
     <thead>
-      <tr>
-        <th>Buyer Article Number</th>
-        <th>Article Description</th>
-        <th>Weight</th>
-        <th>Plant Name</th>
-        <th>Box Qty</th>
-        <th>Actions</th></tr></thead>
+      <tr class="filter-row">
+        <th>Buyer Article Number
+          <br>
+          {% if filters %}
+            {% if filters.get('material_code') %}
+            <input name="material_code" class="filter wide" value="{{ filters.get('material_code') }}"></input>
+            {% else %}          
+            <input name="material_code" placeholder=" " class="filter wide" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="material_code" placeholder=" " class="filter wide" value=""></input>
+          {% endif %}
+        </th>
+        <th>Article Description
+          <br>
+          {% if filters %}
+            {% if filters.get('short_text') %}
+            <input name="short_text" class="filter wide" value="{{ filters.get('short_text') }}"></input>
+            {% else %}          
+            <input name="short_text" placeholder=" " class="filter wide" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="short_text" placeholder=" " class="filter wide" value=""></input>
+          {% endif %}
+        </th>
+        <th>Weight
+          <br>
+          {% if filters %}
+            {% if filters.get('gross_weight') %}
+            <input name="gross_weight" class="filter narrow" value="{{ filters.get('gross_weight') }}"></input>
+            {% else %}          
+            <input name="gross_weight" placeholder=" " class="filter narrow" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="gross_weight" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        </th>
+        <th>Plant Name
+          <br>
+          {% if filters %}
+            {% if filters.get('manufacturer') %}
+            <input name="manufacturer" class="filter wide" value="{{ filters.get('manufacturer') }}"></input>
+            {% else %}          
+            <input name="manufacturer" placeholder=" " class="filter wide" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="manufacturer" placeholder=" " class="filter wide" value=""></input>
+          {% endif %}
+        </th>
+        <th>Box Qty
+          <br>
+          {% if filters %}
+            {% if filters.get('box_qty') %}
+            <input name="box_qty" class="filter narrow" value="{{ filters.get('box_qty') }}"></input>
+            {% else %}          
+            <input name="box_qty" placeholder=" " class="filter narrow" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="box_qty" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        </th>
+        <th>Actions
+          <br>
+          <input class="filter verynarrow" placeholder=" " disabled>
+        </th>
+      </tr></thead>
     <tbody>
       {% for m in materials %}
       <tr>
@@ -37,4 +96,29 @@
       {% endfor %}
     </tbody>
   </table>
+<script>
+
+document.querySelectorAll(".filter").forEach(el => {
+  el.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      filter();
+    }
+  });
+});
+
+function filter() {
+  
+  const params = new URLSearchParams();
+
+  document.querySelectorAll(".filter").forEach(el => {
+    if (el.value) {
+      params.append(el.name, el.value);
+    }
+  });
+
+  window.location.href = "/materials/filter?" + params.toString();
+
+}
+
+</script>
 {% endblock %}

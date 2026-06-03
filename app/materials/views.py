@@ -232,3 +232,24 @@ def query_material():
         }
         for material_code, short_text, gross_weight, manufacturer, box_qty in material_list
     ])
+
+@bp.route('/filter', methods=['GET','POST'])
+def filter():
+	
+	if not request.args.to_dict():
+		return redirect(url_for('materials.list_materials'))
+
+	filters = request.args.to_dict()
+
+	query = Material.query
+
+	for key, value in request.args.items():
+		print(value)
+		if key == 'gross_weight':
+			value = value.replace(",", ".")
+		if value and hasattr(Material, key):
+			query = query.filter(getattr(Material, key).like(f"%{value}%"))
+            
+	materials = query.order_by(Material.manufacturer).all()
+	
+	return render_template('materials/list.html', title="Materials", materials=materials, filters=filters)

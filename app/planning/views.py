@@ -294,6 +294,17 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 @bp.route('/', methods=['GET', 'POST'])
 def list_plans():
 
+	plant_names = [
+		row.plant_name
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.plant_name)
+			.distinct()
+			.order_by(Delivery.plant_name)
+			.all()
+		)
+	]
+
 	buyer_article_numbers_list = []
 	buyer_article_numbers = [
 		row.buyer_article_number
@@ -340,7 +351,7 @@ def list_plans():
 		
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
 
-	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list)
+	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
 def list_plans_buyer_article_number(buyer_article_number):
@@ -380,3 +391,79 @@ def list_plans_buyer_article_number(buyer_article_number):
 	
 	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
 	return render_template('planning/list.html', title=f"{buyer_article_number} - {short_text} - Planning", buyer_article_numbers_list=buyer_article_numbers_list)
+
+@bp.route('/filter', methods=['GET','POST'])
+def filter():
+	
+	if not request.args.to_dict():
+		return redirect(url_for('planning.list_plans'))
+	
+	filters = request.args.to_dict()
+
+	plant_names = [
+		row.plant_name
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.plant_name)
+			.distinct()
+			.order_by(Delivery.plant_name)
+			.all()
+		)
+	]
+
+	buyer_article_numbers_list = []
+	buyer_article_numbers = [
+		row.buyer_article_number
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.buyer_article_number)
+			.distinct()
+			.order_by(Delivery.plant_name, Delivery.buyer_article_number)
+			.all()
+		)
+	]
+
+	for buyer_article_number in buyer_article_numbers:
+
+		assignments_dict = {}
+		assignments = (
+			db.session.query(
+				#Material.material_code.label("material_code"),
+				Assignments.delivery_id.label("delivery_id"),
+				Assignments.order_id.label("order_id"),
+				Assignments.qty.label("qty"),
+			)
+			.join(Delivery, Delivery.id == Assignments.delivery_id)
+			.join(Order, Order.id == Assignments.order_id)
+			.join(Material, Material.material_code == Delivery.buyer_article_number)
+			.filter(Material.material_code == buyer_article_number)
+			.all()
+		)
+		for a in assignments:
+			if assignments_dict.get(a[0]):
+				assignments_dict[a[0]].append((a[1], a[2]))
+			else:	
+				assignments_dict[a[0]] = [(a[1], a[2])]
+
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
+		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
+
+		material = Material.query.filter(Material.material_code == buyer_article_number).first()
+		box_qty = material.box_qty if material else 1
+		gross_weight = material.gross_weight if material else 0		
+		for d in deliveries:
+			d.article_description = material.short_text if material else '<material_not_found>'
+			#d.plant_name = material.manufacturer if material else '<material_not_found>'
+		
+		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+
+	filtered_list = []
+
+	for key, value in request.args.items():
+		for b in buyer_article_numbers_list:
+			for d in b[0]:
+				if value and hasattr(d, key) and getattr(d, key) == value:
+					filtered_list.append(b)
+					break
+	
+	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, plant_names=plant_names, filters=filters)

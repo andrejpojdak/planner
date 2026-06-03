@@ -150,11 +150,11 @@ def split_order(order_id):
 	o.article_description = material.short_text if material else '<material_not_found>'
 	weight = material.gross_weight if material else ''
 	o.unit_weight = weight
-	#o.orig_quantity = None
 
 	form = OrderForm(obj=o)
 	form.buyer_article_number.render_kw = { "readonly": True}
 	form.article_description.render_kw = { "readonly": True}
+	form.ordered_quantity.data = None
 
 	if form.validate_on_submit():
 		d = Order(
@@ -201,3 +201,24 @@ def delete_all_orders():
 		db.session.rollback()
 		flash(f'Error while deleting: {e}', 'danger')
 	return redirect(url_for('orders.list_orders'))
+
+@bp.route('/filter', methods=['GET','POST'])
+def filter():
+	
+	if not request.args.to_dict():
+		return redirect(url_for('orders.list_orders'))
+	
+	filters = request.args.to_dict()
+
+	query = Order.query
+
+	for key, value in request.args.items():
+		if value and hasattr(Order, key):
+			query = query.filter(getattr(Order, key).like(f"%{value}%"))
+
+	orders = query.order_by(Order.buyer_article_number).order_by(Order.order_number).all()
+	for o in orders:
+		material = Material.query.filter(Material.material_code == o.buyer_article_number).first()
+		o.sap_article_description = material.short_text if material else '<material_not_found>'
+	
+	return render_template('orders/list.html', title="Orders", orders=orders, filters=filters)
