@@ -26,7 +26,7 @@ class FilterForm(FlaskForm):
 
 class Confirmations():
 	
-	def __init__(self, id, order_number, order_qty, order_fob, order_transport, order_eta, order_confirmed, order_sales_prices, order_supplier, order_orig_qty, order_ecv, order_eds, order_comment):
+	def __init__(self, id, order_number, order_qty, order_fob, order_transport, order_eta, order_confirmed, order_sales_prices, order_supplier, order_orig_qty, order_ecv, order_eds, order_comment, order_rmb, order_tl):
 		self.id = id
 		self.order_number = order_number
 		self.order_qty = order_qty
@@ -40,6 +40,8 @@ class Confirmations():
 		self.order_ecv = order_ecv
 		self.order_eds = order_eds
 		self.order_comment = order_comment
+		self.order_rmb = order_rmb
+		self.order_tl = order_tl
 
 	def __repr__(self):
 		return f"<Confirmation {self.id}, {self.order_number}, {self.order_qty}>"
@@ -99,7 +101,7 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 	if assignments_dict:
 		order_qty_reserve_dict = {}
 		for v in assignments_dict.values():
-			for order, qty in v:
+			for order, qty, assign, tl in v:
 				if order_qty_reserve_dict.get(order):
 					order_qty_reserve_dict[order] += qty
 				else:
@@ -132,7 +134,9 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 											s[1],
 											order.ecv,
 											order.eds,
-											order.comment
+											order.comment,
+											order.rmb,
+											s[3]
 										)
 									)
 									#breakpoint()
@@ -168,7 +172,9 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 											s[1],
 											order.ecv,
 											order.eds,
-											order.comment
+											order.comment,
+											order.rmb,
+											s[3]
 										)
 									)
 									if (d.delivery_quantity - s[1]) <= 0:
@@ -192,7 +198,7 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			#	print(o)
 			#print("---")
 			if len(orders) == 0:
-				deliveries[0].confirmations.append(Confirmations(None,None,None,None,None, None, None,None,None, None, None, None, None))
+				deliveries[0].confirmations.append(Confirmations(None,None,None,None,None,None,None, None, None,None,None, None, None, None, None))
 				confirmed_deliveries.append(deliveries.pop(0))
 				continue
 
@@ -217,7 +223,9 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 						orders[0].orig_qty,
 						orders[0].ecv,
 						orders[0].eds,
-						orders[0].comment
+						orders[0].comment,
+						orders[0].rmb,
+						0
 					)
 				)
 				deliveries[0].delivery_quantity -= orders[0].quantity
@@ -253,7 +261,9 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 							orders[0].orig_qty,
 							orders[0].ecv,
 							orders[0].eds,
-							orders[0].comment
+							orders[0].comment,
+							orders[0].rmb,
+							0
 						)
 					)
 					orders[0].orig_qty = ''
@@ -280,7 +290,9 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 						orders[0].orig_qty,
 						orders[0].ecv,
 						orders[0].eds,
-						orders[0].comment
+						orders[0].comment,
+						orders[0].rmb,
+						0
 					)
 				)
 				confirmed_deliveries.append(deliveries.pop(0))
@@ -322,10 +334,12 @@ def list_plans():
 		assignments_dict = {}
 		assignments = (
 			db.session.query(
-				#Material.material_code.label("material_code"),
 				Assignments.delivery_id.label("delivery_id"),
 				Assignments.order_id.label("order_id"),
 				Assignments.qty.label("qty"),
+				Assignments.assign.label("assign"),
+				Assignments.tl.label("tl"),
+				Assignments.sent.label("sent")
 			)
 			.join(Delivery, Delivery.id == Assignments.delivery_id)
 			.join(Order, Order.id == Assignments.order_id)
@@ -333,11 +347,12 @@ def list_plans():
 			.filter(Material.material_code == buyer_article_number)
 			.all()
 		)
+
 		for a in assignments:
 			if assignments_dict.get(a[0]):
-				assignments_dict[a[0]].append((a[1], a[2]))
+				assignments_dict[a[0]].append((a[1], a[2], a[3], a[4]))
 			else:	
-				assignments_dict[a[0]] = [(a[1], a[2])]
+				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
 		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
@@ -364,6 +379,9 @@ def list_plans_buyer_article_number(buyer_article_number):
 			Assignments.delivery_id.label("delivery_id"),
 			Assignments.order_id.label("order_id"),
 			Assignments.qty.label("qty"),
+			Assignments.assign.label("assign"),
+			Assignments.tl.label("tl"),
+			Assignments.sent.label("sent")
 		)
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
 		.join(Order, Order.id == Assignments.order_id)
@@ -373,9 +391,9 @@ def list_plans_buyer_article_number(buyer_article_number):
 	)
 	for a in assignments:
 		if assignments_dict.get(a[0]):
-			assignments_dict[a[0]].append((a[1], a[2]))
+			assignments_dict[a[0]].append((a[1], a[2], a[3], a[4]))
 		else:	
-			assignments_dict[a[0]] = [(a[1], a[2])]
+			assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
 	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
@@ -432,6 +450,9 @@ def filter():
 				Assignments.delivery_id.label("delivery_id"),
 				Assignments.order_id.label("order_id"),
 				Assignments.qty.label("qty"),
+				Assignments.assign.label("assign"),
+				Assignments.tl.label("tl"),
+				Assignments.sent.label("sent")
 			)
 			.join(Delivery, Delivery.id == Assignments.delivery_id)
 			.join(Order, Order.id == Assignments.order_id)
@@ -439,11 +460,12 @@ def filter():
 			.filter(Material.material_code == buyer_article_number)
 			.all()
 		)
+
 		for a in assignments:
 			if assignments_dict.get(a[0]):
-				assignments_dict[a[0]].append((a[1], a[2]))
+				assignments_dict[a[0]].append((a[1], a[2], a[3], a[4]))
 			else:	
-				assignments_dict[a[0]] = [(a[1], a[2])]
+				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
 		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
@@ -456,14 +478,115 @@ def filter():
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
-
+	
 	filtered_list = []
-
+	'''
 	for key, value in request.args.items():
 		for b in buyer_article_numbers_list:
 			for d in b[0]:
+				print(d)
 				if value and hasattr(d, key) and getattr(d, key) == value:
 					filtered_list.append(b)
 					break
+	print(filtered_list)
+	'''
+	for b in buyer_article_numbers_list:
+		# For filtering purposes, stock order list is turned into en empty Delivery object
+		if len(b[1]) > 0:
+			#breakpoint()
+			for o in b[1][:]:
+				plant_name = b[0][0].plant_name
+				ecv = b[0][0].ecv
+				eds = b[0][0].eds
+				order_number = b[0][0].order_number
+				order_position = b[0][0].order_position
+				article_description = b[0][0].article_description
+				buyer_article_number = b[0][0].buyer_article_number
+
+				new_delivery = Delivery(
+					plant_name = plant_name,
+					ecv = ecv,
+					eds = eds,
+					order_number = order_number,
+					order_position = order_position,
+					article_description = article_description
+					)
+				new_delivery.original_qty = ''
+				new_delivery.confirmations = []
+				new_delivery.confirmations.append(
+					Confirmations(
+						o.id,
+						o.order_number,
+						o.quantity,
+						o.fob,
+						o.transport,
+						o.eta,
+						'',
+						o.sales_price,
+						o.supplier,
+						'stock',
+						o.ecv,
+						o.eds,
+						o.comment,
+						o.rmb,
+						0
+					)
+				)
+				b[0].append(new_delivery)
+				b[1].remove(o)
+			
+		if request.args.get("delivery_week"):
+			for d in b[0]:
+				d.delivery_week = d.delivery_date.strftime('CW%V/%g')
+		if request.args.get("order_week_confirmed"):
+			for d in b[0]:
+				for c in d.confirmations:
+					if c.order_confirmed:
+						c.order_week_confirmed = c.order_confirmed.strftime('CW%V/%g')
+
+		for k, v in request.args.items():
+			#breakpoint()
+			if "confirmed" in k:
+				for d in b[0][:]:
+					filtered_confirmations = []
+					for fc in d.confirmations:
+						if fc.id is None:
+							continue
+						if str(v).lower() in str(getattr(fc, k)).lower() and v is not None and getattr(fc, k) is not None:
+							filtered_confirmations.append(fc)
+					'''
+					filtered_confirmations = [
+						fc for fc in d.confirmations
+						if str(v).lower() in str(getattr(fc, k)).lower() and v is not None and getattr(fc, k) is not None
+					]'''
+					if len(filtered_confirmations) == 0:
+						b[0].remove(d)
+					else:
+						#print(filtered_confirmations)
+						d.confirmations = filtered_confirmations
+		
+		result = [
+			p for p in b[0]
+			if all(
+				str(value).lower() in str(getattr(p, attr)).lower()
+				for attr, value in filters.items()
+				if value is not None and "confirm" not in attr
+			)
+		]
+		'''result = [
+			p for p in b[0]
+			if all(
+				any(
+					str(value).lower() in str(getattr(c, "order_confirmed", "")).lower()
+					for c in p.confirmations
+				) if "confirmed" in attr else
+				str(value).lower() in str(getattr(p, attr, "")).lower()
+
+				for attr, value in filters.items()
+				if value is not None
+			)
+		]'''
+		if len(result) > 0:
+			filtered_list.append((result, b[1], b[2], b[3]))
 	
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, plant_names=plant_names, filters=filters)

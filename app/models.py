@@ -75,9 +75,12 @@ class Assignments(db.Model):
 	delivery_id = db.Column(db.Integer, db.ForeignKey("deliveries.id"), primary_key=True)
 	order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), primary_key=True)
 	qty = db.Column(db.Integer)
+	assign = db.Column(db.Boolean)
+	tl = db.Column(db.Boolean)
+	sent = db.Column(db.Boolean)
 
 	delivery = db.relationship("Delivery", back_populates="delivery_orders")
 	order = db.relationship("Order", back_populates="delivery_orders")
 
 	def __repr__(self):
-		return f"<Settings for {self.delivery_id}:{self.order_id}>"
+		return f"<Assignment for {self.delivery_id}:{self.order_id} for {self.qty} pcs>"

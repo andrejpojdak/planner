@@ -337,7 +337,7 @@ def filter():
 			query = query.filter(getattr(Delivery, key).like(f"%{value}%"))
 
 	deliveries = query.order_by(Delivery.plant_name).all()
-	
+
 	return render_template('deliveries/list.html', title="Deliveries", deliveries=deliveries, plant_names=plant_names, filters=filters)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET','POST'])

@@ -42,6 +42,12 @@ def create_app(config=None):
 	from .assignments.views import bp as assignments_bp
 	app.register_blueprint(assignments_bp, url_prefix="/assignments")
 
+	from .tls.views import bp as tls_bp
+	app.register_blueprint(tls_bp, url_prefix="/transport_lists")
+
+	from .sent.views import bp as sent_bp
+	app.register_blueprint(sent_bp, url_prefix="/sent")
+
 	# create DB tables for quick start
 	with app.app_context():
 		db.create_all()

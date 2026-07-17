@@ -18,7 +18,7 @@ table.assignment_list {
 table.assignment_list td {
 	color: blue;
 }table {
-	border-collapse:collapse;
+	border-collapse: collapse;
 	width:100%;
 	table-layout: auto;
 	border-top: 2px solid black;
@@ -32,9 +32,11 @@ th,td {
 	padding:6px;
 	vertical-align: bottom;
 	text-align: left;
+	white-space: nowrap;
 }
 .status {
 	background-color: lightgrey;
+	scroll-margin-top: 80px;
 }
 tr.status {
 	font-size: 14px;
@@ -56,12 +58,20 @@ th {
 .wide {
     width: 150px;
 }
+tr.filter-row {
+    position: sticky;
+    top: 0;
+    background: white; /* important so content doesn't show through */
+    z-index: 10;
+}
 tr.filter-row th input {
     box-sizing: border-box;
 	/*display: none;*/
 }
-tr.filter-row th input:not(:placeholder-shown) {
+tr.filter-row th input:not(:placeholder-shown),
+tr.filter-row th input[type="date"]:valid {
 	border-color: lime;
+	border-width: 2px;
 }
 tr.filter-row th input[type="date"] {
 	border-color: rgb(118, 118, 118);
@@ -189,4 +199,53 @@ tr.end td {
 }
 #results li:hover {
 	background-color: lightgrey;
+}
+.assignment-table {
+	width: auto;
+}
+tr:has(.rmb) {
+	background-color: rgb(255, 255, 160);
+	/*color: salmon;*/
+}
+tr:has(.sales-price) {
+	background-color: yellow;
+	/*color: salmon;*/
+}
+tr:has(input:checked) {
+	background-color: yellowgreen;
+	/*color: salmon;*/
+}
+#create-tl-button {
+	display: none;
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	background-color: yellowgreen;
+	text-align: center;
+	vertical-align: auto;
+	height: 50px;
+	width: 140px;
+	cursor: pointer;
+}
+#create-tl-button img {
+	text-align: center;
+	vertical-align: middle;
+	width: 25%;
+}
+#sent-button {
+	display: none;
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	background-color: yellowgreen;
+	text-align: center;
+	vertical-align: auto;
+	height: 50px;
+	width: 140px;
+	cursor: pointer;
+}
+#sent-button img {
+	text-align: center;
+	vertical-align: middle;
+	width: 25%;
 }

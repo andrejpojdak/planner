@@ -32,8 +32,8 @@
           <th>PO Order</th>
         </thead>
         <tbody>
-          <tr>
           {% for a in assignment_list %}
+          <tr>
             <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
             <td>{{ a.short_text }}</td>
             <td>{{ a.delivery_quantity }}</td>
@@ -41,8 +41,8 @@
             <td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
             <td>{{ a.order_qty }}</td>
             <td>{{ a.order_number }}</td>
-          {% endfor %}
           </tr>
+          {% endfor %}
         </tbody>
       </table>
     {% else %}

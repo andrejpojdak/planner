@@ -135,12 +135,12 @@
         <br>
         {% if filters %}
           {% if filters.get('delivery_date') %}
-          <input type="date" name="delivery_date" class="filter normal" value="{{ filters.get('delivery_date') }}"></input>
+          <input type="date" name="delivery_date" class="filter normal" value="{{ filters.get('delivery_date') }}" required></input>
           {% else %}
-          <input type="date" name="delivery_date" class="filter normal" value=""></input>
+          <input type="date" name="delivery_date" class="filter normal" value="" required></input>
           {% endif %}
         {% else %}
-        <input type="date" name="delivery_date" class="filter normal" value=""></input>
+        <input type="date" name="delivery_date" class="filter normal" value="" required></input>
         {% endif %}
       </th>
 			<th>Delivery Quantity
@@ -226,11 +226,18 @@ document.querySelectorAll(".quickfilter").forEach(el => {
 });
 
 document.querySelectorAll(".filter").forEach(el => {
-  el.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      filter();
-    }
-  });
+  const type = el.type;
+
+  if (type === "date") {
+    el.addEventListener("change", filter);
+  } else {
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        filter();
+      }
+    });
+  }
+
 });
 
 function filter() {

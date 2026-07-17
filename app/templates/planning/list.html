@@ -3,7 +3,6 @@
 {% block title %}Planning{% endblock %}
 
 {% block content %}
-
 	<div>
 	Quick filters:
 	<select name="plant_name" class="filter quickfilter">
@@ -21,10 +20,15 @@
 	{% endfor %}
 	</select>
 	</div>
+
+	<button id="create-tl-button">
+		<img src="{{ url_for('static', filename='img/icons8-packing-100.png') }}">
+	</button>
+	
 	<br>
 	<table id="planning">
     <thead>
-		<tr>
+		<tr class="filter-row">
 			<th>Plant Name
 				<br>
 				{% if filters %}
@@ -37,52 +41,150 @@
 				<input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
 				{% endif %}
 			</th>
-			<th>ECV EDS</th>
-			<th>SO Number</th>
-			<th>SAP Article Description</th>
-			<th>Req. Qty</th>
-			<th>Req. Date</th>
-			<th>Req. Week</th>
-			<th>Conf. Date</th>
-			<th>Conf. Week</th>
-			<th>Stock</th>
+			<th>ECV
+				<br>
+				<input name="ecv" class="quickfilter verynarrow" placeholder=" " value="" disabled></input>
+			</th>
+			<th>EDS
+				<br>
+				<input name="eds" class="quickfilter verynarrow" placeholder=" " value="" disabled></input>
+			</th>
+			<th>SO Number
+				<br>
+				{% if filters %}
+				{% if filters.get('order_number') %}
+				<input name="order_number" class="filter normal" value="{{ filters.get('order_number') }}"></input>
+				{% else %}          
+				<input name="order_number" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+				{% else %} 
+				<input name="order_number" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+			</th>
+			<th>SAP Article Description
+				<br>
+				{% if filters %}
+				{% if filters.get('article_description') %}
+				<input name="article_description" class="filter normal" value="{{ filters.get('article_description') }}"></input>
+				{% else %}          
+				<input name="article_description" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+				{% else %} 
+				<input name="article_description" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+			</th>
+			<th>Req. Qty
+				<br>
+				{% if filters %}
+				{% if filters.get('original_qty') %}
+				<input name="original_qty" class="filter narrow" value="{{ filters.get('original_qty') }}"></input>
+				{% else %}          
+				<input name="original_qty" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %} 
+				<input name="original_qty" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>Req. Date
+				<br>
+				{% if filters %}
+				{% if filters.get('delivery_date') %}
+				<input type="date" name="delivery_date" class="filter normal" value="{{ filters.get('delivery_date') }}" required></input>
+				{% else %}
+				<input type="date" name="delivery_date" class="filter normal" value="" required></input>
+				{% endif %}
+				{% else %}
+				<input type="date" name="delivery_date" class="filter normal" value="" required></input>
+				{% endif %}
+			</th>
+			<th>Req. Week
+				<br>
+				{% if filters %}
+				{% if filters.get('delivery_week') %}
+				<input name="delivery_week" class="filter normal" value="{{ filters.get('delivery_week') }}"></input>
+				{% else %}          
+				<input name="delivery_week" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="delivery_week" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+			</th>
+			<th>Conf. Date
+				<br>
+				{% if filters %}
+				{% if filters.get('order_confirmed') %}
+				<input type="date" name="order_confirmed" class="filter normal" value="{{ filters.get('order_confirmed') }}" required></input>
+				{% else %}
+				<input type="date" name="order_confirmed" class="filter normal" value="" required></input>
+				{% endif %}
+				{% else %}
+				<input type="date" name="order_confirmed" class="filter normal" value="" required></input>
+				{% endif %}
+			</th>
+			<th>Conf. Week
+				<br>
+				{% if filters %}
+				{% if filters.get('order_week_confirmed') %}
+				<input name="order_week_confirmed" class="filter normal" value="{{ filters.get('order_week_confirmed') }}"></input>
+				{% else %}
+				<input name="order_week_confirmed" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_week_confirmed" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+			</th>
+			<th>Stock
+				<br>
+				{% if filters %}
+				{% if filters.get('order_orig_qty_confirmed') %}
+				<input name="order_orig_qty_confirmed" class="filter narrow" value="{{ filters.get('order_orig_qty_confirmed') }}"></input>
+				{% else %}
+				<input name="order_orig_qty_confirmed" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_orig_qty_confirmed" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
 			<th>Conf. Qty</th>
 			<th>TL</th>
 			<th>Sales Price</th>
 			<th>ETA</th>
 			<th>Comment</th>
+			<th>RMB</th>
 			<th>Frgt</th>
 			<th>Sup</th>
 			<th>PO No.</th>
-			<th>ECV EDS</th>
+			<th>ECV</th>
+			<th>EDS</th>
 			<th>FOB</th>
 			<th></th>
 		</tr>
 	</thead>
     <tbody>
 	{% for b in buyer_article_numbers_list %}
-			<tr class="status">
-				<td colspan="9">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</td>
-				<td colspan="2"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box</a></td>
-				<td colspan="10"></td>
+			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
+				<td colspan="10">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}</td>
+				<td colspan="3"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</a></td>
+				<td colspan="11"></td>
 			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}
 			{% if loop.first %}
 			<tr>
 				<td>{{ d.plant_name }}</td>
-				<td>{{ d.ecv  }}<br>{{ d.eds  }}</td>
+				<td>{{ d.ecv }}</td>
+				<td>{{ d.eds }}</td>
 				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
-				<td id="{{ d.article_description }}">{{ d.article_description }}</td>
+				<td>{{ d.article_description }}</td>
 				<td>{{ d.original_qty }}</td>
-				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') }}</td>
-				<td>{{ d.delivery_date.strftime('CW%V/%g') }}</td>
+				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</td>
+				<td>{{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }}</td>
 				{% if c.order_confirmed is none %}
 				<td>?</td>
 				<td>?</td>
 				{% else %}
-				<td class="confirmed">{{ c.order_confirmed.strftime('%d.%m.%Y') }}</td>
-				<td class="confirmedwk">{{ c.order_confirmed.strftime('CW%V/%g') }}</td>
+				<td class="confirmed">{{ c.order_confirmed.strftime('%d.%m.%Y') if c.order_confirmed else '' }}</td>
+				<td class="confirmedwk">{{ c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '' }}</td>
 				{% endif %}
 				{% if c.order_orig_qty is none %}
 				<td>?</td>
@@ -91,16 +193,30 @@
 				{% endif %}
 				{% if c.order_qty is none %}
 				<td>?</td>
-				{% else %}
+				{% elif c.order_orig_qty == 'stock' %}
 				<td>{{ c.order_qty }}</td>
+				{% else %}
+				<td>
+					<a href="{{ url_for('assignments.assign', delivery_id=d.id, order_id=c.id, qty=c.order_qty, buyer_article_number=d.buyer_article_number) }}">
+						<span class="tl-values" data-delivery-id="{{ d.id }}" data-order-id="{{ c.id }}" data-qty="{{ c.order_qty }}">{{ c.order_qty }}</span>
+					</a>
+				</td>
 				{% endif %}
+				{% if c.order_tl %}
 				<td class="tl">
+					<input type="checkbox" checked disabled>
+				</td>
+				{% elif c.order_orig_qty == 'stock' %}
+				<td></td>
+				{% else %}
+				<td>
 					<input type="checkbox">
 				</td>
+				{% endif %}
 				{% if c.order_sales_price is none %}
 				<td></td>
 				{% else %}
-				<td>{{ '%.4f' % c.order_sales_price }}</td>
+				<td class="sales-price">{{ '%.4f' % c.order_sales_price }}</td>
 				{% endif %}
 				{% if c.order_eta is none %}
 				<td></td>
@@ -111,6 +227,11 @@
 				<td></td>
 				{% else %}
 				<td>{{ c.order_comment }}</td>
+				{% endif %}
+				{% if c.order_rmb is none %}
+				<td></td>
+				{% else %}
+				<td class="rmb">{{ c.order_rmb }}</td>
 				{% endif %}
 				{% if c.order_transport is none %}
 				<td></td>
@@ -127,10 +248,15 @@
 				{% else %}
 				<td><a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">{{ c.order_number }}</a></td>
 				{% endif %}
-				{% if c.order_ecv is none or c.order_eds is none %}
+				{% if c.order_ecv is none %}
 				<td></td>
 				{% else %}
-				<td>{{ c.order_ecv }}<br>{{ c.order_eds }}</td>			
+				<td>{{ c.order_ecv }}</td>
+				{% endif %}
+				{% if c.order_eds is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_eds }}</td>
 				{% endif %}
 				{% if c.order_fob is none %}
 				<td></td>
@@ -145,12 +271,16 @@
 							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
 							<span>-------</span><br>
 							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
-							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) if d.id else ''}}">Edit delivery</a><br>
 							<span>-------</span><br>
+							<a href="{{ url_for('orders.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View orders</a><br>
+							<a href="{{ url_for('deliveries.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View deliveries</a><br>
 							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
 						</div>
 					</div>
 				</td>
+				{% elif c.order_orig_qty == 'stock' %}
+				<td></td>
 				{% else %}
 				<td class="actions">
 					<div id="menu-container">
@@ -162,8 +292,10 @@
 							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}" onclick="return confirm('Delete this order?');">Delete {{ c.order_number }}</a><br>
 							<span>-------</span><br>
 							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
-							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) if d.id else ''}}">Edit delivery</a><br>
 							<span>-------</span><br>
+							<a href="{{ url_for('orders.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View orders</a><br>							
+							<a href="{{ url_for('deliveries.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View deliveries</a><br>
 							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
 						</div>
 					</div>
@@ -173,18 +305,19 @@
 			{% else %}
 			<tr>
 				<td>{{ d.plant_name }}</td>
-				<td>{{ d.ecv  }}<br>{{ d.eds  }}</td>
+				<td>{{ d.ecv }}</td>
+				<td>{{ d.eds }}</td>
 				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
 				<td>{{ d.article_description }}</td>
 				<td></td>
-				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') }}</td>
-				<td>{{ d.delivery_date.strftime('CW%V/%g') }}</td>
+				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</td>
+				<td>{{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }}</td>
 				{% if c.order_confirmed is none %}
 				<td>?</td>
 				<td>?</td>
 				{% else %}
-				<td class="confirmed">{{ c.order_confirmed.strftime('%d.%m.%Y') }}</td>
-				<td class="confirmedwk">{{ c.order_confirmed.strftime('CW%V/%g') }}</td>
+				<td class="confirmed">{{ c.order_confirmed.strftime('%d.%m.%Y') if c.order_confirmed else '' }}</td>
+				<td class="confirmedwk">{{ c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '' }}</td>
 				{% endif %}
 				{% if c.order_orig_qty is none %}
 				<td>?</td>
@@ -193,16 +326,30 @@
 				{% endif %}
 				{% if c.order_qty is none %}
 				<td>?</td>
-				{% else %}
+				{% elif c.order_orig_qty == 'stock' %}
 				<td>{{ c.order_qty }}</td>
+				{% else %}
+				<td>
+					<a href="{{ url_for('assignments.assign', delivery_id=d.id, order_id=c.id, qty=c.order_qty, buyer_article_number=d.buyer_article_number) }}">
+						<span class="tl-values" data-delivery-id="{{ d.id }}" data-order-id="{{ c.id }}" data-qty="{{ c.order_qty }}">{{ c.order_qty }}</span>
+					</a>
+				</td>
 				{% endif %}
+				{% if c.order_tl %}
 				<td class="tl">
+					<input type="checkbox" checked disabled>
+				</td>
+				{% elif c.order_orig_qty == 'stock' %}
+				<td></td>
+				{% else %}
+				<td>
 					<input type="checkbox">
 				</td>
+				{% endif %}
 				{% if c.order_sales_price is none %}
 				<td></td>
 				{% else %}
-				<td>{{ '%.4f' % c.order_sales_price }}</td>
+				<td class="sales-price">{{ '%.4f' % c.order_sales_price }}</td>
 				{% endif %}
 				{% if c.order_eta is none %}
 				<td></td>
@@ -213,6 +360,11 @@
 				<td></td>
 				{% else %}
 				<td>{{ c.order_comment }}</td>
+				{% endif %}
+				{% if c.order_rmb is none %}
+				<td></td>
+				{% else %}
+				<td class="rmb">{{ c.order_rmb }}</td>
 				{% endif %}
 				{% if c.order_transport is none %}
 				<td></td>
@@ -229,10 +381,15 @@
 				{% else %}
 				<td><a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">{{ c.order_number }}</a></td>
 				{% endif %}
-				{% if c.order_ecv is none or c.order_eds is none %}
+				{% if c.order_ecv is none %}
 				<td></td>
 				{% else %}
-				<td>{{ c.order_ecv }}<br>{{ c.order_eds }}</td>			
+				<td>{{ c.order_ecv }}</td>
+				{% endif %}
+				{% if c.order_eds is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_eds }}</td>
 				{% endif %}
 				{% if c.order_fob is none %}
 				<td></td>
@@ -247,12 +404,16 @@
 							<a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number, next=request.full_path ) }}">Create new PO</a><br>
 							<span>-------</span><br>
 							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
-							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) if d.id else '' }}">Edit delivery</a><br>
 							<span>-------</span><br>
+							<a href="{{ url_for('orders.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View orders</a><br>
+							<a href="{{ url_for('deliveries.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View deliveries</a><br>
 							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
 						</div>
 					</div>
 				</td>
+				{% elif c.order_orig_qty == 'stock' %}
+				<td></td>
 				{% else %}
 				<td class="actions">
 					<div id="menu-container">
@@ -264,8 +425,10 @@
 							<a href="{{ url_for('orders.delete_order', order_id=c.id, next=request.full_path) }}" onclick="return confirm('Delete this order?');">Delete {{ c.order_number }}</a><br>
 							<span>-------</span><br>
 							<a href="{{ url_for('deliveries.create_delivery', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">Create new delivery</a><br>
-							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) }}">Edit delivery</a><br>
+							<a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id, next=request.full_path) if d.id else '' }}">Edit delivery</a><br>
 							<span>-------</span><br>
+							<a href="{{ url_for('orders.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View orders</a><br>
+							<a href="{{ url_for('deliveries.filter', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View deliveries</a><br>
 							<a href="{{ url_for('materials.edit_material', buyer_article_number=d.buyer_article_number, next=request.full_path) }}">View material</a><br>
 						</div>
 					</div>
@@ -280,7 +443,8 @@
 	  {% for s in b[1] %}
 		<tr>			
 			<td>{{ b[0][0].plant_name }}</td>
-			<td>{{ b[0][0].ecv  }}<br>{{ b[0][0].eds  }}</td>
+			<td>{{ b[0][0].ecv }}</td>
+			<td>{{ b[0][0].eds }}</td>
 			<td>{{ b[0][0].order_number.lstrip('0') }}-{{ b[0][0].order_position }}</td>
 			<td>{{ b[0][0].article_description }}</td>
 			<td></td>
@@ -293,20 +457,31 @@
 			{% if s.sales_price is none %}
 			<td></td>
 			{% else %}
-			<td>{{ '%.4f' % s.sales_price }}</td>
+			<td class="sales-price">{{ '%.4f' % s.sales_price }}</td>
 			{% endif %}
 			<td></td>
 			<td>{{ s.eta.strftime('CW%V/%g') if s.eta is not none else '?' }}</td>
 			<td>{{ s.comment }}</td>
+			{% if s.rmb is none %}
+			<td></td>
+			{% else %}
+			<td class="rmb">{{ s.rmb }}</td>
+			{% endif %}
 			<td>{{ s.transport }}</td>
 			<td>{{ s.supplier }}</td>
 			<td><a href="{{ url_for('orders.edit_order', order_id=s.id, next=request.full_path) }}">{{ s.order_number }}</a></td>
-			{% if s.ecv is none or s.eds is none %}
+			{% if s.ecv is none %}
 			<td></td>
 			{% else %}
-			<td>{{ s.ecv }}<br>{{ s.eds }}</td>			
+			<td>{{ s.ecv }}</td>
+			{% endif %}
+			{% if s.eds is none %}
+			<td></td>
+			{% else %}
+			<td>{{ s.eds }}</td>
 			{% endif %}
 			<td>{{ s.fob.strftime('%d.%m.%Y') }}</td>
+			<td></td>
 		</tr>
 	  {% endfor %}
 	{% endfor %}
@@ -315,7 +490,9 @@
   <br>
   <br>
   <br>
+
 <script>
+	
 function parseDateDMY(dateStr) {
   const [day, month, year] = dateStr.split('.');
   return new Date(`20${year}`, month - 1, day);
@@ -411,11 +588,18 @@ document.querySelectorAll(".quickfilter").forEach(el => {
 });
 
 document.querySelectorAll(".filter").forEach(el => {
-  el.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      filter();
-    }
-  });
+  const type = el.type;
+
+  if (type === "date") {
+    el.addEventListener("change", filter);
+  } else {
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        filter();
+      }
+    });
+  }
+
 });
 
 function filter() {
@@ -431,6 +615,57 @@ function filter() {
   window.location.href = "/planning/filter?" + params.toString();
 
 }
+	
+function create_tl() {
+
+	const checkboxes_checked = document.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)');
+	const payload = [];
+
+	checkboxes_checked.forEach(cb => {
+		cb.addEventListener("click", function () {
+			console.log("Clicked:", this.checked);
+		});
+		const row = cb.closest('tr');
+		const tl = row.querySelector('span.tl-values');
+
+		payload.push({
+			delivery_id: parseInt(tl.dataset.deliveryId),
+			order_id: parseInt(tl.dataset.orderId),
+			qty: parseInt(tl.dataset.qty)
+		});
+	});
+
+	fetch('/transport_lists/create', {
+		method: 'POST',
+		headers: {'Content-Type': 'application/json'},
+		body: JSON.stringify(payload)
+	})
+	.then(async response => {
+		const data = await response.json();
+		if (!response.ok) {
+			throw new Error(data.error || "Unknown error");
+		}
+		if (data.message === "ok") {
+			window.location.href = "/transport_lists";
+		} else {
+			alert(data.message);
+		}
+	})
+	.catch(error => {
+		alert(error.message);
+	});
+
+}
+
+const create_tl_button = document.getElementById("create-tl-button");
+const checkboxes_unchecked = document.querySelectorAll('input[type="checkbox"]:not(:disabled)');
+checkboxes_unchecked.forEach(cb => {
+	cb.addEventListener("click", function () {
+		create_tl_button.style.display = 'block';
+	});
+});
+
+create_tl_button.onclick = create_tl;
 
 </script>
 {% endblock %}

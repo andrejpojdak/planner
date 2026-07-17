@@ -4,11 +4,10 @@
 
 {% block content %}
 
-<div id="flex-left">
-	<form method="post" action="{{ url_for('assignments.delete_all_assignments') }}" onsubmit="return confirm('Delete ALL assignments? This cannot be undone.');">
-		<button type="submit">Delete all assignments</button>
-	</form>
-</div>
+<button id="sent-button">
+  <img src="{{ url_for('static', filename='img/icons8-truck-100.png') }}"/>
+</button>
+
 <br>
 <table>
     <thead>
@@ -20,7 +19,7 @@
         <th>Req. Week</th>
         <th>Conf. Qty</th>
         <th>PO No.</th>
-        <th>TL</th>
+        <th>Sent</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -35,22 +34,37 @@
         <td>{{ a.order_qty }}</td>
         <td>{{ a.order_number }}</td>
         <td>
-          <input type="checkbox" disabled {% if a.tl %}checked{% endif %}/>
-        </td>
+					<input type="checkbox">
+				</td>
         <td class="actions">
           <div id="menu-container">
             <div id="menu-icon">&#9776;</div>
             <div id="menu">
-              <a href="{{ url_for('assignments.assign', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">Edit</a><br>
-              <form method="post" action="{{ url_for('assignments.delete_assignment', delivery_id=a.delivery_id, order_id=a.order_id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
+              <a href="{{ url_for('tls.change_qty', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">Edit</a><br>
+              <form method="post" action="{{ url_for('tls.delete_tl', delivery_id=a.delivery_id, order_id=a.order_id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
             </div>
           </div>
         </td>
 	  </tr>
       {% else %}
-      <tr><td colspan=8">No assignments yet.</td></tr>
+      <tr><td colspan=8>No assignments yet.</td></tr>
       {% endfor %}
     </tbody>
 </table>
 
+<script>
+
+const sent_button = document.getElementById("sent-button");
+const checkboxes_unchecked = document.querySelectorAll('input[type="checkbox"]');
+checkboxes_unchecked.forEach(cb => {
+	cb.addEventListener("click", function () {
+		sent_button.style.display = 'block';
+  
+	});
+});
+
+//sent_button.onclick = create_tl;
+
+
+</script>
 {% endblock %}

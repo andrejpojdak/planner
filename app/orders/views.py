@@ -105,6 +105,7 @@ def edit_order(order_id):
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
 		.join(Order, Order.id == Assignments.order_id)
 		.join(Material, Material.material_code == Delivery.buyer_article_number)
+		.filter(Assignments.order_id == order_id)
 		.all()
 	)
 
@@ -135,6 +136,10 @@ def edit_order(order_id):
 		o.eds = form.eds.data.strip()
 		o.supplier = form.supplier.data.strip()
 		o.comment = form.comment.data.strip()
+		
+		if Order.query.filter(Order.order_number == o.order_number).filter(Order.buyer_article_number == o.buyer_article_number).first().id != order_id:
+			flash(f'Order {o.order_number}, {o.article_description} already exists.', 'danger')
+			return render_template('orders/form.html', title="Create new order", form=form, action='Create', page="create")
 		
 		db.session.commit()
 		flash('Order updated.', 'success')
@@ -217,6 +222,7 @@ def filter():
 			query = query.filter(getattr(Order, key).like(f"%{value}%"))
 
 	orders = query.order_by(Order.buyer_article_number).order_by(Order.order_number).all()
+	print(type(orders))
 	for o in orders:
 		material = Material.query.filter(Material.material_code == o.buyer_article_number).first()
 		o.sap_article_description = material.short_text if material else '<material_not_found>'
