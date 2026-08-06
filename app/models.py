@@ -57,6 +57,7 @@ class Order(db.Model):
 	supplier = db.Column(db.String(15), nullable=True)
 	comment = db.Column(db.String(120), nullable=True)
 	created_at = db.Column(db.Date, default=datetime.datetime.utcnow)
+	in_stock_date = db.Column(db.Date)
 	delivery_orders = db.relationship("Assignments", back_populates="order")
 	
 	def __repr__(self):

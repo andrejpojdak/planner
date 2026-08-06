@@ -25,6 +25,7 @@ class OrderForm(FlaskForm):
 	overall_weight = StringField('Overall weight', validators=[Optional()], render_kw={'readonly': True})
 	purchase_price = DecimalField('Purchase price', validators=[Optional(), NumberRange(min=0.00001, message="Price must be greater than 0")])
 	sales_price = DecimalField('Sales price', validators=[Optional(), NumberRange(min=0.00001, message="Price must be greater than 0")])
+	in_stock_date = DateField('In-stock date', validators=[Optional()])
 	rmb = IntegerField('RMB', validators=[Optional(), NumberRange(min=1, message="RMB must be greater than 0")])
 	ecv = StringField('ECV', validators=[Optional()])
 	eds = StringField('EDS', validators=[Optional()])
@@ -131,6 +132,7 @@ def edit_order(order_id):
 		o.ordered_quantity = form.ordered_quantity.data
 		o.purchase_price = form.purchase_price.data
 		o.sales_price = form.sales_price.data
+		o.in_stock_date = form.in_stock_date.data
 		o.rmb = form.rmb.data
 		o.ecv = form.ecv.data.strip()
 		o.eds = form.eds.data.strip()

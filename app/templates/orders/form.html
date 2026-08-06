@@ -61,6 +61,7 @@
   <p>{{ form.eds.label }}<br>{{ form.eds(size=40) }}</p>
   <p>{{ form.purchase_price.label }}<br>{{ form.purchase_price(size=40, value='%.4f'|format(form.purchase_price.data) if form.purchase_price.data is not none else '') }}</p>
   <p>{{ form.sales_price.label }}<br>{{ form.sales_price(size=40, value='%.4f'|format(form.sales_price.data) if form.sales_price.data is not none else '') }}</p>
+  <p>{{ form.in_stock_date.label }}<br>{{ form.in_stock_date(size=40) }} *</p>  
   <p>{{ form.rmb.label }}<br>{{ form.rmb(size=40) }}</p>
   <p>{{ form.submit() }}</p>
 </form>

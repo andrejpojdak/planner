@@ -94,7 +94,7 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			o.eta = eta
 	
 	deliveries.sort(key=lambda d: d.delivery_date)
-	orders.sort(key=lambda o: (not o.sales_price, o.eta == None, o.eta))
+	orders.sort(key=lambda o: (not o.sales_price, o.in_stock_date, o.eta == None, o.eta))
 	confirmed_deliveries = []
 
 ###Start of Assignment
