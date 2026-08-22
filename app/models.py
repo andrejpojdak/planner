@@ -32,6 +32,7 @@ class Delivery(db.Model):
 	additional_information = db.Column(db.String(1024), nullable=True)
 	ecv = db.Column(db.String(120), nullable=True)
 	eds = db.Column(db.String(120), nullable=True)
+	sent = db.Column(db.Boolean)
 	created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 	delivery_orders = db.relationship("Assignments", back_populates="delivery")
 
@@ -48,7 +49,7 @@ class Order(db.Model):
 	fob = db.Column(db.Date)
 	transport = db.Column(db.String(120), nullable=True)
 	quantity = db.Column(db.Integer, nullable=True)
-	ordered_quantity = db.Column(db.Integer, nullable=True)
+	avail_quantity = db.Column(db.Integer, nullable=True)
 	ecv = db.Column(db.String(120), nullable=True)
 	eds = db.Column(db.String(120), nullable=True)
 	purchase_price = db.Column(db.Float, nullable=True)

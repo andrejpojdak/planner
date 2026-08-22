@@ -12,13 +12,15 @@
 <table>
     <thead>
       <tr>
-        <th>SO Number</th>
+        <th>Plant Name</th>
+		<th>SO Number</th>
         <th>SAP Article Description</th>
         <th>Req. Qty</th>
         <th>Req. Date</th>
         <th>Req. Week</th>
         <th>Conf. Qty</th>
         <th>PO No.</th>
+        <th>Sales Price</th>
         <th>Sent</th>
         <th>Actions</th>
       </tr>
@@ -26,14 +28,18 @@
     <tbody>
       {% for a in assignments %}
       <tr>
-        <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
+        <td>{{ a.plant_name }}</td>
+	    <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
         <td>{{ a.short_text }}</td>
         <td>{{ a.delivery_quantity }}</td>
 				<td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
 				<td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
-        <td>{{ a.order_qty }}</td>
-        <td>{{ a.order_number }}</td>
         <td>
+          <span class="tl-values" data-delivery-id="{{ a.delivery_id }}" data-order-id="{{ a.order_id }}" data-qty="{{ a.order_qty }}">{{ a.order_qty }}</span>
+        </td>
+        <td>{{ a.order_number }}</td>
+        <td>{{ '%.4f' % a.sales_price }}</td>
+		<td>
 					<input type="checkbox">
 				</td>
         <td class="actions">
@@ -53,6 +59,45 @@
 </table>
 
 <script>
+function sent_tl() {
+
+	const checkboxes_checked = document.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)');
+	const payload = [];
+
+	checkboxes_checked.forEach(cb => {
+		cb.addEventListener("click", function () {
+			console.log("Clicked:", this.checked);
+		});
+		const row = cb.closest('tr');
+		const tl = row.querySelector('span.tl-values');
+
+		payload.push({
+			delivery_id: parseInt(tl.dataset.deliveryId),
+			order_id: parseInt(tl.dataset.orderId),
+			qty: parseInt(tl.dataset.qty)
+		});
+	});
+	fetch('/transport_lists/tl_sent', {
+		method: 'POST',
+		headers: {'Content-Type': 'application/json'},
+		body: JSON.stringify(payload)
+	})
+	.then(async response => {
+		const data = await response.json();
+		if (!response.ok) {
+			throw new Error(data.error || "Unknown error");
+		}
+		if (data.message === "ok") {
+			window.location.href = "/sent";
+		} else {
+			alert(data.message);
+		}
+	})
+	.catch(error => {
+		alert(error.message);
+	});
+
+}
 
 const sent_button = document.getElementById("sent-button");
 const checkboxes_unchecked = document.querySelectorAll('input[type="checkbox"]');
@@ -63,7 +108,7 @@ checkboxes_unchecked.forEach(cb => {
 	});
 });
 
-//sent_button.onclick = create_tl;
+sent_button.onclick = sent_tl;
 
 
 </script>

@@ -13,12 +13,14 @@ bp = Blueprint('tls', __name__)
 def list_tls():
 	assignments = (
 		db.session.query(
+			Delivery.plant_name.label("plant_name"),
 			Delivery.order_number.label("delivery_order_number"),
 			Delivery.order_position.label("delivery_order_position"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),
 			Order.order_number.label("order_number"),
+			Order.sales_price.label("sales_price"),
 			Assignments.qty.label("order_qty"),
 			Assignments.delivery_id.label("delivery_id"),
 			Assignments.order_id.label("order_id"),
@@ -132,3 +134,36 @@ def delete_tl(delivery_id, order_id):
 
 	return redirect(url_for('tls.list_tls'))
 
+@bp.route('/tl_sent', methods=['GET', 'POST'])
+def sent():
+	for item in request.get_json():
+		
+		delivery_id = item.get("delivery_id")
+		order_id = item.get("order_id")
+		qty = item.get("qty")
+
+		query_assignment = Assignments.query.filter(Assignments.delivery_id == delivery_id, Assignments.order_id == order_id, Assignments.tl == True).first()
+		query_delivery = Delivery.query.filter(Delivery.id == delivery_id).first()
+		query_order = Order.query.filter(Order.id == order_id).first()
+
+		if query_assignment:
+
+			query_assignment.assign = False
+			query_assignment.tl = False
+			query_assignment.sent = True
+			db.session.add(query_assignment)
+			db.session.commit()
+
+			query_delivery.sent = True
+			db.session.add(query_delivery)
+			db.session.commit()
+		
+		else:
+			flash(f"TL not found!")
+			return redirect(url_for('tls.list_tls'))
+
+	return jsonify(
+				{
+					"message"	: "ok"
+				}
+			), 200

@@ -440,50 +440,6 @@
       {% else %}
       <tr><td colspan=15">No orders yet.</td></tr>
       {% endfor %}
-	  {% for s in b[1] %}
-		<tr>			
-			<td>{{ b[0][0].plant_name }}</td>
-			<td>{{ b[0][0].ecv }}</td>
-			<td>{{ b[0][0].eds }}</td>
-			<td>{{ b[0][0].order_number.lstrip('0') }}-{{ b[0][0].order_position }}</td>
-			<td>{{ b[0][0].article_description }}</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>stock</td>
-			<td>{{ s.quantity}}</td>
-			{% if s.sales_price is none %}
-			<td></td>
-			{% else %}
-			<td class="sales-price">{{ '%.4f' % s.sales_price }}</td>
-			{% endif %}
-			<td></td>
-			<td>{{ s.eta.strftime('CW%V/%g') if s.eta is not none else '?' }}</td>
-			<td>{{ s.comment }}</td>
-			{% if s.rmb is none %}
-			<td></td>
-			{% else %}
-			<td class="rmb">{{ s.rmb }}</td>
-			{% endif %}
-			<td>{{ s.transport }}</td>
-			<td>{{ s.supplier }}</td>
-			<td><a href="{{ url_for('orders.edit_order', order_id=s.id, next=request.full_path) }}">{{ s.order_number }}</a></td>
-			{% if s.ecv is none %}
-			<td></td>
-			{% else %}
-			<td>{{ s.ecv }}</td>
-			{% endif %}
-			{% if s.eds is none %}
-			<td></td>
-			{% else %}
-			<td>{{ s.eds }}</td>
-			{% endif %}
-			<td>{{ s.fob.strftime('%d.%m.%Y') }}</td>
-			<td></td>
-		</tr>
-	  {% endfor %}
 	{% endfor %}
     </tbody>
   </table>

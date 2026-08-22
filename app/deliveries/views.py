@@ -51,7 +51,7 @@ def list_deliveries():
 			.all()
 		)
 	]
-	deliveries = Delivery.query.order_by(Delivery.plant_name).all()
+	deliveries = Delivery.query.filter(Delivery.sent == None).order_by(Delivery.plant_name).all()
 	return render_template('deliveries/list.html', title="Deliveries", deliveries=deliveries, plant_names=plant_names)
 
 @bp.route('/create', methods=['GET','POST'])
@@ -330,7 +330,7 @@ def filter():
 		)
 	]
 
-	query = Delivery.query
+	query = Delivery.query.filter(Delivery.sent == None)
 
 	for key, value in request.args.items():
 		if value and hasattr(Delivery, key):
@@ -342,5 +342,5 @@ def filter():
 
 @bp.route('/query/<buyer_article_number>', methods=['GET','POST'])
 def query(buyer_article_number):
-	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_date.asc()).all()
+	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.delivery_date.asc()).all()
 	return render_template('deliveries/list.html', deliveries=deliveries)

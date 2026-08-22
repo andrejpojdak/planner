@@ -354,7 +354,7 @@ def list_plans():
 			else:	
 				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -365,6 +365,51 @@ def list_plans():
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+
+	for b in buyer_article_numbers_list:
+		# For filtering purposes, stock order list is turned into en empty Delivery object
+		if len(b[1]) > 0:
+			#breakpoint()
+			for o in b[1][:]:
+				plant_name = b[0][0].plant_name
+				ecv = b[0][0].ecv
+				eds = b[0][0].eds
+				order_number = b[0][0].order_number
+				order_position = b[0][0].order_position
+				article_description = b[0][0].article_description
+				buyer_article_number = b[0][0].buyer_article_number
+
+				new_delivery = Delivery(
+					plant_name = plant_name,
+					ecv = ecv,
+					eds = eds,
+					order_number = order_number,
+					order_position = order_position,
+					article_description = article_description
+					)
+				new_delivery.original_qty = ''
+				new_delivery.confirmations = []
+				new_delivery.confirmations.append(
+					Confirmations(
+						o.id,
+						o.order_number,
+						o.quantity,
+						o.fob,
+						o.transport,
+						o.eta,
+						'',
+						o.sales_price,
+						o.supplier,
+						'stock',
+						o.ecv,
+						o.eds,
+						o.comment,
+						o.rmb,
+						0
+					)
+				)
+				b[0].append(new_delivery)
+				b[1].remove(o)
 
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names)
 
@@ -395,7 +440,7 @@ def list_plans_buyer_article_number(buyer_article_number):
 		else:	
 			assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
+	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.order_number, Delivery.order_position).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 	
 	material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -467,9 +512,9 @@ def filter():
 			else:	
 				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
-
+		
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
 		box_qty = material.box_qty if material else 1
 		gross_weight = material.gross_weight if material else 0		
