@@ -92,11 +92,11 @@ def change_qty():
 	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_date).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.fob).all()
 
-	assignment_list = Assignments.query.filter(Assignments.order_id == order_id, Assignments.sent == False).all()
-	sum_of_assignment_list = sum(a.qty for a in assignment_list)
-	order_qty = Order.query.filter(Order.id == order_id).first().quantity
+	from ..assignments.views import order_available_qty
 
-	max_qty = order_qty - sum_of_assignment_list + qty
+	available_qty = order_available_qty(order_id)
+	max_qty = available_qty + qty
+	
 	return render_template('tls/form.html', max_qty=max_qty, action="Save", title="Edit transport list", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty)
 
 @bp.route('/edit/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])

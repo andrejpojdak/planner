@@ -5,8 +5,8 @@
 {% block content %}
 	<div>
 	Quick filters:
-	<select name="plant_name" class="filter quickfilter">
-		<option value="">Plant Name</option>
+	<select name="quick_plant_name" class="quickfilter">
+		<option value="">All Plants</option>
 		{% for plant in plant_names %}
 		{% if filters %}
 			{% if filters.get('plant_name') %}
@@ -16,6 +16,20 @@
 			{% endif %}
 		{% else %}
 		<option value="{{ plant }}">{{ plant }}</option>
+		{% endif %}
+	{% endfor %}
+	</select>
+	<select name="quick_order_week_confirmed" class="quickfilter">
+		<option value="">Conf. Week</option>
+		{% for week in weeks %}
+		{% if filters %}
+			{% if filters.get('order_week_confirmed') %}
+			<option value="{{ week }}" {% if week in filters.get('order_week_confirmed') %} selected{% endif %}>{{ week }}</option>
+			{% else %}
+			<option value="{{ week }}">{{ week }}</option>
+			{% endif %}
+		{% else %}
+		<option value="{{ week }}">{{ week }}</option>
 		{% endif %}
 	{% endfor %}
 	</select>
@@ -33,21 +47,21 @@
 				<br>
 				{% if filters %}
 				{% if filters.get('plant_name') %}
-				<input name="plant_name" class="quickfilter wide" value="{{ filters.get('plant_name') }}" disabled></input>
+				<input name="plant_name" class="filter wide" value="{{ filters.get('plant_name') }}" disabled></input>
 				{% else %}
-				<input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
+				<input name="plant_name" class="filter wide" placeholder=" " value="" disabled></input>
 				{% endif %}
 				{% else %}
-				<input name="plant_name" class="quickfilter wide" placeholder=" " value="" disabled></input>
+				<input name="plant_name" class="filter wide" placeholder=" " value="" disabled></input>
 				{% endif %}
 			</th>
 			<th>ECV
 				<br>
-				<input name="ecv" class="quickfilter verynarrow" placeholder=" " value="" disabled></input>
+				<input name="ecv" class="filter verynarrow" placeholder=" " value="" disabled></input>
 			</th>
 			<th>EDS
 				<br>
-				<input name="eds" class="quickfilter verynarrow" placeholder=" " value="" disabled></input>
+				<input name="eds" class="filter verynarrow" placeholder=" " value="" disabled></input>
 			</th>
 			<th>SO Number
 				<br>
@@ -134,16 +148,6 @@
 				{% endif %}
 			</th>
 			<th>Stock
-				<br>
-				{% if filters %}
-				{% if filters.get('order_orig_qty_confirmed') %}
-				<input name="order_orig_qty_confirmed" class="filter narrow" value="{{ filters.get('order_orig_qty_confirmed') }}"></input>
-				{% else %}
-				<input name="order_orig_qty_confirmed" placeholder=" " class="filter narrow" value=""></input>
-				{% endif %}
-				{% else %}
-				<input name="order_orig_qty_confirmed" placeholder=" " class="filter narrow" value=""></input>
-				{% endif %}
 			</th>
 			<th>Conf. Qty</th>
 			<th>TL</th>
@@ -163,14 +167,14 @@
     <tbody>
 	{% for b in buyer_article_numbers_list %}
 			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
-				<td colspan="10">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}</td>
+				<td colspan="10">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a></td>
 				<td colspan="3"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</a></td>
 				<td colspan="11"></td>
 			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}
 			{% if loop.first %}
-			<tr>
+			<tr data-sent="{{ c.sent }}">
 				<td>{{ d.plant_name }}</td>
 				<td>{{ d.ecv }}</td>
 				<td>{{ d.eds }}</td>
@@ -193,7 +197,7 @@
 				{% endif %}
 				{% if c.order_qty is none %}
 				<td>?</td>
-				{% elif c.order_orig_qty == 'stock' %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
 				<td>{{ c.order_qty }}</td>
 				{% else %}
 				<td>
@@ -206,7 +210,7 @@
 				<td class="tl">
 					<input type="checkbox" checked disabled>
 				</td>
-				{% elif c.order_orig_qty == 'stock' %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
 				<td></td>
 				{% else %}
 				<td>
@@ -245,6 +249,8 @@
 				{% endif %}
 				{% if c.id is none %}
 				<td></td>
+				{% elif c.sent == True %}
+				<td>{{ c.order_number }}</td>
 				{% else %}
 				<td><a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">{{ c.order_number }}</a></td>
 				{% endif %}
@@ -279,7 +285,7 @@
 						</div>
 					</div>
 				</td>
-				{% elif c.order_orig_qty == 'stock' %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
 				<td></td>
 				{% else %}
 				<td class="actions">
@@ -303,7 +309,7 @@
 				{% endif %}
 			</tr>
 			{% else %}
-			<tr>
+			<tr data-sent="{{ c.sent }}">
 				<td>{{ d.plant_name }}</td>
 				<td>{{ d.ecv }}</td>
 				<td>{{ d.eds }}</td>
@@ -326,7 +332,7 @@
 				{% endif %}
 				{% if c.order_qty is none %}
 				<td>?</td>
-				{% elif c.order_orig_qty == 'stock' %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True  %}
 				<td>{{ c.order_qty }}</td>
 				{% else %}
 				<td>
@@ -339,7 +345,7 @@
 				<td class="tl">
 					<input type="checkbox" checked disabled>
 				</td>
-				{% elif c.order_orig_qty == 'stock' %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
 				<td></td>
 				{% else %}
 				<td>
@@ -378,6 +384,8 @@
 				{% endif %}
 				{% if c.id is none %}
 				<td></td>
+				{% elif c.sent == True %}
+				<td>{{ c.order_number }}</td>
 				{% else %}
 				<td><a href="{{ url_for('orders.edit_order', order_id=c.id, next=request.full_path) }}">{{ c.order_number }}</a></td>
 				{% endif %}
@@ -412,7 +420,7 @@
 						</div>
 					</div>
 				</td>
-				{% elif c.order_orig_qty == 'stock' %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
 				<td></td>
 				{% else %}
 				<td class="actions">
@@ -540,7 +548,16 @@ thead.addEventListener("click", function () {
 colorRows(document.querySelectorAll("tbody tr:not(.status)"), 4);
 
 document.querySelectorAll(".quickfilter").forEach(el => {
-  el.addEventListener("change", filter);
+    el.addEventListener("change", function () {
+        const name = this.name.replace("quick_", "");
+        const input = document.querySelector(`input[name="${name}"]`);
+
+        if (input) {
+            input.value = this.value;
+        }
+
+        filter();
+    });
 });
 
 document.querySelectorAll(".filter").forEach(el => {

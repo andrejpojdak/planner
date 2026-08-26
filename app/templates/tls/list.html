@@ -38,7 +38,11 @@
           <span class="tl-values" data-delivery-id="{{ a.delivery_id }}" data-order-id="{{ a.order_id }}" data-qty="{{ a.order_qty }}">{{ a.order_qty }}</span>
         </td>
         <td>{{ a.order_number }}</td>
+		{% if a.sales_price is none %}
+		<td></td>
+		{% else %}
         <td>{{ '%.4f' % a.sales_price }}</td>
+		{% endif %}
 		<td>
 					<input type="checkbox">
 				</td>

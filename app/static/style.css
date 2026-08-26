@@ -249,3 +249,16 @@ tr:has(input:checked) {
 	vertical-align: middle;
 	width: 25%;
 }
+.available_qty {
+	font-weight: bold;
+    font-size: 1.2em;
+}
+[data-sent=True] {
+	color: red;
+	font-weight: bold;
+}
+#lists {
+	position: absolute;
+	left: 400px;
+	top: 200px;
+}

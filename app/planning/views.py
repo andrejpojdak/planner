@@ -317,6 +317,15 @@ def list_plans():
 		)
 	]
 
+	today = date.today()
+	current_week = today.isocalendar().week
+	current_year = today.isocalendar().year
+
+	weeks = [
+		f"CW{(current_week + offset):02d}/{str(current_year)[-2:]}"
+		for offset in range(-2, 3)
+	]
+
 	buyer_article_numbers_list = []
 	buyer_article_numbers = [
 		row.buyer_article_number
@@ -354,7 +363,7 @@ def list_plans():
 			else:	
 				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.order_number, Delivery.order_position).all()
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -367,8 +376,13 @@ def list_plans():
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
 
 	for b in buyer_article_numbers_list:
+		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
+		for d in b[0]:
+			for c in d.confirmations:
+				if Assignments.query.filter(Assignments.delivery_id == d.id, Assignments.order_id == c.id, Assignments.sent == True).all():
+					c.sent = True
 		# For filtering purposes, stock order list is turned into en empty Delivery object
-		if len(b[1]) > 0:
+		if len (b[0]) > 0 and len(b[1]) > 0:
 			#breakpoint()
 			for o in b[1][:]:
 				plant_name = b[0][0].plant_name
@@ -411,7 +425,7 @@ def list_plans():
 				b[0].append(new_delivery)
 				b[1].remove(o)
 
-	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names)
+	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
 def list_plans_buyer_article_number(buyer_article_number):
@@ -462,7 +476,7 @@ def filter():
 		return redirect(url_for('planning.list_plans'))
 	
 	filters = request.args.to_dict()
-
+	print(filters)
 	plant_names = [
 		row.plant_name
 		for row in (
@@ -472,6 +486,15 @@ def filter():
 			.order_by(Delivery.plant_name)
 			.all()
 		)
+	]
+
+	today = date.today()
+	current_week = today.isocalendar().week
+	current_year = today.isocalendar().year
+
+	weeks = [
+		f"CW{(current_week + offset):02d}/{str(current_year)[-2:]}"
+		for offset in range(-2, 3)
 	]
 
 	buyer_article_numbers_list = []
@@ -512,9 +535,9 @@ def filter():
 			else:	
 				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.order_number, Delivery.order_position).all()
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
-		
+
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
 		box_qty = material.box_qty if material else 1
 		gross_weight = material.gross_weight if material else 0		
@@ -523,7 +546,7 @@ def filter():
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
-	
+
 	filtered_list = []
 	'''
 	for key, value in request.args.items():
@@ -536,9 +559,13 @@ def filter():
 	print(filtered_list)
 	'''
 	for b in buyer_article_numbers_list:
+		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
+		for d in b[0]:
+			for c in d.confirmations:
+				if Assignments.query.filter(Assignments.delivery_id == d.id, Assignments.order_id == c.id, Assignments.sent == True).all():
+					c.sent = True
 		# For filtering purposes, stock order list is turned into en empty Delivery object
-		if len(b[1]) > 0:
-			#breakpoint()
+		if len (b[0]) > 0 and len(b[1]) > 0:
 			for o in b[1][:]:
 				plant_name = b[0][0].plant_name
 				ecv = b[0][0].ecv
@@ -582,12 +609,17 @@ def filter():
 			
 		if request.args.get("delivery_week"):
 			for d in b[0]:
-				d.delivery_week = d.delivery_date.strftime('CW%V/%g')
+				if d.delivery_date:
+					d.delivery_week = d.delivery_date.strftime('CW%V/%g')
+				else:
+					d.delivery_week = ''
 		if request.args.get("order_week_confirmed"):
 			for d in b[0]:
 				for c in d.confirmations:
 					if c.order_confirmed:
 						c.order_week_confirmed = c.order_confirmed.strftime('CW%V/%g')
+					else:
+						c.order_week_confirmed = ''
 
 		for k, v in request.args.items():
 			#breakpoint()
@@ -633,5 +665,5 @@ def filter():
 		]'''
 		if len(result) > 0:
 			filtered_list.append((result, b[1], b[2], b[3]))
-	
-	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, plant_names=plant_names, filters=filters)
+		
+	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, filters=filters, plant_names=plant_names, weeks=weeks)

@@ -11,7 +11,7 @@ bp = Blueprint('sent', __name__)
 
 @bp.route('/', methods=['GET'])
 def list_sent():
-	assignments = (
+	sent = (
 		db.session.query(
 			Delivery.order_number.label("delivery_order_number"),
 			Delivery.order_position.label("delivery_order_position"),
@@ -32,4 +32,4 @@ def list_sent():
 		.filter(Assignments.sent == True)
 		.all()
 	)
-	return render_template('assignments/list.html', title="Sent", assignments=assignments)
+	return render_template('sent/list.html', title="Sent", sent=sent)

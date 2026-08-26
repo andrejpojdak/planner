@@ -86,6 +86,10 @@
 				<input name="quantity" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 			</th>
+			<th>Available Quantity
+				<br>
+				<input name="available_quantity" placeholder=" " class="filter narrow" value=""></input>
+			</th>
 			<th>ECV
 				<br>
 				{% if filters %}
@@ -149,6 +153,7 @@
         <td>{{ o.fob.strftime('%d.%m.%Y') }}</td>
         <td>{{ o.transport }}</td>
         <td>{{ o.quantity }}</td>
+        <td class="available_qty">{{ o.available_quantity }}</td>
 		<td>{{ o.ecv }}</td>
         <td>{{ o.eds }}</td>
 		{% if o.rmb is none %}

@@ -231,6 +231,7 @@ def import_csv():
 				q = q.filter(Delivery.order_number == on)
 			if op:
 				q = q.filter(Delivery.order_position == op)
+			q = q.filter(Delivery.sent == None)
 			q.delete(synchronize_session=False)
 		db.session.commit()
 		# Insert rows
@@ -250,11 +251,13 @@ def import_csv():
 			delivery_instruction_number = get(['Delivery Instruction Number','DeliveryInstructionNumber'])
 			order_number = get(['Order Number','OrderNumber'])
 			order_position = get(['Order Position','OrderPosition'])
-			#breakpoint()
 			if version_to_avoid.get((order_number, order_position)) and int(delivery_instruction_number) in version_to_avoid.get((order_number, order_position)):
 				continue
 			delivery_date = get(['Delivery date','Delivery Date','DeliveryDate'])
+			delivery_date = datetime.strptime(delivery_date, "%d.%m.%Y").date()
 			delivery_quantity = get(['Delivery quantity','Delivery Quantity','DeliveryQuantity'])
+			if Delivery.query.filter(Delivery.order_number == order_number, Delivery.order_position == order_position, Delivery.delivery_date == delivery_date, Delivery.delivery_quantity == delivery_quantity, Delivery.sent == True).all():
+				continue
 			additional_information = get(['Additional information'])
 			#breakpoint()
 			if int(delivery_quantity) == 0:
@@ -294,7 +297,7 @@ def import_csv():
 				delivery_instruction_number=delivery_instruction_number,
 				order_number=order_number,
 				order_position=order_position,
-				delivery_date=datetime.strptime(delivery_date, "%d.%m.%Y").date(),
+				delivery_date=delivery_date,
 				delivery_quantity=delivery_quantity,
 				additional_information=additional_information,
 				ecv=ecv,
@@ -342,5 +345,10 @@ def filter():
 
 @bp.route('/query/<buyer_article_number>', methods=['GET','POST'])
 def query(buyer_article_number):
+
 	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.delivery_date.asc()).all()
-	return render_template('deliveries/list.html', deliveries=deliveries)
+	material = Material.query.filter(Material.material_code == buyer_article_number).first()
+	for d in deliveries:
+		d.article_description = material.short_text if material else '<material_not_found>'
+	
+	return render_template('deliveries/list.html', deliveries=deliveries, title=f"Deliveries {buyer_article_number} {material.short_text}")

@@ -21,6 +21,7 @@ class OrderForm(FlaskForm):
 	transport = SelectField('Transport type', choices=[('SEA', 'SEA'),('RAIL', 'RAIL'),('AIR', 'AIR'),('UNCONFIRMED', 'UNCONFIRMED')], default='UNCONFIRMED', validators=[DataRequired()])
 	quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1, message="Qty must be greater than 0")])
 	ordered_quantity = IntegerField('Ordered Quantity', validators=[Optional(), NumberRange(min=1, message="Qty must be greater than 0")], render_kw={"disabled": True})
+	available_quantity = IntegerField('Available Quantity', validators=[Optional()], render_kw={"disabled": True})
 	unit_weight = StringField('Unit weight', validators=[Optional()], render_kw={'readonly': True})
 	overall_weight = StringField('Overall weight', validators=[Optional()], render_kw={'readonly': True})
 	purchase_price = DecimalField('Purchase price', validators=[Optional(), NumberRange(min=0.00001, message="Price must be greater than 0")])
@@ -35,11 +36,27 @@ class OrderForm(FlaskForm):
 
 @bp.route('/', methods=['GET'])
 def list_orders():
-	orders = Order.query.order_by(Order.buyer_article_number).order_by(Order.order_number).all()
+
+	from ..assignments.views import order_available_qty
+
+	orders = Order.query.order_by(Order.buyer_article_number).order_by(Order.fob).all()
 	for o in orders:
 		material = Material.query.filter(Material.material_code == o.buyer_article_number).first()
 		o.sap_article_description = material.short_text if material else '<material_not_found>'
+		o.available_quantity = order_available_qty(o.id)
 	return render_template('orders/list.html', title="Orders", orders=orders)
+
+@bp.route('/query/<buyer_article_number>', methods=['GET','POST'])
+def query(buyer_article_number):
+
+	from ..assignments.views import order_available_qty
+
+	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).order_by(Order.fob).all()
+	material = Material.query.filter(Material.material_code == buyer_article_number).first()
+	for o in orders:
+		o.sap_article_description = material.short_text if material else '<material_not_found>'
+		o.available_quantity = order_available_qty(o.id)
+	return render_template('orders/list.html', title=f"Orders {buyer_article_number} {material.short_text}", orders=orders)
 
 @bp.route('/create', methods=['GET','POST'])
 def create_order():
@@ -90,8 +107,12 @@ def create_order():
 
 @bp.route('/edit/<int:order_id>', methods=['GET','POST'])
 def edit_order(order_id):
+
 	assignment_list = []
-	assignment_list = (
+	tl_list = []
+	sent_list = []
+
+	query = (
 		db.session.query(
 			Delivery.order_number.label("delivery_order_number"),
 			Delivery.order_position.label("delivery_order_position"),
@@ -107,8 +128,11 @@ def edit_order(order_id):
 		.join(Order, Order.id == Assignments.order_id)
 		.join(Material, Material.material_code == Delivery.buyer_article_number)
 		.filter(Assignments.order_id == order_id)
-		.all()
 	)
+
+	assignment_list = query.filter(Assignments.assign == True, Assignments.tl != True).all()
+	tl_list = query.filter(Assignments.tl == True).all()
+	sent_list = query.filter(Assignments.sent == True).all()
 
 	next_url = request.args.get('next')
 	o = Order.query.get_or_404(order_id)
@@ -121,6 +145,8 @@ def edit_order(order_id):
 	form = OrderForm(obj=o)
 	form.buyer_article_number.render_kw = { "readonly": True}
 	form.article_description.render_kw = { "readonly": True}
+	from ..assignments.views import order_available_qty
+	form.available_quantity.data = order_available_qty(order_id)
 
 	if form.validate_on_submit():
 		o.order_number = form.order_number.data.strip()
@@ -146,7 +172,7 @@ def edit_order(order_id):
 		db.session.commit()
 		flash('Order updated.', 'success')
 		return redirect(next_url or url_for('orders.list_orders'))
-	return render_template('orders/form.html', title="Edit", form=form, action='Edit', order_id=order_id, next_url=next_url, page="edit", assignment_list=assignment_list)
+	return render_template('orders/form.html', title="Edit", form=form, action='Edit', order_id=order_id, next_url=next_url, page="edit", assignment_list=assignment_list, tl_list=tl_list, sent_list=sent_list)
 
 @bp.route('/split/<int:order_id>', methods=['GET','POST'])
 def split_order(order_id):

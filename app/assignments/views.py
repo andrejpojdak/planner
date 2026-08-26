@@ -9,6 +9,12 @@ from datetime import datetime
 
 bp = Blueprint('assignments', __name__)
 
+def order_available_qty(order_id):
+	assignment_list = Assignments.query.filter(Assignments.order_id == order_id).all()
+	sum_of_assignment_list = sum(a.qty for a in assignment_list)
+	order_qty = Order.query.filter(Order.id == order_id).first().quantity
+	return order_qty - sum_of_assignment_list
+
 @bp.route('/', methods=['GET'])
 def list_assignments():
 	assignments = (
@@ -46,16 +52,14 @@ def assign():
 	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_date).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.fob).all()
 
-	assignment_list = Assignments.query.filter(Assignments.order_id == order_id, Assignments.sent == False).all()
-	sum_of_assignment_list = sum(a.qty for a in assignment_list)
-	order_qty = Order.query.filter(Order.id == order_id).first().quantity
-
+	available_qty = order_available_qty(order_id)
+	
 	if Assignments.query.filter(Assignments.delivery_id == delivery_id).filter(Assignments.order_id == order_id).first():
-		max_qty = order_qty - sum_of_assignment_list + qty
+		max_qty = available_qty + qty
 		return render_template('assignments/form.html', max_qty=max_qty, edit=1, action="Save", title="Edit assignment", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty)
 
 	else:
-		max_qty = order_qty - sum_of_assignment_list
+		max_qty = available_qty
 		return render_template('assignments/form.html', max_qty=max_qty, edit=0, action="Create", title="Create new assignment", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty)
 
 @bp.route('/create/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
