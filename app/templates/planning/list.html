@@ -178,7 +178,11 @@
 				<td>{{ d.plant_name }}</td>
 				<td>{{ d.ecv }}</td>
 				<td>{{ d.eds }}</td>
+				{% if d.order_number == none and d.order_position == none%}
+				<td></td>
+				{% else %}
 				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
+				{% endif %}
 				<td>{{ d.article_description }}</td>
 				<td>{{ d.original_qty }}</td>
 				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</td>
@@ -313,7 +317,11 @@
 				<td>{{ d.plant_name }}</td>
 				<td>{{ d.ecv }}</td>
 				<td>{{ d.eds }}</td>
+				{% if d.order_number == none and d.order_position == none%}
+				<td></td>
+				{% else %}
 				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
+				{% endif %}
 				<td>{{ d.article_description }}</td>
 				<td></td>
 				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</td>
@@ -446,7 +454,7 @@
 			{% endif %}
 		{% endfor %}
       {% else %}
-      <tr><td colspan=15">No orders yet.</td></tr>
+      <tr><td colspan="15">No orders yet.</td></tr>
       {% endfor %}
 	{% endfor %}
     </tbody>
@@ -492,60 +500,7 @@ document.querySelectorAll('#planning tbody tr').forEach(row => {
   }
 });
 
-
-
-const table = document.querySelector("table");
-const thead = document.querySelector("thead");
-
-thead.addEventListener("click", function () {
-
-  if (table.querySelector(".filter-row")) return;
-
-  const headerCells = document.querySelectorAll("th");
-  const filterRow = document.createElement("tr");
-  filterRow.classList.add("filter-row");
-
-  const filterRowButtonTr = document.createElement("tr");
-  filterRowButtonTr.classList.add("filter-row-button");
-  const filterRowButtonTd = document.createElement("td");
-  filterRowButtonTd.id = "apply";
-  filterRowButtonTr.appendChild(filterRowButtonTd);
-  filterRowButtonTd.colSpan = 15;
-
-  const applyButton = document.createElement("button");
-  applyButton.textContent = "Apply filter";
-  const clearButton = document.createElement("button");
-  clearButton.textContent = "Clear filter";
-
-  filterRowButtonTd.appendChild(applyButton);
-  filterRowButtonTd.appendChild(clearButton);
-  applyButton.addEventListener("click", filterTable);
-  clearButton.addEventListener("click", clearTable);
-
-  headerCells.forEach((th, index) => {
-
-    const td = document.createElement("td");
-    const input = document.createElement("input");
- 
-    input.type = "text";
-    input.placeholder = "Filter...";
-    input.dataset.column = index;
-
-	if (index === headerCells.length - 1) {
-    	filterRow.appendChild(td);
-		return;
-	} else {
-		td.appendChild(input);
-	    filterRow.appendChild(td);
-	}
-  });
-
-  table.querySelector("tbody").prepend(filterRowButtonTr);
-  table.querySelector("tbody").prepend(filterRow);
-
-});
-
-colorRows(document.querySelectorAll("tbody tr:not(.status)"), 4);
+colorRows(document.querySelectorAll("tbody tr:not(.status)"), 5);
 
 document.querySelectorAll(".quickfilter").forEach(el => {
     el.addEventListener("change", function () {

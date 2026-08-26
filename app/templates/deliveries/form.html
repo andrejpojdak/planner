@@ -20,6 +20,7 @@
       <p>{{ form.submit() }}</p>
 
     {% if assignment_list %}
+    <div id="lists-deliveries">
     <h3>Assignments</h3>
       <table class="assignment_list">
         <thead>
@@ -45,7 +46,7 @@
           {% endfor %}
         </tbody>
       </table>
-    {% else %}
+      </div>
     {% endif %}
 
       <p>{{ form.article_description.label }}<br>{{ form.article_description(size=80) }} *</p>

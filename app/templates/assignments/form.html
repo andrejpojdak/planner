@@ -5,9 +5,9 @@
 {% block content %}
 
 {% if edit %}
-<form method="post" action="{{ url_for('assignments.edit_assignment', delivery_id=delivery_id, order_id=order_id) }}">
+<form id="assignmentForm" method="post" action="{{ url_for('assignments.edit_assignment', delivery_id=delivery_id, order_id=order_id) }}">
 {% else %}
-<form method="post" action="{{ url_for('assignments.create_assignment', delivery_id=delivery_id, order_id=order_id) }}">
+<form id="assignmentForm" method="post" action="{{ url_for('assignments.create_assignment', delivery_id=delivery_id, order_id=order_id) }}">
 {% endif %}
 
   <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
@@ -23,12 +23,12 @@
       <tbody>
         <tr>
           <td>
-            <select name="deliveries" disabled>
+            <select name="deliveries">
               {% for d in deliveries %}
                 {% if delivery_id == d.id %}
-                <option value="{{ d.id }}" selected>{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
+                <option value="{{ d.id }}" selected>{{ d.order_number }}-{{ d.order_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
                 {% else %}
-                <option value="{{ d.id }}">{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
+                <option value="{{ d.id }}">{{ d.order_number }}-{{ d.order_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
                 {% endif %}
               {% endfor %}
             </select>
@@ -37,7 +37,7 @@
             <input value="{{ qty }}" class="normal" name="qty" type="number" step="1" min="1" max="{{ max_qty }}"></input>&nbsp;Max. {{ max_qty }}pcs
           </td>
           <td>
-            <select name="orders" disabled>
+            <select name="orders">
               {% for o in orders %}
                 {% if order_id == o.id %}
                 <option value="{{ o.id }}" selected>{{ o.order_number }}</option>
@@ -60,5 +60,32 @@
   <button type="submit">Delete</button>
 </form>
 {% endif %}
+
+<script>
+    const form = document.getElementById('assignmentForm');
+    const deliverySelect = document.querySelector('select[name="deliveries"]');
+    const orderSelect = document.querySelector('select[name="orders"]');
+
+    function updateFormAction() {
+        const deliveryId = deliverySelect.value;
+        const orderId = orderSelect.value;
+
+        const url = new URL(form.action);
+
+        // URL structure: /.../<delivery_id>/<order_id>
+        const parts = url.pathname.split('/');
+
+        parts[parts.length - 2] = deliveryId;
+        parts[parts.length - 1] = orderId;
+
+        url.pathname = parts.join('/');
+
+        form.action = url.toString();
+
+    }
+
+    deliverySelect.addEventListener('change', updateFormAction);
+    orderSelect.addEventListener('change', updateFormAction);
+</script>
 
 {% endblock %}

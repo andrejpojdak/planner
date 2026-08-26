@@ -386,10 +386,10 @@ def list_plans():
 			#breakpoint()
 			for o in b[1][:]:
 				plant_name = b[0][0].plant_name
-				ecv = b[0][0].ecv
-				eds = b[0][0].eds
-				order_number = b[0][0].order_number
-				order_position = b[0][0].order_position
+				ecv = ''
+				eds = ''
+				order_number = None
+				order_position = None
 				article_description = b[0][0].article_description
 				buyer_article_number = b[0][0].buyer_article_number
 
@@ -566,12 +566,21 @@ def filter():
 					c.sent = True
 		# For filtering purposes, stock order list is turned into en empty Delivery object
 		if len (b[0]) > 0 and len(b[1]) > 0:
+			#Find most common order, most probably delivery schedule number
+			'''
+			from collections import Counter
+			most_common = Counter(
+				(d.order_number, d.order_position)
+				for d in b[0]
+			).most_common(1)[0]
+			most_common_order, most_common_position = most_common[0]
+			'''
 			for o in b[1][:]:
 				plant_name = b[0][0].plant_name
-				ecv = b[0][0].ecv
-				eds = b[0][0].eds
-				order_number = b[0][0].order_number
-				order_position = b[0][0].order_position
+				ecv = ''
+				eds = ''
+				order_number = None
+				order_position = None
 				article_description = b[0][0].article_description
 				buyer_article_number = b[0][0].buyer_article_number
 

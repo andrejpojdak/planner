@@ -262,3 +262,8 @@ tr:has(input:checked) {
 	left: 400px;
 	top: 200px;
 }
+#lists-deliveries {
+	position: absolute;
+	left: 700px;
+	top: 220px;
+}

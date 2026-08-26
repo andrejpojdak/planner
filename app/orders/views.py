@@ -20,7 +20,6 @@ class OrderForm(FlaskForm):
 	fob = DateField('Delivery date', validators=[DataRequired()])
 	transport = SelectField('Transport type', choices=[('SEA', 'SEA'),('RAIL', 'RAIL'),('AIR', 'AIR'),('UNCONFIRMED', 'UNCONFIRMED')], default='UNCONFIRMED', validators=[DataRequired()])
 	quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1, message="Qty must be greater than 0")])
-	ordered_quantity = IntegerField('Ordered Quantity', validators=[Optional(), NumberRange(min=1, message="Qty must be greater than 0")], render_kw={"disabled": True})
 	available_quantity = IntegerField('Available Quantity', validators=[Optional()], render_kw={"disabled": True})
 	unit_weight = StringField('Unit weight', validators=[Optional()], render_kw={'readonly': True})
 	overall_weight = StringField('Overall weight', validators=[Optional()], render_kw={'readonly': True})
@@ -84,7 +83,6 @@ def create_order():
 			fob = form.fob.data,
 			transport = form.transport.data.strip(),
 			quantity = form.quantity.data,
-			ordered_quantity = form.quantity.data,
 			purchase_price = form.purchase_price.data,
 			sales_price = form.sales_price.data,
 			rmb = form.rmb.data,
@@ -107,6 +105,9 @@ def create_order():
 
 @bp.route('/edit/<int:order_id>', methods=['GET','POST'])
 def edit_order(order_id):
+
+	order_qty = Order.query.filter(Order.id == order_id).first().quantity
+	assignment_qty = Assignments.query.filter(Assignments.order_id == order_id).first().qty
 
 	assignment_list = []
 	tl_list = []
@@ -155,7 +156,6 @@ def edit_order(order_id):
 		o.fob = form.fob.data
 		o.transport = form.transport.data.strip()
 		o.quantity = form.quantity.data
-		o.ordered_quantity = form.ordered_quantity.data
 		o.purchase_price = form.purchase_price.data
 		o.sales_price = form.sales_price.data
 		o.in_stock_date = form.in_stock_date.data
@@ -168,6 +168,15 @@ def edit_order(order_id):
 		if Order.query.filter(Order.order_number == o.order_number).filter(Order.buyer_article_number == o.buyer_article_number).first().id != order_id:
 			flash(f'Order {o.order_number}, {o.article_description} already exists.', 'danger')
 			return render_template('orders/form.html', title="Create new order", form=form, action='Create', page="create")
+
+		# Check if exactly 1 assignemnt, so it automatically updates assign qty to updated qty
+		assignment_count = len( Assignments.query.filter(Assignments.order_id == order_id).all() )
+		if assignment_count == 1:
+			if order_qty == assignment_qty:
+				Assignments.query.filter(Assignments.order_id == order_id).update({
+					Assignments.qty: o.quantity
+				})
+				db.session.commit()
 		
 		db.session.commit()
 		flash('Order updated.', 'success')
@@ -187,7 +196,6 @@ def split_order(order_id):
 	form = OrderForm(obj=o)
 	form.buyer_article_number.render_kw = { "readonly": True}
 	form.article_description.render_kw = { "readonly": True}
-	form.ordered_quantity.data = None
 
 	if form.validate_on_submit():
 		d = Order(
@@ -197,7 +205,6 @@ def split_order(order_id):
 			fob = form.fob.data,
 			transport = form.transport.data.strip(),
 			quantity = form.quantity.data,
-			ordered_quantity = None,
 			purchase_price = form.purchase_price.data,
 			sales_price = form.sales_price.data,
 			rmb = form.rmb.data,

@@ -119,6 +119,7 @@ def edit_delivery(delivery_id):
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
 		.join(Order, Order.id == Assignments.order_id)
 		.join(Material, Material.material_code == Delivery.buyer_article_number)
+		.filter(Assignments.delivery_id == delivery_id)
 		.all()
 	)
 
@@ -282,8 +283,8 @@ def import_csv():
 			if not sap_material:
 				if not missing_materials.get(buyer_article_number):
 					missing_materials[buyer_article_number] = article_description
-			
-			if 'schaeffler' in plant_name.casefold():
+			breakpoint()
+			if 'schaeffler' in plant_name.casefold() or 'dsv' in plant_name.casefold():
 				if schaeffler_mappings.get(buyer_plant_id):
 					plant_name = 'SCHAEFFLER' + ' ' + schaeffler_mappings[buyer_plant_id]
 
