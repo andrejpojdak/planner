@@ -57,11 +57,27 @@
 			</th>
 			<th>ECV
 				<br>
-				<input name="ecv" class="filter verynarrow" placeholder=" " value="" disabled></input>
+				{% if filters %}
+				{% if filters.get('ecv') %}
+				<input name="ecv" class="filter midnarrow" value="{{ filters.get('ecv') }}"></input>
+				{% else %}          
+				<input name="ecv" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
+				{% else %} 
+				<input name="ecv" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
 			</th>
 			<th>EDS
 				<br>
-				<input name="eds" class="filter verynarrow" placeholder=" " value="" disabled></input>
+				{% if filters %}
+				{% if filters.get('eds') %}
+				<input name="eds" class="filter midnarrow" value="{{ filters.get('eds') }}"></input>
+				{% else %}          
+				<input name="eds" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
+				{% else %} 
+				<input name="eds" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
 			</th>
 			<th>SO Number
 				<br>
@@ -148,6 +164,16 @@
 				{% endif %}
 			</th>
 			<th>Stock
+				<br>
+				{% if filters %}
+				{% if filters.get('order_orig_qty') %}
+				<input name="order_orig_qty" class="filter normal" value="{{ filters.get('order_orig_qty') }}"></input>
+				{% else %}
+				<input name="order_orig_qty" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_orig_qty" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
 			</th>
 			<th>Conf. Qty</th>
 			<th>TL</th>

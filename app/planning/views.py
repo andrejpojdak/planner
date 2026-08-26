@@ -476,7 +476,7 @@ def filter():
 		return redirect(url_for('planning.list_plans'))
 	
 	filters = request.args.to_dict()
-	print(filters)
+	
 	plant_names = [
 		row.plant_name
 		for row in (
@@ -590,7 +590,8 @@ def filter():
 					eds = eds,
 					order_number = order_number,
 					order_position = order_position,
-					article_description = article_description
+					article_description = article_description,
+					buyer_article_number = buyer_article_number
 					)
 				new_delivery.original_qty = ''
 				new_delivery.confirmations = []
@@ -631,47 +632,33 @@ def filter():
 						c.order_week_confirmed = ''
 
 		for k, v in request.args.items():
-			#breakpoint()
-			if "confirmed" in k:
+			if "order_" in k:
 				for d in b[0][:]:
 					filtered_confirmations = []
 					for fc in d.confirmations:
+						if k == 'order_orig_qty' and v == 'stock' and fc.order_orig_qty == 'stock':
+							filtered_confirmations.append(fc)
+							continue
 						if fc.id is None:
 							continue
 						if str(v).lower() in str(getattr(fc, k)).lower() and v is not None and getattr(fc, k) is not None:
 							filtered_confirmations.append(fc)
-					'''
-					filtered_confirmations = [
-						fc for fc in d.confirmations
-						if str(v).lower() in str(getattr(fc, k)).lower() and v is not None and getattr(fc, k) is not None
-					]'''
+					
 					if len(filtered_confirmations) == 0:
 						b[0].remove(d)
 					else:
-						#print(filtered_confirmations)
 						d.confirmations = filtered_confirmations
-		
+		for p in b[0]:
+			print(p.buyer_article_number)
 		result = [
 			p for p in b[0]
 			if all(
 				str(value).lower() in str(getattr(p, attr)).lower()
 				for attr, value in filters.items()
-				if value is not None and "confirm" not in attr
+				if value is not None and "order_" not in attr
 			)
 		]
-		'''result = [
-			p for p in b[0]
-			if all(
-				any(
-					str(value).lower() in str(getattr(c, "order_confirmed", "")).lower()
-					for c in p.confirmations
-				) if "confirmed" in attr else
-				str(value).lower() in str(getattr(p, attr, "")).lower()
 
-				for attr, value in filters.items()
-				if value is not None
-			)
-		]'''
 		if len(result) > 0:
 			filtered_list.append((result, b[1], b[2], b[3]))
 		

@@ -49,6 +49,9 @@ th {
 .verynarrow {
     width: 20px;
 }
+.midnarrow {
+    width: 30px;
+}
 .narrow {
     width: 45px;
 }
