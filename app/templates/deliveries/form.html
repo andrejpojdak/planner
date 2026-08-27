@@ -35,7 +35,7 @@
         <tbody>
           {% for a in assignment_list %}
           <tr>
-            <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
+            <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
             <td>{{ a.short_text }}</td>
             <td>{{ a.delivery_quantity }}</td>
             <td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
@@ -53,8 +53,8 @@
       <div id="results"></div>
       <p>{{ form.buyer_article_number.label }}<br>{{ form.buyer_article_number(size=80) }} *</p>
       <p>{{ form.plant_name.label }}<br>{{ form.plant_name(size=80) }} *</p>
-      <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40) }} *</p>
-      <p>{{ form.order_position.label }}<br>{{ form.order_position(size=20) }} *</p>
+      <p>{{ form.delivery_schedule_number.label }}<br>{{ form.delivery_schedule_number(size=40) }} *</p>
+      <p>{{ form.delivery_schedule_position.label }}<br>{{ form.delivery_schedule_position(size=20) }} *</p>
       <p>{{ form.delivery_date.label }}<br>{{ form.delivery_date() }} *</p>
       <p>{{ form.delivery_quantity.label }}<br>{{ form.delivery_quantity() }} *</p>
       <p>{{ form.buyer_plant_id.label }}<br>{{ form.buyer_plant_id(size=40) }}</p>

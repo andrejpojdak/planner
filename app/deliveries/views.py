@@ -23,8 +23,8 @@ class DeliveryForm(FlaskForm):
 	article_description = StringField('Article Description', validators=[DataRequired()])
 	engineering_change_level = StringField('Engineering Change Level', validators=[Optional()])
 	delivery_instruction_number = StringField('Delivery Instruction Number', validators=[Optional()])
-	order_number = StringField('Order Number', validators=[DataRequired()])
-	order_position = StringField('Order Position', validators=[DataRequired()])
+	delivery_schedule_number = StringField('Delivery Schedule Number', validators=[DataRequired()])
+	delivery_schedule_position = StringField('Delivery Schedule Position', validators=[DataRequired()])
 	delivery_date = DateField('Delivery date', validators=[DataRequired()])
 	delivery_quantity = IntegerField('Delivery quantity', validators=[DataRequired(), NumberRange(min=1, message="Qty must be greater than 0")])
 	additional_information = StringField('Additional information', validators=[Optional()])
@@ -84,8 +84,8 @@ def create_delivery():
 			article_description=form.article_description.data,
 			engineering_change_level=form.engineering_change_level.data,
 			delivery_instruction_number=form.delivery_instruction_number.data,
-			order_number=form.order_number.data,
-			order_position=form.order_position.data,
+			delivery_schedule_number=form.delivery_schedule_number.data,
+			delivery_schedule_position=form.delivery_schedule_position.data,
 			delivery_date=form.delivery_date.data,
 			delivery_quantity=float(form.delivery_quantity.data) if form.delivery_quantity.data is not None else None,
 			additional_information=form.additional_information.data,
@@ -106,8 +106,8 @@ def edit_delivery(delivery_id):
 	assignment_list = []
 	assignment_list = (
 		db.session.query(
-			Delivery.order_number.label("delivery_order_number"),
-			Delivery.order_position.label("delivery_order_position"),
+			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
+			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),
@@ -136,8 +136,8 @@ def edit_delivery(delivery_id):
 		d.article_description = form.article_description.data
 		d.engineering_change_level = form.engineering_change_level.data
 		d.delivery_instruction_number = form.delivery_instruction_number.data
-		d.order_number = form.order_number.data
-		d.order_position = form.order_position.data
+		d.delivery_schedule_number = form.delivery_schedule_number.data
+		d.delivery_schedule_position = form.delivery_schedule_position.data
 		d.delivery_date = form.delivery_date.data
 		d.delivery_quantity = float(form.delivery_quantity.data) if form.delivery_quantity.data is not None else None
 		d.additional_information = form.additional_information.data
@@ -229,9 +229,9 @@ def import_csv():
 		for on, op in keys:
 			q = Delivery.query
 			if on:
-				q = q.filter(Delivery.order_number == on)
+				q = q.filter(Delivery.delivery_schedule_number == on)
 			if op:
-				q = q.filter(Delivery.order_position == op)
+				q = q.filter(Delivery.delivery_schedule_position == op)
 			q = q.filter(Delivery.sent == None)
 			q.delete(synchronize_session=False)
 		db.session.commit()
@@ -250,14 +250,14 @@ def import_csv():
 			article_description = get(['Article Description', 'ArticleDescription', 'Description'])
 			engineering_change_level = get(['Engineering Change Level','EngineeringChangeLevel'])
 			delivery_instruction_number = get(['Delivery Instruction Number','DeliveryInstructionNumber'])
-			order_number = get(['Order Number','OrderNumber'])
-			order_position = get(['Order Position','OrderPosition'])
-			if version_to_avoid.get((order_number, order_position)) and int(delivery_instruction_number) in version_to_avoid.get((order_number, order_position)):
+			delivery_schedule_number = get(['Order Number','OrderNumber'])
+			delivery_schedule_position = get(['Order Position','OrderPosition'])
+			if version_to_avoid.get((delivery_schedule_number, delivery_schedule_position)) and int(delivery_instruction_number) in version_to_avoid.get((delivery_schedule_number, delivery_schedule_position)):
 				continue
 			delivery_date = get(['Delivery date','Delivery Date','DeliveryDate'])
 			delivery_date = datetime.strptime(delivery_date, "%d.%m.%Y").date()
 			delivery_quantity = get(['Delivery quantity','Delivery Quantity','DeliveryQuantity'])
-			if Delivery.query.filter(Delivery.order_number == order_number, Delivery.order_position == order_position, Delivery.delivery_date == delivery_date, Delivery.delivery_quantity == delivery_quantity, Delivery.sent == True).all():
+			if Delivery.query.filter(Delivery.delivery_schedule_number == delivery_schedule_number, Delivery.delivery_schedule_position == delivery_schedule_position, Delivery.delivery_date == delivery_date, Delivery.delivery_quantity == delivery_quantity, Delivery.sent == True).all():
 				continue
 			additional_information = get(['Additional information'])
 			#breakpoint()
@@ -283,7 +283,7 @@ def import_csv():
 			if not sap_material:
 				if not missing_materials.get(buyer_article_number):
 					missing_materials[buyer_article_number] = article_description
-			breakpoint()
+			
 			if 'schaeffler' in plant_name.casefold() or 'dsv' in plant_name.casefold():
 				if schaeffler_mappings.get(buyer_plant_id):
 					plant_name = 'SCHAEFFLER' + ' ' + schaeffler_mappings[buyer_plant_id]
@@ -296,8 +296,8 @@ def import_csv():
 				article_description=article_description,
 				engineering_change_level=engineering_change_level,
 				delivery_instruction_number=delivery_instruction_number,
-				order_number=order_number,
-				order_position=order_position,
+				delivery_schedule_number=delivery_schedule_number,
+				delivery_schedule_position=delivery_schedule_position,
 				delivery_date=delivery_date,
 				delivery_quantity=delivery_quantity,
 				additional_information=additional_information,

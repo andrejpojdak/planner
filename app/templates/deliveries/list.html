@@ -38,25 +38,25 @@
 			<th>SO Number
         <br>
         {% if filters %}
-          {% if filters.get('order_number') %}
-          <input name="order_number" class="filter normal" value="{{ filters.get('order_number') }}"></input>
+          {% if filters.get('delivery_schedule_number') %}
+          <input name="delivery_schedule_number" class="filter normal" value="{{ filters.get('delivery_schedule_number') }}"></input>
           {% else %}          
-          <input name="order_number" placeholder=" " class="filter normal" value=""></input>
+          <input name="delivery_schedule_number" placeholder=" " class="filter normal" value=""></input>
           {% endif %}
         {% else %} 
-        <input name="order_number" placeholder=" " class="filter normal" value=""></input>
+        <input name="delivery_schedule_number" placeholder=" " class="filter normal" value=""></input>
         {% endif %}
       </th>
 			<th>SO Pos.
         <br>
         {% if filters %}
-          {% if filters.get('order_position') %}
-          <input name="order_position" class="filter narrow" value="{{ filters.get('order_position') }}"></input>
+          {% if filters.get('delivery_schedule_position') %}
+          <input name="delivery_schedule_position" class="filter narrow" value="{{ filters.get('delivery_schedule_position') }}"></input>
           {% else %}          
-          <input name="order_position" placeholder=" " class="filter narrow" value=""></input>
+          <input name="delivery_schedule_position" placeholder=" " class="filter narrow" value=""></input>
           {% endif %}
         {% else %} 
-        <input name="order_position" placeholder=" " class="filter narrow" value=""></input>
+        <input name="delivery_schedule_position" placeholder=" " class="filter narrow" value=""></input>
         {% endif %}
       </th>
 			<th>Plan Ver.
@@ -188,8 +188,8 @@
     <tbody>
       {% for d in deliveries %}
       <tr>
-        <td>{{ d.order_number.lstrip('0') }}</td>
-        <td>{{ d.order_position }}</td>
+        <td>{{ d.delivery_schedule_number.lstrip('0') }}</td>
+        <td>{{ d.delivery_schedule_position }}</td>
         <td>{{ d.delivery_instruction_number }}</td>
         <td>{{ d.buyer_plant_id }}</td>
         <td>{{ d.plant_name }}</td>

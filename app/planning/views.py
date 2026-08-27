@@ -189,14 +189,8 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 				else:
 					flash(f"Higher qty to assign than actual qty for order {order.order_number}! Cancel all assignments for this order.", 'danger')
 ###End of Assignment
-	#for d in deliveries:
-	#	print(d.id, d.delivery_quantity, d.confirmations)
 	
 	while (len(deliveries) > 0):
-			#breakpoint()
-			#for o in orders:
-			#	print(o)
-			#print("---")
 			if len(orders) == 0:
 				deliveries[0].confirmations.append(Confirmations(None,None,None,None,None,None,None, None, None,None,None, None, None, None, None))
 				confirmed_deliveries.append(deliveries.pop(0))
@@ -300,7 +294,6 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 				continue
 	
 	confirmed_deliveries.sort(key=lambda d: d.delivery_date)
-	#print(*confirmed_deliveries, sep="\n")
 	return confirmed_deliveries, orders, box_qty, gross_weight
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -363,7 +356,7 @@ def list_plans():
 			else:	
 				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_schedule_number, Delivery.delivery_schedule_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -388,8 +381,8 @@ def list_plans():
 				plant_name = b[0][0].plant_name
 				ecv = ''
 				eds = ''
-				order_number = None
-				order_position = None
+				delivery_schedule_number = None
+				delivery_schedule_position = None
 				article_description = b[0][0].article_description
 				buyer_article_number = b[0][0].buyer_article_number
 
@@ -397,8 +390,8 @@ def list_plans():
 					plant_name = plant_name,
 					ecv = ecv,
 					eds = eds,
-					order_number = order_number,
-					order_position = order_position,
+					delivery_schedule_number = delivery_schedule_number,
+					delivery_schedule_position = delivery_schedule_position,
 					article_description = article_description
 					)
 				new_delivery.original_qty = ''
@@ -454,7 +447,7 @@ def list_plans_buyer_article_number(buyer_article_number):
 		else:	
 			assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.order_number, Delivery.order_position).all()
+	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.delivery_schedule_number, Delivery.delivery_schedule_position).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 	
 	material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -535,7 +528,7 @@ def filter():
 			else:	
 				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.order_number, Delivery.order_position).all()
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_schedule_number, Delivery.delivery_schedule_position).all()
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -548,16 +541,6 @@ def filter():
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
 
 	filtered_list = []
-	'''
-	for key, value in request.args.items():
-		for b in buyer_article_numbers_list:
-			for d in b[0]:
-				print(d)
-				if value and hasattr(d, key) and getattr(d, key) == value:
-					filtered_list.append(b)
-					break
-	print(filtered_list)
-	'''
 	for b in buyer_article_numbers_list:
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
@@ -566,21 +549,12 @@ def filter():
 					c.sent = True
 		# For filtering purposes, stock order list is turned into en empty Delivery object
 		if len (b[0]) > 0 and len(b[1]) > 0:
-			#Find most common order, most probably delivery schedule number
-			'''
-			from collections import Counter
-			most_common = Counter(
-				(d.order_number, d.order_position)
-				for d in b[0]
-			).most_common(1)[0]
-			most_common_order, most_common_position = most_common[0]
-			'''
 			for o in b[1][:]:
 				plant_name = b[0][0].plant_name
 				ecv = ''
 				eds = ''
-				order_number = None
-				order_position = None
+				delivery_schedule_number = None
+				delivery_schedule_position = None
 				article_description = b[0][0].article_description
 				buyer_article_number = b[0][0].buyer_article_number
 
@@ -588,8 +562,8 @@ def filter():
 					plant_name = plant_name,
 					ecv = ecv,
 					eds = eds,
-					order_number = order_number,
-					order_position = order_position,
+					delivery_schedule_number = delivery_schedule_number,
+					delivery_schedule_position = delivery_schedule_position,
 					article_description = article_description,
 					buyer_article_number = buyer_article_number
 					)
@@ -630,7 +604,15 @@ def filter():
 						c.order_week_confirmed = c.order_confirmed.strftime('CW%V/%g')
 					else:
 						c.order_week_confirmed = ''
-
+		if request.args.get("order_eta_week"):
+			for d in b[0]:
+				for c in d.confirmations:
+					if c.order_eta:
+						c.order_eta_week = c.order_eta.strftime('CW%V/%g')
+					else:
+						c.order_eta_week = ''
+		
+		#Filtering through Confirmations objects, attributes starting with "order_"
 		for k, v in request.args.items():
 			if "order_" in k:
 				for d in b[0][:]:
@@ -648,8 +630,8 @@ def filter():
 						b[0].remove(d)
 					else:
 						d.confirmations = filtered_confirmations
-		for p in b[0]:
-			print(p.buyer_article_number)
+		
+		#Filtering through Delivery objects, attributes not starting with "order_"
 		result = [
 			p for p in b[0]
 			if all(

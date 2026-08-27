@@ -25,8 +25,8 @@ class Delivery(db.Model):
 	article_description = db.Column(db.String(1024), nullable=True)
 	engineering_change_level = db.Column(db.String(120), nullable=True)
 	delivery_instruction_number = db.Column(db.String(120), nullable=True)
-	order_number = db.Column(db.String(120), nullable=True, index=True)
-	order_position = db.Column(db.String(120), nullable=True, index=True)
+	delivery_schedule_number = db.Column(db.String(120), nullable=True, index=True)
+	delivery_schedule_position = db.Column(db.String(120), nullable=True, index=True)
 	delivery_date = db.Column(db.Date)
 	delivery_quantity = db.Column(db.Integer, nullable=True)
 	additional_information = db.Column(db.String(1024), nullable=True)
@@ -37,7 +37,7 @@ class Delivery(db.Model):
 	delivery_orders = db.relationship("Assignments", back_populates="delivery")
 
 	def __repr__(self):
-		return f"<Delivery {self.id} {self.order_number}-{self.order_position}, {self.article_description}, {self.delivery_quantity}, {self.delivery_date}>"
+		return f"<Delivery {self.id} {self.delivery_schedule_number}-{self.delivery_schedule_position}, {self.article_description}, {self.delivery_quantity}, {self.delivery_date}>"
 
 class Order(db.Model):
 	__tablename__ = "orders"

@@ -19,8 +19,8 @@ def order_available_qty(order_id):
 def list_assignments():
 	assignments = (
 		db.session.query(
-			Delivery.order_number.label("delivery_order_number"),
-			Delivery.order_position.label("delivery_order_position"),
+			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
+			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),
@@ -78,7 +78,7 @@ def create_assignment(delivery_id, order_id):
 	db.session.add(a)
 	db.session.commit()
 
-	flash(f"Assignment of {qty}pcs from order {o.order_number} to delivery { d.order_number.lstrip('0') }-{ d.order_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } created.", 'success')
+	flash(f"Assignment of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } created.", 'success')
 	return redirect(url_for('assignments.list_assignments'))
 
 @bp.route('/edit/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
@@ -103,7 +103,7 @@ def edit_assignment(delivery_id, order_id):
 		)
 	db.session.commit()
 
-	flash(f"Assignment of {qty}pcs from order {o.order_number} to delivery { d.order_number.lstrip('0') }-{ d.order_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
+	flash(f"Assignment of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
 	return redirect(url_for('assignments.list_assignments'))
 
 @bp.route('/delete/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
@@ -117,7 +117,7 @@ def delete_assignment(delivery_id, order_id):
 	else:
 		db.session.delete(a)
 		db.session.commit()
-		flash(f"Assignment of {a.qty}pcs from order {o.order_number} to delivery { d.order_number.lstrip('0') }-{ d.order_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } deleted.", 'danger')
+		flash(f"Assignment of {a.qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } deleted.", 'danger')
 	return redirect(url_for('assignments.list_assignments'))
 
 @bp.route('/delete_all', methods=['POST'])

@@ -10,7 +10,6 @@ async function getMaterials(text) {
     }
 
     const data = await response.json();
-    //console.log("Received data:", data);
     return data;
   } catch (error) {
     console.error("Error:", error);

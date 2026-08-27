@@ -14,8 +14,8 @@ def list_tls():
 	assignments = (
 		db.session.query(
 			Delivery.plant_name.label("plant_name"),
-			Delivery.order_number.label("delivery_order_number"),
-			Delivery.order_position.label("delivery_order_position"),
+			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
+			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),
@@ -52,7 +52,7 @@ def create_tl():
 			if query.tl == True:
 				d = Delivery.query.filter(Delivery.id == delivery_id).first()
 				o = Order.query.filter(Order.id == order_id).first()
-				flash_messages.append(f"TL of {o.order_number} for { d.order_number.lstrip('0') }-{ d.order_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') }  already exists!")
+				flash_messages.append(f"TL of {o.order_number} for { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') }  already exists!")
 
 			elif query.assign == True and query.tl == False:
 				query.tl = True
@@ -111,7 +111,7 @@ def edit_tl(delivery_id, order_id):
 
 	db.session.commit()
 
-	flash(f"TL of {qty}pcs from order {o.order_number} to delivery { d.order_number.lstrip('0') }-{ d.order_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
+	flash(f"TL of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
 	return redirect(url_for('tls.list_tls'))
 
 @bp.route('/delete/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
@@ -130,7 +130,7 @@ def delete_tl(delivery_id, order_id):
 		db.session.delete(query)
 		db.session.commit()
 
-	flash(f"TL of {query.qty}pcs from order {o.order_number} to delivery { d.order_number.lstrip('0') }-{ d.order_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } deleted.", 'danger')
+	flash(f"TL of {query.qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } deleted.", 'danger')
 
 	return redirect(url_for('tls.list_tls'))
 

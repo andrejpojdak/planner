@@ -82,13 +82,13 @@
 			<th>SO Number
 				<br>
 				{% if filters %}
-				{% if filters.get('order_number') %}
-				<input name="order_number" class="filter normal" value="{{ filters.get('order_number') }}"></input>
+				{% if filters.get('delivery_schedule_number') %}
+				<input name="delivery_schedule_number" class="filter normal" value="{{ filters.get('delivery_schedule_number') }}"></input>
 				{% else %}          
-				<input name="order_number" placeholder=" " class="filter normal" value=""></input>
+				<input name="delivery_schedule_number" placeholder=" " class="filter normal" value=""></input>
 				{% endif %}
 				{% else %} 
-				<input name="order_number" placeholder=" " class="filter normal" value=""></input>
+				<input name="delivery_schedule_number" placeholder=" " class="filter normal" value=""></input>
 				{% endif %}
 			</th>
 			<th>SAP Article Description
@@ -167,26 +167,150 @@
 				<br>
 				{% if filters %}
 				{% if filters.get('order_orig_qty') %}
-				<input name="order_orig_qty" class="filter normal" value="{{ filters.get('order_orig_qty') }}"></input>
+				<input name="order_orig_qty" class="filter narrow" value="{{ filters.get('order_orig_qty') }}"></input>
 				{% else %}
-				<input name="order_orig_qty" placeholder=" " class="filter normal" value=""></input>
+				<input name="order_orig_qty" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 				{% else %}
-				<input name="order_orig_qty" placeholder=" " class="filter normal" value=""></input>
+				<input name="order_orig_qty" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 			</th>
-			<th>Conf. Qty</th>
-			<th>TL</th>
-			<th>Sales Price</th>
-			<th>ETA</th>
-			<th>Comment</th>
-			<th>RMB</th>
-			<th>Frgt</th>
-			<th>Sup</th>
-			<th>PO No.</th>
-			<th>ECV</th>
-			<th>EDS</th>
-			<th>FOB</th>
+			<th>Conf. Qty
+				<br>
+				{% if filters %}
+				{% if filters.get('order_qty') %}
+				<input name="order_qty" class="filter narrow" value="{{ filters.get('order_qty') }}"></input>
+				{% else %}
+				<input name="order_qty" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_qty" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>TL
+				<br>
+				<input class="filter verynarrow" placeholder=" " value="" disabled></input>
+			</th>
+			<th>Sales Price
+				<br>
+				{% if filters %}
+				{% if filters.get('order_sales_price') %}
+				<input name="order_sales_price" class="filter narrow" value="{{ filters.get('order_sales_price') }}"></input>
+				{% else %}
+				<input name="order_sales_price" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_sales_price" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>ETA
+				<br>
+				{% if filters %}
+				{% if filters.get('order_eta_week') %}
+				<input name="order_eta_week" class="filter narrow" value="{{ filters.get('order_eta_week') }}"></input>
+				{% else %}
+				<input name="order_eta_week" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_eta_week" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>Comment
+				<br>
+				{% if filters %}
+				{% if filters.get('order_comment') %}
+				<input name="order_comment" class="filter wide" value="{{ filters.get('order_comment') }}"></input>
+				{% else %}
+				<input name="order_comment" placeholder=" " class="filter wide" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_comment" placeholder=" " class="filter wide" value=""></input>
+				{% endif %}
+			</th>
+			<th>RMB
+				<br>
+				{% if filters %}
+				{% if filters.get('order_rmb') %}
+				<input name="order_rmb" class="filter narrow" value="{{ filters.get('order_rmb') }}"></input>
+				{% else %}
+				<input name="order_rmb" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_rmb" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>Frgt
+				<br>
+				{% if filters %}
+				{% if filters.get('order_transport') %}
+				<input name="order_transport" class="filter narrow" value="{{ filters.get('order_transport') }}"></input>
+				{% else %}
+				<input name="order_transport" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_transport" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>Supplier
+				<br>
+				{% if filters %}
+				{% if filters.get('order_supplier') %}
+				<input name="order_supplier" class="filter narrow" value="{{ filters.get('order_supplier') }}"></input>
+				{% else %}
+				<input name="order_supplier" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_supplier" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>PO No.
+				<br>
+				{% if filters %}
+				{% if filters.get('order_number') %}
+				<input name="order_number" class="filter normal" value="{{ filters.get('order_number') }}"></input>
+				{% else %}
+				<input name="order_number" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_number" placeholder=" " class="filter normal" value=""></input>
+				{% endif %}
+			</th>
+			<th>ECV
+				<br>
+				{% if filters %}
+				{% if filters.get('order_ecv') %}
+				<input name="order_ecv" class="filter midnarrow" value="{{ filters.get('order_ecv') }}"></input>
+				{% else %}
+				<input name="order_ecv" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_ecv" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>EDS
+				<br>
+				{% if filters %}
+				{% if filters.get('order_eds') %}
+				<input name="order_eds" class="filter midnarrow" value="{{ filters.get('order_eds') }}"></input>
+				{% else %}
+				<input name="order_eds" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="order_eds" placeholder=" " class="filter midnarrow" value=""></input>
+				{% endif %}
+			</th>
+			<th>FOB
+				<br>
+				{% if filters %}
+				{% if filters.get('order_fob') %}
+				<input type="date" name="order_fob" class="filter normal" value="{{ filters.get('order_fob') }}" required></input>
+				{% else %}
+				<input type="date" name="order_fob" class="filter normal" value="" required></input>
+				{% endif %}
+				{% else %}
+				<input type="date" name="order_fob" class="filter normal" value="" required></input>
+				{% endif %}
+			</th>
 			<th></th>
 		</tr>
 	</thead>
@@ -204,10 +328,10 @@
 				<td>{{ d.plant_name }}</td>
 				<td>{{ d.ecv }}</td>
 				<td>{{ d.eds }}</td>
-				{% if d.order_number == none and d.order_position == none%}
+				{% if d.delivery_schedule_number == none and d.delivery_schedule_position == none%}
 				<td></td>
 				{% else %}
-				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
+				<td>{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}</td>
 				{% endif %}
 				<td>{{ d.article_description }}</td>
 				<td>{{ d.original_qty }}</td>
@@ -343,10 +467,10 @@
 				<td>{{ d.plant_name }}</td>
 				<td>{{ d.ecv }}</td>
 				<td>{{ d.eds }}</td>
-				{% if d.order_number == none and d.order_position == none%}
+				{% if d.delivery_schedule_number == none and d.delivery_schedule_position == none%}
 				<td></td>
 				{% else %}
-				<td>{{ d.order_number.lstrip('0') }}-{{ d.order_position }}</td>
+				<td>{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}</td>
 				{% endif %}
 				<td>{{ d.article_description }}</td>
 				<td></td>

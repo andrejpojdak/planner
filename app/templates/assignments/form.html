@@ -26,9 +26,9 @@
             <select name="deliveries">
               {% for d in deliveries %}
                 {% if delivery_id == d.id %}
-                <option value="{{ d.id }}" selected>{{ d.order_number }}-{{ d.order_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
+                <option value="{{ d.id }}" selected>{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
                 {% else %}
-                <option value="{{ d.id }}">{{ d.order_number }}-{{ d.order_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
+                <option value="{{ d.id }}">{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
                 {% endif %}
               {% endfor %}
             </select>

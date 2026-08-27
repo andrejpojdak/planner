@@ -13,8 +13,8 @@ bp = Blueprint('sent', __name__)
 def list_sent():
 	sent = (
 		db.session.query(
-			Delivery.order_number.label("delivery_order_number"),
-			Delivery.order_position.label("delivery_order_position"),
+			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
+			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),

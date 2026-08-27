@@ -244,7 +244,6 @@ def filter():
 	query = Material.query
 
 	for key, value in request.args.items():
-		print(value)
 		if key == 'gross_weight':
 			value = value.replace(",", ".")
 		if value and hasattr(Material, key):

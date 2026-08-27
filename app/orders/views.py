@@ -115,8 +115,8 @@ def edit_order(order_id):
 
 	query = (
 		db.session.query(
-			Delivery.order_number.label("delivery_order_number"),
-			Delivery.order_position.label("delivery_order_position"),
+			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
+			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),
@@ -257,7 +257,6 @@ def filter():
 			query = query.filter(getattr(Order, key).like(f"%{value}%"))
 
 	orders = query.order_by(Order.buyer_article_number).order_by(Order.order_number).all()
-	print(type(orders))
 	for o in orders:
 		material = Material.query.filter(Material.material_code == o.buyer_article_number).first()
 		o.sap_article_description = material.short_text if material else '<material_not_found>'

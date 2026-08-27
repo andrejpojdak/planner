@@ -25,7 +25,7 @@
     <tbody>
       {% for a in sent %}
       <tr>
-        <td>{{ a.delivery_order_number.lstrip('0') }}-{{ a.delivery_order_position }}</td>
+        <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
         <td>{{ a.short_text }}</td>
         <td>{{ a.delivery_quantity }}</td>
 				<td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
