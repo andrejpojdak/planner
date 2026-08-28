@@ -13,6 +13,7 @@
     <thead>
       <tr>
         <th>Plant Name</th>
+        <th>TL Name</th>
 		<th>SO Number</th>
         <th>SAP Article Description</th>
         <th>Req. Qty</th>
@@ -29,6 +30,7 @@
       {% for a in assignments %}
       <tr>
         <td>{{ a.plant_name }}</td>
+        <td>{{ a.tl_name if a.tl_name else '' }}</td>
 	    <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
         <td>{{ a.short_text }}</td>
         <td>{{ a.delivery_quantity }}</td>
@@ -57,7 +59,7 @@
         </td>
 	  </tr>
       {% else %}
-      <tr><td colspan=8>No assignments yet.</td></tr>
+      <tr><td colspan=12>No assignments yet.</td></tr>
       {% endfor %}
     </tbody>
 </table>

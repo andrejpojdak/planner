@@ -216,6 +216,20 @@ tr:has(input:checked) {
 	background-color: yellowgreen;
 	/*color: salmon;*/
 }
+#tl-name {
+	display: none;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	background-color: ligthgray;
+	height: 40px;
+	width: 132px;
+	position: fixed;
+	bottom: 115px;
+	right: 20px;
+	border: 2px solid gray;
+	text-align: center;
+}
 #create-tl-button {
 	display: none;
 	justify-content: center;

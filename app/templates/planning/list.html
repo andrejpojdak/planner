@@ -35,6 +35,8 @@
 	</select>
 	</div>
 
+	<input id="tl-name" placeholder="Enter TL name">
+	</input>
 	<button id="create-tl-button">
 		<img src="{{ url_for('static', filename='img/icons8-packing-100.png') }}">
 	</button>
@@ -724,6 +726,7 @@ function filter() {
 function create_tl() {
 
 	const checkboxes_checked = document.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)');
+	const tl_name = document.getElementById('tl-name').value;
 	const payload = [];
 
 	checkboxes_checked.forEach(cb => {
@@ -736,7 +739,8 @@ function create_tl() {
 		payload.push({
 			delivery_id: parseInt(tl.dataset.deliveryId),
 			order_id: parseInt(tl.dataset.orderId),
-			qty: parseInt(tl.dataset.qty)
+			qty: parseInt(tl.dataset.qty),
+			tl_name: tl_name
 		});
 	});
 
@@ -763,7 +767,7 @@ function create_tl() {
 }
 
 const create_tl_button = document.getElementById("create-tl-button");
-const create_tl_container = document.getElementById("create-tl-container");
+const tl_name = document.getElementById("tl-name");
 
 document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => {
     cb.addEventListener("change", function () {
@@ -772,7 +776,7 @@ document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb =>
         ).length > 0;
 
         create_tl_button.style.display = hasChecked ? 'block' : 'none';
-        create_tl_container.style.display = hasChecked ? 'flex' : 'none';
+        tl_name.style.display = hasChecked ? 'block' : 'none';
     });
 });
 

@@ -26,6 +26,7 @@ def list_tls():
 			Assignments.order_id.label("order_id"),
 			Assignments.assign.label("assign"),
 			Assignments.tl.label("tl"),
+			Assignments.tl_name.label("tl_name"),
 			Assignments.sent.label("sent"),
 			Material.material_code.label("buyer_article_number")
 		)
@@ -44,6 +45,7 @@ def create_tl():
 		delivery_id = item.get("delivery_id")
 		order_id = item.get("order_id")
 		qty = item.get("qty")
+		tl_name = item.get("tl_name")
 		
 		query = Assignments.query.filter(Assignments.delivery_id == delivery_id, Assignments.order_id == order_id, Assignments.sent != True).first()
 		
@@ -56,6 +58,7 @@ def create_tl():
 
 			elif query.assign == True and query.tl == False:
 				query.tl = True
+				query.tl_name = tl_name
 				db.session.add(query)
 				db.session.commit()
 
@@ -66,7 +69,8 @@ def create_tl():
 				qty = qty,
 				assign = False,
 				tl = True,
-				sent = False
+				sent = False,
+				tl_name = tl_name
 				)
 			db.session.add(a)
 			db.session.commit()			
