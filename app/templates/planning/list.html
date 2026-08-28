@@ -374,7 +374,7 @@
 				<td class="tl">
 					<input type="checkbox" checked disabled>
 				</td>
-				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True or c.id == none %}
 				<td></td>
 				{% else %}
 				<td>
@@ -521,7 +521,7 @@
 				<td class="tl">
 					<input type="checkbox" checked disabled>
 				</td>
-				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True or c.id == none %}
 				<td></td>
 				{% else %}
 				<td>

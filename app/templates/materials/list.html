@@ -92,7 +92,7 @@
           <form method="post" action="{{ url_for('materials.delete_material', id=m.id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form></td>
       </tr>
       {% else %}
-      <tr><td colspan="5">No materials yet.</td></tr>
+      <tr><td colspan="6">No materials yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

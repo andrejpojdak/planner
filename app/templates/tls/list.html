@@ -30,7 +30,7 @@
       {% for a in assignments %}
       <tr>
         <td>{{ a.plant_name }}</td>
-        <td>{{ a.tl_name if a.tl_name else '' }}</td>
+        <td><a href="{{ url_for('tls.query_tl', tl_name=a.tl_name) }}">{{ a.tl_name if a.tl_name else '' }}</a></td>
 	    <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
         <td>{{ a.short_text }}</td>
         <td>{{ a.delivery_quantity }}</td>
@@ -116,6 +116,7 @@ checkboxes_unchecked.forEach(cb => {
 
 sent_button.onclick = sent_tl;
 
+colorRows(document.querySelectorAll("tbody tr:not(.status)"), 2);
 
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Order
@@ -308,11 +308,20 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			confirmed_deliveries.append(deliveries.pop(0))
 			orders.pop(0)
 			continue
-
+	
+	#First sort deliveries, sent deliveries first, then by delivery date
 	confirmed_deliveries.sort(
-		key=lambda d: (0 if d.sent is True else 1 if d.sent is False else 2, d.delivery_date)
+		key=lambda d: (0 if d.sent is True else 2, d.delivery_date)
 	)
-	#confirmed_deliveries.sort(key=lambda d: d.delivery_date)
+	#Then sort confirmations in each delivery, first in-stock orders
+	for d in confirmed_deliveries:
+		d.confirmations.sort(
+			key=lambda c: (
+				c.order_sales_price is None,
+				c.order_sales_price if c.order_sales_price is not None else 0
+			)
+		)
+
 	return confirmed_deliveries, orders, box_qty, gross_weight
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -664,3 +673,155 @@ def filter():
 			filtered_list.append((result, b[1], b[2], b[3]))
 		
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, filters=filters, plant_names=plant_names, weeks=weeks)
+
+@bp.route('/zlpi', methods=['GET', 'POST'])
+def zlpi():
+
+	buyer_article_numbers_list = []
+	buyer_article_numbers = [
+		row.buyer_article_number
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.buyer_article_number)
+			.distinct()
+			.order_by(Delivery.plant_name, Delivery.buyer_article_number)
+			.all()
+		)
+	]
+
+	for buyer_article_number in buyer_article_numbers:
+
+		assignments_dict = {}
+		assignments = (
+			db.session.query(
+				Assignments.delivery_id.label("delivery_id"),
+				Assignments.order_id.label("order_id"),
+				Assignments.qty.label("qty"),
+				Assignments.assign.label("assign"),
+				Assignments.tl.label("tl"),
+				Assignments.sent.label("sent")
+			)
+			.join(Delivery, Delivery.id == Assignments.delivery_id)
+			.join(Order, Order.id == Assignments.order_id)
+			.join(Material, Material.material_code == Delivery.buyer_article_number)
+			.filter(Material.material_code == buyer_article_number)
+			.all()
+		)
+
+		for a in assignments:
+			if assignments_dict.get(a[0]):
+				assignments_dict[a[0]].append((a[1], a[2], a[3], a[4]))
+			else:	
+				assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
+
+		deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_schedule_number, Delivery.delivery_schedule_position).all()
+		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
+
+		material = Material.query.filter(Material.material_code == buyer_article_number).first()
+		box_qty = material.box_qty if material else 1
+		gross_weight = material.gross_weight if material else 0		
+		for d in deliveries:
+			d.article_description = material.short_text if material else '<material_not_found>'
+			#d.plant_name = material.manufacturer if material else '<material_not_found>'
+		
+		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+
+	for b in buyer_article_numbers_list:
+		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
+		for d in b[0]:
+			for c in d.confirmations:
+				if Assignments.query.filter(Assignments.delivery_id == d.id, Assignments.order_id == c.id, Assignments.sent == True).all():
+					c.sent = True
+		# For filtering purposes, stock order list is turned into en empty Delivery object
+		if len (b[0]) > 0 and len(b[1]) > 0:
+			#breakpoint()
+			for o in b[1][:]:
+				plant_name = b[0][0].plant_name
+				ecv = ''
+				eds = ''
+				delivery_schedule_number = None
+				delivery_schedule_position = None
+				article_description = b[0][0].article_description
+				buyer_article_number = b[0][0].buyer_article_number
+
+				new_delivery = Delivery(
+					plant_name = plant_name,
+					ecv = ecv,
+					eds = eds,
+					delivery_schedule_number = delivery_schedule_number,
+					delivery_schedule_position = delivery_schedule_position,
+					article_description = article_description
+					)
+				new_delivery.original_qty = ''
+				new_delivery.confirmations = []
+				new_delivery.confirmations.append(
+					Confirmations(
+						o.id,
+						o.order_number,
+						o.quantity,
+						o.fob,
+						o.transport,
+						o.eta,
+						'',
+						o.sales_price,
+						o.supplier,
+						'stock',
+						o.ecv,
+						o.eds,
+						o.comment,
+						o.rmb,
+						0
+					)
+				)
+				b[0].append(new_delivery)
+				b[1].remove(o)
+
+	zlpi = []
+	for b in buyer_article_numbers_list:
+		deliveries = [
+			{
+				"odb": d.plant_name,
+				"plan": d.delivery_schedule_number.lstrip('0'),
+				"position": d.delivery_schedule_position,
+				"part": d.article_description,
+				"req_qty": d.original_qty,
+				"req_day": d.delivery_date.strftime('%Y-%m-%d') if d.delivery_date else '',
+				"req_wk": d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '',
+				"confirmations": [
+					{
+						"conf_wk": c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '',
+						"conf_qty": c.order_qty
+					}
+					for c in d.confirmations
+					if c.order_confirmed and c.order_qty
+				]
+			}
+			for d in b[0]
+			if any(c.order_confirmed and c.order_qty for c in d.confirmations)
+		]
+
+		if deliveries:
+			zlpi.append(deliveries)
+
+	import pandas as pd
+	df = pd.DataFrame([
+		{
+			"odb": d.plant_name,
+			"plan": d.delivery_schedule_number.lstrip('0'),
+			"position": d.delivery_schedule_position,
+			"part": d.article_description,
+			"req_qty": d.original_qty,
+			"req_day": d.delivery_date.strftime('%Y-%m-%d') if d.delivery_date else '',
+			"req_wk": d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '',
+			"conf_wk": c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '',
+			"conf_qty": c.order_qty
+		}
+		for b in buyer_article_numbers_list
+		for d in b[0]
+		for c in d.confirmations
+		if c.order_confirmed and c.order_qty
+	])
+
+	df.to_excel("zlpi.xlsx", index=False)
+
+	return jsonify(zlpi), 200

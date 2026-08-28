@@ -38,6 +38,38 @@ def list_tls():
 	)
 	return render_template('tls/list.html', title="Transport Lists", assignments=assignments)
 
+@bp.route('/query/', methods=['GET'])
+def query_tl():
+
+	tl_name = request.args.get("tl_name")
+
+	assignments = (
+		db.session.query(
+			Delivery.plant_name.label("plant_name"),
+			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
+			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
+			Material.short_text.label("short_text"),
+			Delivery.delivery_date.label("delivery_date"),
+			Delivery.delivery_quantity.label("delivery_quantity"),
+			Order.order_number.label("order_number"),
+			Order.sales_price.label("sales_price"),
+			Assignments.qty.label("order_qty"),
+			Assignments.delivery_id.label("delivery_id"),
+			Assignments.order_id.label("order_id"),
+			Assignments.assign.label("assign"),
+			Assignments.tl.label("tl"),
+			Assignments.tl_name.label("tl_name"),
+			Assignments.sent.label("sent"),
+			Material.material_code.label("buyer_article_number")
+		)
+		.join(Delivery, Delivery.id == Assignments.delivery_id)
+		.join(Order, Order.id == Assignments.order_id)
+		.join(Material, Material.material_code == Delivery.buyer_article_number)
+		.filter(Assignments.tl == True, Assignments.sent != True, Assignments.tl_name == tl_name)
+		.all()
+	)
+	return render_template('tls/list.html', title="Transport Lists", assignments=assignments)
+
 @bp.route('/create', methods=['GET', 'POST'])
 def create_tl():
 	flash_messages = []
