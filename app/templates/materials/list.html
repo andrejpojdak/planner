@@ -8,7 +8,7 @@
 	<a href="{{ url_for('materials.create_material') }}">Create new</a> |
 	<a href="{{ url_for('materials.import_html') }}">Import from HTML</a>
 	<form method="post" action="{{ url_for('materials.delete_all_materials') }}" onsubmit="return confirm('Delete ALL materials? This cannot be undone.');">
-		<button type="submit">Delete all materials</button>
+		<button type="submit" disabled>Delete all materials</button>
 	</form>
 </div>
 <br>

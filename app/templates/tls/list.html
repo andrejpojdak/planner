@@ -35,7 +35,7 @@
 				<td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
 				<td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
         <td>
-          <span class="tl-values" data-delivery-id="{{ a.delivery_id }}" data-order-id="{{ a.order_id }}" data-qty="{{ a.order_qty }}">{{ a.order_qty }}</span>
+          <span class="tl-values available_qty" data-delivery-id="{{ a.delivery_id }}" data-order-id="{{ a.order_id }}" data-qty="{{ a.order_qty }}">{{ a.order_qty }}</span>
         </td>
         <td>{{ a.order_number }}</td>
 		{% if a.sales_price is none %}
@@ -44,8 +44,8 @@
         <td>{{ '%.4f' % a.sales_price }}</td>
 		{% endif %}
 		<td>
-					<input type="checkbox">
-				</td>
+			<input type="checkbox">
+		</td>
         <td class="actions">
           <div id="menu-container">
             <div id="menu-icon">&#9776;</div>

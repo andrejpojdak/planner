@@ -55,7 +55,7 @@ def query(buyer_article_number):
 	for o in orders:
 		o.sap_article_description = material.short_text if material else '<material_not_found>'
 		o.available_quantity = order_available_qty(o.id)
-	return render_template('orders/list.html', title=f"Orders {buyer_article_number} {material.short_text}", orders=orders)
+	return render_template('orders/list.html', title=f"Orders {buyer_article_number} {material.short_text}", orders=orders, query=True, buyer_article_number=buyer_article_number)
 
 @bp.route('/create', methods=['GET','POST'])
 def create_order():
@@ -107,7 +107,8 @@ def create_order():
 def edit_order(order_id):
 
 	order_qty = Order.query.filter(Order.id == order_id).first().quantity
-	assignment_qty = Assignments.query.filter(Assignments.order_id == order_id).first().qty
+	if Assignments.query.filter(Assignments.order_id == order_id).first():
+		assignment_qty = Assignments.query.filter(Assignments.order_id == order_id).first().qty
 
 	assignment_list = []
 	tl_list = []

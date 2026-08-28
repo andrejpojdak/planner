@@ -63,10 +63,10 @@ def create_app(config=None):
 		for k, v in data.items():
 			setting = Settings.query.get(k)
 			if setting:
-				setting.value = v
+				continue
 			else:
 				db.session.add(Settings(key=k, value=v))
-
+		
 		db.session.commit()
 
 	return app

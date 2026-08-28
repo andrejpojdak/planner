@@ -142,7 +142,7 @@ tr:has(.actions:hover) {
 	transition: opacity 0.1s;
 	position: absolute;
 	top: -10px;
-	right: -10px;
+	right: 17px;
 	background: #f0f0f0;
 	border: 1px solid #ccc;
 	padding: 10px;
@@ -150,12 +150,10 @@ tr:has(.actions:hover) {
 	text-align: left;
 	font-size: 14px;
 }
-
-#menu-container:hover #menu {
+.actions:hover #menu {
 	opacity: 1;
 	pointer-events: auto;
 }
-
 /* menu icon styling */
 #menu-icon {
 	cursor: pointer;
@@ -220,37 +218,63 @@ tr:has(input:checked) {
 }
 #create-tl-button {
 	display: none;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	background-color: ligthgray;
+	height: 90px;
+	width: 140px;
 	position: fixed;
 	bottom: 20px;
 	right: 20px;
-	background-color: yellowgreen;
-	text-align: center;
-	vertical-align: auto;
-	height: 50px;
-	width: 140px;
 	cursor: pointer;
+	border: 2px solid gray;
+}
+#create-tl-button:hover {
+	background-color: yellowgreen;
 }
 #create-tl-button img {
-	text-align: center;
-	vertical-align: middle;
-	width: 25%;
+	width: 30%;
+	animation: moveUpDown .5s ease-in-out infinite alternate;
+}
+@keyframes moveUpDown {
+  from {
+    transform: translateY(-5px);
+  }
+
+  to {
+    transform: translateY(5px);
+  }
 }
 #sent-button {
 	display: none;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	background-color: ligthgray;
+	height: 90px;
+	width: 140px;
 	position: fixed;
 	bottom: 20px;
 	right: 20px;
-	background-color: yellowgreen;
-	text-align: center;
-	vertical-align: auto;
-	height: 50px;
-	width: 140px;
 	cursor: pointer;
+	border: 2px solid gray;
+}
+#sent-button:hover {
+	background-color: lightgray;
 }
 #sent-button img {
-	text-align: center;
-	vertical-align: middle;
-	width: 25%;
+	width: 30%;
+	animation: moveSideways .5s ease-in-out infinite alternate;
+}
+@keyframes moveSideways {
+  from {
+    transform: translateX(-5px);
+  }
+
+  to {
+    transform: translateX(5px);
+  }
 }
 .available_qty {
 	font-weight: bold;

@@ -15,6 +15,7 @@ def list_sent():
 		db.session.query(
 			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
 			Delivery.delivery_schedule_position.label("delivery_schedule_position"),
+			Delivery.plant_name.label("delivery_plant_name"),
 			Material.short_text.label("short_text"),
 			Delivery.delivery_date.label("delivery_date"),
 			Delivery.delivery_quantity.label("delivery_quantity"),

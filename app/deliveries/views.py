@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Delivery
@@ -27,6 +27,7 @@ class DeliveryForm(FlaskForm):
 	delivery_schedule_position = StringField('Delivery Schedule Position', validators=[DataRequired()])
 	delivery_date = DateField('Delivery date', validators=[DataRequired()])
 	delivery_quantity = IntegerField('Delivery quantity', validators=[DataRequired(), NumberRange(min=1, message="Qty must be greater than 0")])
+	sufficient_quantity = IntegerField('Sufficient quantity', validators=[Optional(), NumberRange(min=1, message="Qty must be greater than 0")])
 	additional_information = StringField('Additional information', validators=[Optional()])
 	ecv = StringField('ECV', validators=[Optional()])
 	eds = StringField('EDS', validators=[Optional()])
@@ -51,7 +52,7 @@ def list_deliveries():
 			.all()
 		)
 	]
-	deliveries = Delivery.query.filter(Delivery.sent == None).order_by(Delivery.plant_name).all()
+	deliveries = Delivery.query.filter(Delivery.sent == None).order_by(Delivery.buyer_article_number).all()
 	return render_template('deliveries/list.html', title="Deliveries", deliveries=deliveries, plant_names=plant_names)
 
 @bp.route('/create', methods=['GET','POST'])
@@ -88,6 +89,7 @@ def create_delivery():
 			delivery_schedule_position=form.delivery_schedule_position.data,
 			delivery_date=form.delivery_date.data,
 			delivery_quantity=float(form.delivery_quantity.data) if form.delivery_quantity.data is not None else None,
+			sufficient_quantity=float(form.sufficient_quantity.data) if form.sufficient_quantity.data is not None else None,
 			additional_information=form.additional_information.data,
 			ecv=form.ecv.data,
 			eds=form.eds.data
@@ -140,6 +142,7 @@ def edit_delivery(delivery_id):
 		d.delivery_schedule_position = form.delivery_schedule_position.data
 		d.delivery_date = form.delivery_date.data
 		d.delivery_quantity = float(form.delivery_quantity.data) if form.delivery_quantity.data is not None else None
+		d.sufficient_quantity = float(form.sufficient_quantity.data) if form.sufficient_quantity.data is not None else None
 		d.additional_information = form.additional_information.data
 		d.ecv = form.ecv.data
 		d.eds = form.eds.data
@@ -166,6 +169,25 @@ def delete_all_deliveries():
 		db.session.rollback()
 		flash(f'Error while deleting: {e}', 'danger')
 	return redirect(url_for('deliveries.list_deliveries'))
+
+@bp.route('/delete_selected', methods=['POST'])
+def delete_selected_deliveries():
+	try:
+		for item in request.get_json():
+			delivery_id = item.get("delivery_id")
+			d = Delivery.query.get_or_404(delivery_id)
+			db.session.delete(d)
+			db.session.commit()
+		flash('Selected deliveries deleted.', 'warning')
+	except Exception as e:
+		db.session.rollback()
+		flash(f'Error while deleting: {e}', 'danger')
+
+	return jsonify(
+				{
+					"message"	: "ok"
+				}
+			), 200
 
 @bp.route('/import', methods=['GET','POST'])
 def import_csv():
@@ -352,4 +374,4 @@ def query(buyer_article_number):
 	for d in deliveries:
 		d.article_description = material.short_text if material else '<material_not_found>'
 	
-	return render_template('deliveries/list.html', deliveries=deliveries, title=f"Deliveries {buyer_article_number} {material.short_text}")
+	return render_template('deliveries/list.html', deliveries=deliveries, title=f"Deliveries {buyer_article_number} {material.short_text}", query=True, buyer_article_number=buyer_article_number)

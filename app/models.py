@@ -29,6 +29,7 @@ class Delivery(db.Model):
 	delivery_schedule_position = db.Column(db.String(120), nullable=True, index=True)
 	delivery_date = db.Column(db.Date)
 	delivery_quantity = db.Column(db.Integer, nullable=True)
+	sufficient_quantity = db.Column(db.Integer, nullable=True)
 	additional_information = db.Column(db.String(1024), nullable=True)
 	ecv = db.Column(db.String(120), nullable=True)
 	eds = db.Column(db.String(120), nullable=True)

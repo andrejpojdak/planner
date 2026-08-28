@@ -6,13 +6,14 @@
 
 <div id="flex-left">
 	<form method="post" action="{{ url_for('assignments.delete_all_assignments') }}" onsubmit="return confirm('Delete ALL assignments? This cannot be undone.');">
-		<button type="submit">Delete all assignments</button>
+		<button type="submit" disabled>Delete all assignments</button>
 	</form>
 </div>
 <br>
 <table>
     <thead>
       <tr>
+        <th>Plant Name</th>
         <th>SO Number</th>
         <th>SAP Article Description</th>
         <th>Req. Qty</th>
@@ -27,12 +28,13 @@
     <tbody>
       {% for a in assignments %}
       <tr>
+        <td>{{ a.delivery_plant_name }}</td>
         <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
         <td>{{ a.short_text }}</td>
         <td>{{ a.delivery_quantity }}</td>
 				<td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
 				<td>{{ a.delivery_date.strftime('CW%V/%g') }}</td>
-        <td>{{ a.order_qty }}</td>
+        <td class="available_qty">{{ a.order_qty }}</td>
         <td>{{ a.order_number }}</td>
         <td>
           <input type="checkbox" disabled {% if a.tl %}checked{% endif %}/>

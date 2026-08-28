@@ -17,13 +17,6 @@ from datetime import date
 
 bp = Blueprint('planning', __name__)
 
-class FilterForm(FlaskForm):
-	plant_name = StringField('Plant name', validators=[Optional()])
-	so_number = StringField('SO Number', validators=[Optional()])
-	sap_article_description = StringField('SAP Article Description', validators=[Optional()])
-	conf_week = StringField('Confirmed Week', validators=[Optional()])
-	submit = SubmitField('Filter')
-
 class Confirmations():
 	
 	def __init__(self, id, order_number, order_qty, order_fob, order_transport, order_eta, order_confirmed, order_sales_prices, order_supplier, order_orig_qty, order_ecv, order_eds, order_comment, order_rmb, order_tl):
@@ -45,16 +38,6 @@ class Confirmations():
 
 	def __repr__(self):
 		return f"<Confirmation {self.id}, {self.order_number}, {self.order_qty}>"
-
-class Assignment():
-
-	def __init__(self, delivery_id, order_id, qty):
-		self.delivery_id = delivery_id
-		self.order_id = order_id
-		self.qty = qty
-	
-	def __repr__(self):
-		return f"<Assignment {self.delivery_id}, {self.order_id}, {self.qty}pcs>"
 
 def iso_week_range(isoweek_cwMMYY_format):
 
@@ -80,15 +63,24 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			"RAIL": r.value
 		}
 		return fob + timedelta(days=freight_map.get(transport, 0))
-	
+
+	brasil_delta = 63
+	portugal_delta = 14
+
 	for d in deliveries:
 		d.confirmations = []
-		d.original_qty = d.delivery_quantity
+		if d.sufficient_quantity:
+			d.original_qty = d.delivery_quantity
+			d.delivery_quantity = d.sufficient_quantity
+		else:
+			d.original_qty = d.delivery_quantity
 	
 	for o in orders:
 		o.orig_qty = o.quantity
 		if o.transport == "UNCONFIRMED":
 			o.eta = None
+		elif o.in_stock_date:
+			o.eta = o.in_stock_date
 		else:
 			eta = compute_eta(o.fob, o.transport)
 			o.eta = eta
@@ -97,7 +89,7 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 	orders.sort(key=lambda o: (not o.sales_price, o.in_stock_date is None, o.in_stock_date, o.eta is None, o.eta))
 	confirmed_deliveries = []
 
-###Start of Assignment
+	###Start of Assignment
 	if assignments_dict:
 		order_qty_reserve_dict = {}
 		for v in assignments_dict.values():
@@ -111,13 +103,21 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			if order.id in order_qty_reserve_dict.keys():
 				if order.quantity == order_qty_reserve_dict[order.id]:
 					for d in deliveries[:]:
+
+						delta = 0
+
+						if 'brasil' in str(d.plant_name).lower():
+							delta = brasil_delta
+						if 'portugal' in str(d.plant_name).lower():
+							delta = portugal_delta
+							
 						if d.id in assignments_dict.keys():
 							for s in assignments_dict[d.id]:
 								if order.id == s[0]:
 									if ( order.eta is None ):
 										order.confirmed_date = None
-									elif ( order.eta < d.delivery_date ):
-										order.confirmed_date = d.delivery_date
+									elif ( order.eta < d.delivery_date - timedelta(days = delta) ):
+										order.confirmed_date = d.delivery_date - timedelta(days = delta)
 									else:
 										order.confirmed_date = order.eta
 									d.confirmations.append(
@@ -149,13 +149,21 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 				
 				elif order.quantity > order_qty_reserve_dict[order.id]:
 					for d in deliveries[:]:
+
+						delta = 0
+
+						if 'brasil' in str(d.plant_name).lower():
+							delta = brasil_delta
+						if 'portugal' in str(d.plant_name).lower():
+							delta = portugal_delta
+							
 						if d.id in assignments_dict.keys():
 							for s in assignments_dict[d.id]:
 								if order.id == s[0]:
 									if ( order.eta is None ):
 										order.confirmed_date = None
-									elif ( order.eta < d.delivery_date ):
-										order.confirmed_date = d.delivery_date
+									elif ( order.eta < d.delivery_date - timedelta(days = delta) ):
+										order.confirmed_date = d.delivery_date - timedelta(days = delta)
 									else:
 										order.confirmed_date = order.eta
 									d.confirmations.append(
@@ -188,93 +196,72 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 				
 				else:
 					flash(f"Higher qty to assign than actual qty for order {order.order_number}! Cancel all assignments for this order.", 'danger')
-###End of Assignment
+	###End of Assignment
 	
 	while (len(deliveries) > 0):
-			if len(orders) == 0:
-				deliveries[0].confirmations.append(Confirmations(None,None,None,None,None,None,None, None, None,None,None, None, None, None, None))
-				confirmed_deliveries.append(deliveries.pop(0))
-				continue
 
-			if deliveries[0].delivery_quantity > orders[0].quantity:
-				if ( orders[0].eta is None ):
-					orders[0].confirmed_date = None
-				elif ( orders[0].eta < deliveries[0].delivery_date ):
-					orders[0].confirmed_date = deliveries[0].delivery_date
-				else:
-					orders[0].confirmed_date = orders[0].eta
-				deliveries[0].confirmations.append(
-					Confirmations(
-						orders[0].id,
-						orders[0].order_number,
-						orders[0].quantity,
-						orders[0].fob,
-						orders[0].transport,
-						orders[0].eta,
-						orders[0].confirmed_date,
-						orders[0].sales_price,
-						orders[0].supplier,
-						orders[0].orig_qty,
-						orders[0].ecv,
-						orders[0].eds,
-						orders[0].comment,
-						orders[0].rmb,
-						0
-					)
-				)
-				deliveries[0].delivery_quantity -= orders[0].quantity
-				#confirmed_deliveries.append(deliveries.pop(0))
-				orders.pop(0)
-				continue
+		delta = 0
+
+		if 'brasil' in str(deliveries[0].plant_name).lower():
+			delta = brasil_delta
+		if 'portugal' in str(deliveries[0].plant_name).lower():
+			delta = portugal_delta
 			
-			elif deliveries[0].delivery_quantity < orders[0].quantity:
-				if ( orders[0].eta is None ):
-					orders[0].confirmed_date = None
-				elif ( orders[0].eta < deliveries[0].delivery_date ):
-					orders[0].confirmed_date = deliveries[0].delivery_date
-				else:
-					orders[0].confirmed_date = orders[0].eta
-				
-				import math
-				if(math.ceil(deliveries[0].delivery_quantity/box_qty)*box_qty >= orders[0].quantity):
-					deliveries[0].delivery_quantity = orders[0].quantity
-					continue
-				else:
-					deliveries[0].delivery_quantity = math.ceil(deliveries[0].delivery_quantity/box_qty)*box_qty
-					deliveries[0].confirmations.append(
-						Confirmations(
-							orders[0].id,
-							orders[0].order_number,
-							deliveries[0].delivery_quantity,
-							orders[0].fob,
-							orders[0].transport,
-							orders[0].eta,
-							orders[0].confirmed_date,
-							orders[0].sales_price,
-							orders[0].supplier,
-							orders[0].orig_qty,
-							orders[0].ecv,
-							orders[0].eds,
-							orders[0].comment,
-							orders[0].rmb,
-							0
-						)
-					)
-					orders[0].orig_qty = ''
-					orders[0].quantity -= deliveries[0].delivery_quantity
-					confirmed_deliveries.append(deliveries.pop(0))
-					continue
+		if len(orders) == 0:
+			deliveries[0].confirmations.append(Confirmations(None,None,None,None,None,None,None, None, None,None,None, None, None, None, None))
+			confirmed_deliveries.append(deliveries.pop(0))
+			continue
 
+		if deliveries[0].delivery_quantity > orders[0].quantity:
+			if ( orders[0].eta is None ):
+				orders[0].confirmed_date = None
+			elif ( orders[0].eta < deliveries[0].delivery_date - timedelta(days = delta) ):
+				orders[0].confirmed_date = deliveries[0].delivery_date - timedelta(days = delta)
 			else:
-				if ( orders[0].eta < deliveries[0].delivery_date ):
-					orders[0].confirmed_date = deliveries[0].delivery_date
-				else:
-					orders[0].confirmed_date = orders[0].eta
+				orders[0].confirmed_date = orders[0].eta
+			deliveries[0].confirmations.append(
+				Confirmations(
+					orders[0].id,
+					orders[0].order_number,
+					orders[0].quantity,
+					orders[0].fob,
+					orders[0].transport,
+					orders[0].eta,
+					orders[0].confirmed_date,
+					orders[0].sales_price,
+					orders[0].supplier,
+					orders[0].orig_qty,
+					orders[0].ecv,
+					orders[0].eds,
+					orders[0].comment,
+					orders[0].rmb,
+					0
+				)
+			)
+			deliveries[0].delivery_quantity -= orders[0].quantity
+			#confirmed_deliveries.append(deliveries.pop(0))
+			orders.pop(0)
+			continue
+		
+		elif deliveries[0].delivery_quantity < orders[0].quantity:
+			if ( orders[0].eta is None ):
+				orders[0].confirmed_date = None
+			elif ( orders[0].eta < deliveries[0].delivery_date - timedelta(days = delta) ):
+				orders[0].confirmed_date = deliveries[0].delivery_date - timedelta(days = delta)
+			else:
+				orders[0].confirmed_date = orders[0].eta
+			
+			import math
+			if(math.ceil(deliveries[0].delivery_quantity/box_qty)*box_qty >= orders[0].quantity):
+				deliveries[0].delivery_quantity = orders[0].quantity
+				continue
+			else:
+				deliveries[0].delivery_quantity = math.ceil(deliveries[0].delivery_quantity/box_qty)*box_qty
 				deliveries[0].confirmations.append(
 					Confirmations(
 						orders[0].id,
 						orders[0].order_number,
-						orders[0].quantity,
+						deliveries[0].delivery_quantity,
 						orders[0].fob,
 						orders[0].transport,
 						orders[0].eta,
@@ -289,11 +276,43 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 						0
 					)
 				)
+				orders[0].orig_qty = ''
+				orders[0].quantity -= deliveries[0].delivery_quantity
 				confirmed_deliveries.append(deliveries.pop(0))
-				orders.pop(0)
 				continue
-	
-	confirmed_deliveries.sort(key=lambda d: d.delivery_date)
+
+		else:
+			if ( orders[0].eta < deliveries[0].delivery_date - timedelta(days = delta) ):
+				orders[0].confirmed_date = deliveries[0].delivery_date - timedelta(days = delta)
+			else:
+				orders[0].confirmed_date = orders[0].eta
+			deliveries[0].confirmations.append(
+				Confirmations(
+					orders[0].id,
+					orders[0].order_number,
+					orders[0].quantity,
+					orders[0].fob,
+					orders[0].transport,
+					orders[0].eta,
+					orders[0].confirmed_date,
+					orders[0].sales_price,
+					orders[0].supplier,
+					orders[0].orig_qty,
+					orders[0].ecv,
+					orders[0].eds,
+					orders[0].comment,
+					orders[0].rmb,
+					0
+				)
+			)
+			confirmed_deliveries.append(deliveries.pop(0))
+			orders.pop(0)
+			continue
+
+	confirmed_deliveries.sort(
+		key=lambda d: (0 if d.sent is True else 1 if d.sent is False else 2, d.delivery_date)
+	)
+	#confirmed_deliveries.sort(key=lambda d: d.delivery_date)
 	return confirmed_deliveries, orders, box_qty, gross_weight
 
 @bp.route('/', methods=['GET', 'POST'])

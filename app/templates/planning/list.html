@@ -38,7 +38,7 @@
 	<button id="create-tl-button">
 		<img src="{{ url_for('static', filename='img/icons8-packing-100.png') }}">
 	</button>
-	
+
 	<br>
 	<table id="planning">
     <thead>
@@ -334,9 +334,17 @@
 				<td>{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}</td>
 				{% endif %}
 				<td>{{ d.article_description }}</td>
-				<td>{{ d.original_qty }}</td>
+				<td>{{ d.original_qty }}{{ '(' ~ d.sufficient_quantity ~ ')' if d.sufficient_quantity else ''}}</td>
+				{% if c.sent == True %}
 				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</td>
+				{% else %}
+				<td class="requested"><a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id) if d.id else '' }}">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</a></td>
+				{% endif %}
+				{% if c.sent == True %}
 				<td>{{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }}</td>
+				{% else %}
+				<td><a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id) if d.id else '' }}">{{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }}</a></td>
+				{% endif %}
 				{% if c.order_confirmed is none %}
 				<td>?</td>
 				<td>?</td>
@@ -474,8 +482,16 @@
 				{% endif %}
 				<td>{{ d.article_description }}</td>
 				<td></td>
+				{% if c.sent == True %}
 				<td class="requested">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</td>
+				{% else %}
+				<td class="requested"><a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id) if d.id else '' }}">{{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }}</a></td>
+				{% endif %}
+				{% if c.sent == True %}
 				<td>{{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }}</td>
+				{% else %}
+				<td><a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id) if d.id else '' }}">{{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }}</a></td>
+				{% endif %}
 				{% if c.order_confirmed is none %}
 				<td>?</td>
 				<td>?</td>
@@ -617,14 +633,24 @@
 	
 function parseDateDMY(dateStr) {
   const [day, month, year] = dateStr.split('.');
-  return new Date(`20${year}`, month - 1, day);
+  return new Date(`${year}`, month - 1, day);
 }
 
-document.querySelectorAll('#planning tbody tr').forEach(row => {
+document.querySelectorAll('#planning tbody tr:not([data-sent="True"]):not(.status)').forEach(row => {
   const requestedCell = row.querySelector('.requested')
   const confirmedCell = row.querySelector('.confirmed')
   const confirmedWkCell = row.querySelector('.confirmedwk')
+  const brasil_delta = 63;
+  const portugal_delta = 14;
+  let delta = 0;
+  const plant = row.cells[0].textContent.toLowerCase();
 
+	if (plant.includes('brasil')) {
+	delta = brasil_delta;
+	} else if (plant.includes('portugal')) {
+	delta = portugal_delta;
+	}
+  
   if (!confirmedCell || !requestedCell || !confirmedWkCell) return;
 
   const requestedText = requestedCell.textContent.trim();
@@ -633,20 +659,21 @@ document.querySelectorAll('#planning tbody tr').forEach(row => {
 
   const requestedDate = parseDateDMY(requestedText);
   const confirmedDate = parseDateDMY(confirmedText);
+  confirmedDate.setDate(confirmedDate.getDate() + delta)
 
   const requestedPlus7 = new Date(requestedDate);
   requestedPlus7.setDate(requestedPlus7.getDate() + 7);
 
-  if (confirmedDate > requestedDate && confirmedDate <= requestedPlus7) {
-    confirmedCell.style.color = 'orange';
-	confirmedWkCell.style.color = 'orange';
-    confirmedCell.style.fontWeight = 'bold';
-    confirmedWkCell.style.fontWeight = 'bold';
-  } else if (confirmedDate > requestedPlus7) {
-    confirmedCell.style.color = 'red';
-	confirmedWkCell.style.color = 'red';
-    confirmedCell.style.fontWeight = 'bold';
-    confirmedWkCell.style.fontWeight = 'bold';
+  if ( confirmedDate > requestedDate && confirmedDate <= requestedPlus7 ) {
+    confirmedCell.style.color = 'white';
+    confirmedCell.style.backgroundColor = 'orange';
+	confirmedWkCell.style.color = 'white';
+	confirmedWkCell.style.backgroundColor = 'orange';
+  } else if ( confirmedDate > requestedPlus7 ) {
+    confirmedCell.style.color = 'white';
+    confirmedCell.style.backgroundColor = 'red';
+	confirmedWkCell.style.color = 'white';
+	confirmedWkCell.style.backgroundColor = 'red';
   }
 });
 
@@ -736,11 +763,17 @@ function create_tl() {
 }
 
 const create_tl_button = document.getElementById("create-tl-button");
-const checkboxes_unchecked = document.querySelectorAll('input[type="checkbox"]:not(:disabled)');
-checkboxes_unchecked.forEach(cb => {
-	cb.addEventListener("click", function () {
-		create_tl_button.style.display = 'block';
-	});
+const create_tl_container = document.getElementById("create-tl-container");
+
+document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => {
+    cb.addEventListener("change", function () {
+        const hasChecked = document.querySelectorAll(
+            'input[type="checkbox"]:checked:not(:disabled)'
+        ).length > 0;
+
+        create_tl_button.style.display = hasChecked ? 'block' : 'none';
+        create_tl_container.style.display = hasChecked ? 'flex' : 'none';
+    });
 });
 
 create_tl_button.onclick = create_tl;

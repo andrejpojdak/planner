@@ -5,9 +5,13 @@
 {% block content %}
 
 <div id="flex-left">
+	{% if query %}
+	<a href="{{ url_for('orders.create_order', buyer_article_number=buyer_article_number, next=request.full_path ) }}">Create new</a>
+	{% else %}
 	<a href="{{ url_for('orders.create_order') }}">Create new</a>
+	{% endif %}
 	<form method="post" action="{{ url_for('orders.delete_all_orders') }}" onsubmit="return confirm('Delete ALL orders? This cannot be undone.');">
-		<button type="submit">Delete all orders</button>
+		<button type="submit" disabled>Delete all orders</button>
 	</form>
 </div>
 <br>

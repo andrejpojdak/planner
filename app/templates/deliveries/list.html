@@ -6,11 +6,16 @@
 
 <div class="menu">
 	<div id="flex-left">
-		<a href="{{ url_for('deliveries.create_delivery') }}">Create new delivery</a> |
-		<a href="{{ url_for('deliveries.import_csv') }}">Import from CSV</a>
+    {% if query %}
+    <a href="{{ url_for('deliveries.create_delivery', buyer_article_number=buyer_article_number, next=request.full_path) }}">Create new delivery</a>
+		{% else %}
+    <a href="{{ url_for('deliveries.create_delivery') }}">Create new delivery</a> |
+		{% endif %}
+    <a href="{{ url_for('deliveries.import_csv') }}">Import from CSV</a>
 		<form method="post" action="{{ url_for('deliveries.delete_all_deliveries') }}" onsubmit="return confirm('Delete ALL deliveries? This cannot be undone.');">
-			<button type="submit">Delete all deliveries</button>
+			<button type="submit" disabled>Delete all deliveries</button>
 		</form>
+		<button id="del-selected-button" type="submit" disabled>Delete selected deliveries</button>
 	</div>
 </div>
 <br>
@@ -179,6 +184,8 @@
         <input name="eds" placeholder=" " class="filter verynarrow" value=""></input>
         {% endif %}
       </th>
+      <th>
+      </th>
 			<th>Actions
         <br>
         <input class="filter verynarrow" placeholder=" " disabled>
@@ -197,9 +204,12 @@
         <td>{{ d.buyer_article_number }}</td>
         <td>{{ d.article_description }}</td>
         <td>{{ d.delivery_date.strftime('%d.%m.%Y') }}</td>
-        <td>{{ '%.0f'|format(d.delivery_quantity) if d.delivery_quantity is not none else '' }}</td>
+        <td><span class="del-values" data-delivery-id="{{ d.id }}"></span>{{ '%.0f'|format(d.delivery_quantity) if d.delivery_quantity is not none else '' }}</td>
         <td>{{ d.ecv }}</td>
         <td>{{ d.eds }}</td>
+        <td>
+          <input type="checkbox">
+        </td>
         <td class="actions">
           <div id="menu-container">
             <div id="menu-icon">&#9776;</div>
@@ -253,6 +263,62 @@ function filter() {
   window.location.href = "/deliveries/filter?" + params.toString();
 
 }
+
+
+function delete_selected_deliveries() {
+
+	const checkboxes_checked = document.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)');
+	const payload = [];
+
+	checkboxes_checked.forEach(cb => {
+		cb.addEventListener("click", function () {
+			console.log("Clicked:", this.checked);
+		});
+		const row = cb.closest('tr');
+		const tl = row.querySelector('span.del-values');
+
+		payload.push({
+			delivery_id: parseInt(tl.dataset.deliveryId)
+		});
+	});
+	fetch('/deliveries/delete_selected', {
+		method: 'POST',
+		headers: {'Content-Type': 'application/json'},
+		body: JSON.stringify(payload)
+	})
+	.then(async response => {
+		const data = await response.json();
+		if (!response.ok) {
+			throw new Error(data.error || "Unknown error");
+		}
+		if (data.message === "ok") {
+			window.location.href = "/deliveries";
+		} else {
+			alert(data.message);
+		}
+	})
+	.catch(error => {
+		alert(error.message);
+	});
+
+}
+
+const delete_selected_deliveries_button = document.getElementById("del-selected-button");
+const checkboxes_unchecked = document.querySelectorAll('input[type="checkbox"]');
+checkboxes_unchecked.forEach(cb => {
+	cb.addEventListener("click", function () {
+		delete_selected_deliveries_button.disabled = false;
+	});
+});
+
+delete_selected_deliveries_button.addEventListener('click', function (event) {
+    if (!confirm('Delete selected deliveries? This cannot be undone.')) {
+        event.preventDefault();
+        return;
+    }
+
+    delete_selected_deliveries();
+});
 
 </script>
   {% endblock %}
