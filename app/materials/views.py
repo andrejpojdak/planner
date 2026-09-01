@@ -18,6 +18,7 @@ class MaterialForm(FlaskForm):
     gross_weight = DecimalField('Gross weight', validators=[DataRequired(), NumberRange(min=0.000001, message="Gross weight must be greater than 0")], places=3)
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
     box_qty = IntegerField('Box Qty', validators=[Optional(), NumberRange(min=1)])
+    comment = StringField('Comment', validators=[Optional()])
     submit = SubmitField('Save')
 
 class ImportForm(FlaskForm):
@@ -87,13 +88,15 @@ def create_material():
     args_gross_weight=float(request.args.get('gross_weight', 0))
     args_manufacturer=request.args.get('manufacturer', '')
     args_box_qty=request.args.get('box_qty', '')
+    args_comment=request.args.get('comment', '')
   
     form = MaterialForm(
         material_code=args_material_code,
         short_text=args_short_text,
         gross_weight=args_gross_weight,
         manufacturer=args_manufacturer,
-        box_qty=args_box_qty
+        box_qty=args_box_qty,
+        comment=args_comment
         )
 
     if form.validate_on_submit():
@@ -102,7 +105,8 @@ def create_material():
             short_text=form.short_text.data,
             gross_weight=float(form.gross_weight.data) if form.gross_weight.data is not None else None,
             manufacturer=form.manufacturer.data,
-            box_qty=form.box_qty.data
+            box_qty=form.box_qty.data,
+            comment=form.comment.data
             )
         if Material.query.filter(Material.material_code == m.material_code).first():
             flash(f'Material code {m.material_code} already exists.', 'danger')
@@ -132,6 +136,7 @@ def edit_material():
         m.gross_weight = float(form.gross_weight.data) if form.gross_weight.data is not None else None
         m.manufacturer = form.manufacturer.data
         m.box_qty = form.box_qty.data
+        m.comment = form.comment.data
         db.session.commit()
         flash('Material updated.', 'success')
         return redirect(next_url or url_for('materials.list_materials'))

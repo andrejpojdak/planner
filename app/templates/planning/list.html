@@ -319,7 +319,7 @@
     <tbody>
 	{% for b in buyer_article_numbers_list %}
 			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
-				<td colspan="10">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a></td>
+				<td colspan="10"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">{{ b[4] if b[4] else ''}}</span></td>
 				<td colspan="3"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</a></td>
 				<td colspan="11"></td>
 			</tr>

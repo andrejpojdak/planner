@@ -62,9 +62,11 @@ def create_order():
 	
 	next_url = request.args.get('next')
 	buyer_article_number = request.args.get('buyer_article_number', '')
-	
+	material_comment = ''
+
 	if buyer_article_number:
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
+		material_comment = material.comment
 		article_description = material.short_text if material else '<material_not_found>'
 		unit_weight = material.gross_weight if material else ''
 
@@ -101,7 +103,7 @@ def create_order():
 		flash('Order created.', 'success')
 		return redirect(next_url or url_for('orders.list_orders'))
 
-	return render_template('orders/form.html', title="Create new order", form=form, action='Create', page="create")
+	return render_template('orders/form.html', title="Create new order", form=form, action='Create', page="create", material_comment=material_comment)
 
 @bp.route('/edit/<int:order_id>', methods=['GET','POST'])
 def edit_order(order_id):
