@@ -48,8 +48,10 @@
       </table>
       </div>
     {% endif %}
-
-      <p>{{ form.article_description.label }}<br>{{ form.article_description(size=80) }} *</p>
+    
+    <span class="comment">{{ 'Comment: ' ~ material_comment if material_comment else '' }}</span>
+    
+    <p>{{ form.article_description.label }}<br>{{ form.article_description(size=80) }} *</p>
       <div id="results"></div>
       <p>{{ form.buyer_article_number.label }}<br>{{ form.buyer_article_number(size=80) }} *</p>
       <p>{{ form.plant_name.label }}<br>{{ form.plant_name(size=80) }} *</p>

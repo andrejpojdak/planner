@@ -49,7 +49,7 @@ def iso_week_range(isoweek_cwMMYY_format):
 
 	return monday, sunday
 
-def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict):
+def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment):
 	
 	def compute_eta(fob, transport):
 		
@@ -322,7 +322,7 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			)
 		)
 
-	return confirmed_deliveries, orders, box_qty, gross_weight
+	return confirmed_deliveries, orders, box_qty, gross_weight, comment
 
 @bp.route('/', methods=['GET', 'POST'])
 def list_plans():
@@ -390,11 +390,12 @@ def list_plans():
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
 		box_qty = material.box_qty if material else 1
 		gross_weight = material.gross_weight if material else 0		
+		comment = material.comment if material else ''
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
 
 	for b in buyer_article_numbers_list:
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
@@ -562,11 +563,12 @@ def filter():
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
 		box_qty = material.box_qty if material else 1
 		gross_weight = material.gross_weight if material else 0		
+		comment = material.comment if material else ''
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
 
 	filtered_list = []
 	for b in buyer_article_numbers_list:
@@ -668,9 +670,9 @@ def filter():
 				if value is not None and "order_" not in attr
 			)
 		]
-
+		
 		if len(result) > 0:
-			filtered_list.append((result, b[1], b[2], b[3]))
+			filtered_list.append((result, b[1], b[2], b[3], b[4]))
 		
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, filters=filters, plant_names=plant_names, weeks=weeks)
 
@@ -720,11 +722,12 @@ def zlpi():
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
 		box_qty = material.box_qty if material else 1
 		gross_weight = material.gross_weight if material else 0		
+		comment = material.comment if material else ''
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
 
 	for b in buyer_article_numbers_list:
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table

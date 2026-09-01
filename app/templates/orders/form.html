@@ -97,6 +97,9 @@
   {% else %}
   {% endif %}
 </div>
+
+  <span class="comment">{{ 'Comment: ' ~ material_comment if material_comment else '' }}</span>
+
   {% if page == 'split' %}
   <p>{{ form.order_number.label }}<br>{{ form.order_number(size=40) }}</p>
   {% elif page == 'create' %}

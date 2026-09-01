@@ -61,9 +61,11 @@ def create_delivery():
 	next_url = request.args.get('next')
 
 	buyer_article_number = request.args.get("buyer_article_number")
+	material_comment = ''
 	
 	if buyer_article_number:
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
+		material_comment = material.comment
 		article_description = material.short_text if material else '<material_not_found>'
 		plant_name = material.manufacturer if material else '<manufacturer_not_found>'
 	
@@ -98,7 +100,7 @@ def create_delivery():
 		db.session.commit()
 		flash('Delivery created.', 'success')
 		return redirect(next_url or url_for('deliveries.list_deliveries'))
-	return render_template('deliveries/form.html', title="Create new delivery", form=form, action='Create')
+	return render_template('deliveries/form.html', title="Create new delivery", form=form, action='Create', material_comment=material_comment)
 
 @bp.route('/edit/<int:delivery_id>', methods=['GET','POST'])
 def edit_delivery(delivery_id):
