@@ -101,7 +101,7 @@ def create_order():
 		db.session.add(d)
 		db.session.commit()
 		flash('Order created.', 'success')
-		return redirect(next_url or url_for('orders.list_orders'))
+		return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or next_url or url_for('orders.list_orders'))
 
 	return render_template('orders/form.html', title="Create new order", form=form, action='Create', page="create", material_comment=material_comment)
 
@@ -183,7 +183,7 @@ def edit_order(order_id):
 		
 		db.session.commit()
 		flash('Order updated.', 'success')
-		return redirect(next_url or url_for('orders.list_orders'))
+		return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=material.material_code) or next_url or url_for('orders.list_orders'))
 	return render_template('orders/form.html', title="Edit", form=form, action='Edit', order_id=order_id, next_url=next_url, page="edit", assignment_list=assignment_list, tl_list=tl_list, sent_list=sent_list)
 
 @bp.route('/split/<int:order_id>', methods=['GET','POST'])
@@ -222,17 +222,18 @@ def split_order(order_id):
 		db.session.add(d)
 		db.session.commit()
 		flash('Order split.', 'success')
-		return redirect(next_url or url_for('orders.list_orders'))
+		return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=material.material_code) or next_url or url_for('orders.list_orders'))
 	return render_template('orders/form.html', title="Split", form=form, action='Split', page="split")
 
 @bp.route('/delete/<int:order_id>', methods=['GET', 'POST'])
 def delete_order(order_id):
 	next_url = request.args.get('next')
 	o = Order.query.get_or_404(order_id)
+
 	db.session.delete(o)
 	db.session.commit()
 	flash(f'Order {o.order_number}, {o.article_description} deleted.', 'warning')
-	return redirect(next_url or url_for('orders.list_orders'))
+	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=o.buyer_article_number) or next_url or url_for('orders.list_orders'))
 
 @bp.route('/delete_all', methods=['POST'])
 def delete_all_orders():

@@ -80,7 +80,7 @@ def create_assignment(delivery_id, order_id):
 	db.session.commit()
 
 	flash(f"Assignment of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } created.", 'success')
-	return redirect(url_for('assignments.list_assignments'))
+	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or url_for('assignments.list_assignments'))
 
 @bp.route('/edit/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
 def edit_assignment(delivery_id, order_id):
@@ -105,7 +105,7 @@ def edit_assignment(delivery_id, order_id):
 	db.session.commit()
 
 	flash(f"Assignment of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
-	return redirect(url_for('assignments.list_assignments'))
+	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or url_for('assignments.list_assignments'))
 
 @bp.route('/delete/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
 def delete_assignment(delivery_id, order_id):
@@ -119,7 +119,7 @@ def delete_assignment(delivery_id, order_id):
 		db.session.delete(a)
 		db.session.commit()
 		flash(f"Assignment of {a.qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } deleted.", 'danger')
-	return redirect(url_for('assignments.list_assignments'))
+	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or url_for('assignments.list_assignments'))
 
 @bp.route('/delete_all', methods=['POST'])
 def delete_all_assignments():

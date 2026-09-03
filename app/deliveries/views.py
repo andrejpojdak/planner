@@ -99,7 +99,7 @@ def create_delivery():
 		db.session.add(d)
 		db.session.commit()
 		flash('Delivery created.', 'success')
-		return redirect(next_url or url_for('deliveries.list_deliveries'))
+		return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or next_url or url_for('deliveries.list_deliveries'))
 	return render_template('deliveries/form.html', title="Create new delivery", form=form, action='Create', material_comment=material_comment)
 
 @bp.route('/edit/<int:delivery_id>', methods=['GET','POST'])
@@ -150,7 +150,7 @@ def edit_delivery(delivery_id):
 		d.eds = form.eds.data
 		db.session.commit()
 		flash('Delivery updated.', 'success')
-		return redirect(next_url or url_for('deliveries.list_deliveries'))
+		return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or next_url or url_for('deliveries.list_deliveries'))
 	return render_template('deliveries/form.html', title="Edit delivery", form=form, action='Edit', assignment_list=assignment_list)
 
 @bp.route('/delete/<int:delivery_id>', methods=['POST'])
@@ -159,7 +159,7 @@ def delete_delivery(delivery_id):
 	db.session.delete(d)
 	db.session.commit()
 	flash('Delivery deleted.', 'warning')
-	return redirect(url_for('deliveries.list_deliveries'))
+	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or url_for('deliveries.list_deliveries'))
 
 @bp.route('/delete_all', methods=['POST'])
 def delete_all_deliveries():

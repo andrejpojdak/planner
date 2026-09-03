@@ -312,3 +312,9 @@ tr:has(input:checked) {
 	font-style: italic;
 	color: blue;
 }
+tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
+	background-color: purple;
+	color: white;
+	font-style: italic;
+	font-weight: bold;
+}

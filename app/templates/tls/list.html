@@ -106,12 +106,15 @@ function sent_tl() {
 }
 
 const sent_button = document.getElementById("sent-button");
-const checkboxes_unchecked = document.querySelectorAll('input[type="checkbox"]');
-checkboxes_unchecked.forEach(cb => {
-	cb.addEventListener("click", function () {
-		sent_button.style.display = 'block';
-  
-	});
+
+document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => {
+    cb.addEventListener("change", function () {
+        const hasChecked = document.querySelectorAll(
+            'input[type="checkbox"]:checked:not(:disabled)'
+        ).length > 0;
+
+        sent_button.style.display = hasChecked ? 'block' : 'none';
+    });
 });
 
 sent_button.onclick = sent_tl;

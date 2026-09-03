@@ -483,12 +483,13 @@ def list_plans_buyer_article_number(buyer_article_number):
 	short_text = material.short_text if material else ''
 	box_qty = material.box_qty if material else 1
 	gross_weight = material.gross_weight if material else 0
+	comment = material.comment if material else ''
 
 	for d in deliveries:
 		d.article_description = material.short_text if material else '<material_not_found>'
 		d.plant_name = material.manufacturer if material else '<material_not_found>'
 	
-	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict))
+	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
 	return render_template('planning/list.html', title=f"{buyer_article_number} - {short_text} - Planning", buyer_article_numbers_list=buyer_article_numbers_list)
 
 @bp.route('/filter', methods=['GET','POST'])
