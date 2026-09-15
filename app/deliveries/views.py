@@ -376,4 +376,4 @@ def query(buyer_article_number):
 	for d in deliveries:
 		d.article_description = material.short_text if material else '<material_not_found>'
 	
-	return render_template('deliveries/list.html', deliveries=deliveries, title=f"Deliveries {buyer_article_number} {material.short_text}", query=True, buyer_article_number=buyer_article_number)
+	return render_template('deliveries/list.html', deliveries=deliveries, title=f"Deliveries - {material.short_text} - {buyer_article_number}", query=True, buyer_article_number=buyer_article_number)

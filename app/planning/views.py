@@ -451,6 +451,26 @@ def list_plans():
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
 def list_plans_buyer_article_number(buyer_article_number):
+
+	plant_names = [
+		row.plant_name
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.plant_name)
+			.distinct()
+			.order_by(Delivery.plant_name)
+			.all()
+		)
+	]
+
+	today = date.today()
+	current_week = today.isocalendar().week
+	current_year = today.isocalendar().year
+
+	weeks = [
+		f"CW{(current_week + offset):02d}/{str(current_year)[-2:]}"
+		for offset in range(-2, 3)
+	]
 	
 	buyer_article_numbers_list = []
 	assignments_dict = {}
@@ -476,7 +496,7 @@ def list_plans_buyer_article_number(buyer_article_number):
 		else:	
 			assignments_dict[a[0]] = [(a[1], a[2], a[3], a[4])]
 
-	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number, Delivery.sent == None).order_by(Delivery.delivery_schedule_number, Delivery.delivery_schedule_position).all()
+	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_schedule_number, Delivery.delivery_schedule_position).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 	
 	material = Material.query.filter(Material.material_code == buyer_article_number).first()
@@ -487,10 +507,61 @@ def list_plans_buyer_article_number(buyer_article_number):
 
 	for d in deliveries:
 		d.article_description = material.short_text if material else '<material_not_found>'
-		d.plant_name = material.manufacturer if material else '<material_not_found>'
+		#d.plant_name = material.manufacturer if material else '<material_not_found>'
 	
 	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
-	return render_template('planning/list.html', title=f"{buyer_article_number} - {short_text} - Planning", buyer_article_numbers_list=buyer_article_numbers_list)
+
+	for b in buyer_article_numbers_list:
+		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
+		for d in b[0]:
+			for c in d.confirmations:
+				if Assignments.query.filter(Assignments.delivery_id == d.id, Assignments.order_id == c.id, Assignments.sent == True).all():
+					c.sent = True
+		# For filtering purposes, stock order list is turned into en empty Delivery object
+		if len (b[0]) > 0 and len(b[1]) > 0:
+			#breakpoint()
+			for o in b[1][:]:
+				plant_name = b[0][0].plant_name
+				ecv = ''
+				eds = ''
+				delivery_schedule_number = None
+				delivery_schedule_position = None
+				article_description = b[0][0].article_description
+				buyer_article_number = b[0][0].buyer_article_number
+
+				new_delivery = Delivery(
+					plant_name = plant_name,
+					ecv = ecv,
+					eds = eds,
+					delivery_schedule_number = delivery_schedule_number,
+					delivery_schedule_position = delivery_schedule_position,
+					article_description = article_description
+					)
+				new_delivery.original_qty = ''
+				new_delivery.confirmations = []
+				new_delivery.confirmations.append(
+					Confirmations(
+						o.id,
+						o.order_number,
+						o.quantity,
+						o.fob,
+						o.transport,
+						o.eta,
+						'',
+						o.sales_price,
+						o.supplier,
+						'stock',
+						o.ecv,
+						o.eds,
+						o.comment,
+						o.rmb,
+						0
+					)
+				)
+				b[0].append(new_delivery)
+				b[1].remove(o)
+
+	return render_template('planning/list.html', title=f"Planning - {short_text} - {buyer_article_number}", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
 
 @bp.route('/filter', methods=['GET','POST'])
 def filter():

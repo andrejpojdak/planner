@@ -55,7 +55,7 @@ def query(buyer_article_number):
 	for o in orders:
 		o.sap_article_description = material.short_text if material else '<material_not_found>'
 		o.available_quantity = order_available_qty(o.id)
-	return render_template('orders/list.html', title=f"Orders {buyer_article_number} {material.short_text}", orders=orders, query=True, buyer_article_number=buyer_article_number)
+	return render_template('orders/list.html', title=f"Orders - {material.short_text} - {buyer_article_number}", orders=orders, query=True, buyer_article_number=buyer_article_number)
 
 @bp.route('/create', methods=['GET','POST'])
 def create_order():

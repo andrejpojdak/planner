@@ -1,5 +1,5 @@
 from app import create_app
-from flask import Flask, url_for, render_template_string
+from flask import Flask, url_for, render_template_string, redirect
 from dotenv import load_dotenv
 import os
 
@@ -12,13 +12,14 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
 @app.route('/')
 def index():
-	return render_template_string('''
+	'''return render_template_string(
 		<a href="{{ url_for('orders.list_orders') }}">Orders</a><br>
 		<a href="{{ url_for('deliveries.list_deliveries') }}">Deliveries</a><br>
 		<a href="{{ url_for('materials.list_materials') }}">Materials</a><br>
 		<a href="{{ url_for('settings.edit_settings') }}">Settings</a><br>
 		<a href="{{ url_for('planning.list_plans') }}">Planning</a>
-	''')
+	)'''
+	return redirect(url_for('planning.list_plans'))
 
 if __name__ == '__main__':
     app.run(debug=True, host=SERVER_IP)
