@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<div class="menu">
+<div>
 	<div id="flex-left">
     {% if query %}
     <a href="{{ url_for('deliveries.create_delivery', buyer_article_number=buyer_article_number, next=request.full_path) }}">Create new delivery</a>

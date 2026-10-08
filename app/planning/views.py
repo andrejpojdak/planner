@@ -64,9 +64,9 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 		}
 		return fob + timedelta(days=freight_map.get(transport, 0))
 
-	brasil_delta = 63
-	portugal_delta = 14
-
+	brasil_delta = Settings.query.filter_by(key="brasil_delta").first().value
+	portugal_delta = Settings.query.filter_by(key="portugal_delta").first().value
+	
 	for d in deliveries:
 		d.confirmations = []
 		if d.sufficient_quantity:
@@ -322,10 +322,42 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			)
 		)
 
-	return confirmed_deliveries, orders, box_qty, gross_weight, comment
+	delays, to_order_list = analyze_delays(confirmed_deliveries)
+	
+	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list
 
-@bp.route('/', methods=['GET', 'POST'])
-def list_plans():
+def analyze_delays(confirmed_deliveries):
+
+	brasil_delta = Settings.query.filter_by(key="brasil_delta").first().value
+	portugal_delta = Settings.query.filter_by(key="portugal_delta").first().value
+	leadtime = Settings.query.filter_by(key="leadtime").first().value
+	today = date.today()
+	
+	delay_list = []
+	to_order_list = []
+
+	for cd in confirmed_deliveries:
+
+		delta = 0
+		if 'brasil' in str(cd.plant_name).lower():
+			delta = brasil_delta
+		if 'portugal' in str(cd.plant_name).lower():
+			delta = portugal_delta
+		
+		for c in cd.confirmations:
+			if c.id is None and (today + timedelta(days = leadtime + delta)) > cd.delivery_date:
+				to_order_list.append((cd.id, cd.delivery_date))
+			if Assignments.query.filter(Assignments.delivery_id == cd.id, Assignments.order_id == c.id, Assignments.sent == True).all():
+				c.sent = True
+			else:
+				c.sent = False
+			if c.order_confirmed is not None and c.sent is False:
+				if cd.delivery_date < (c.order_confirmed + timedelta(days = delta)):
+					delay_list.append((cd.id, c.id, c.order_qty))
+
+	return delay_list, to_order_list
+
+def all_plans():
 
 	plant_names = [
 		row.plant_name
@@ -397,7 +429,14 @@ def list_plans():
 		
 		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
 
+	overall_delays_list = []
+	overall_new_orders_list = []
+
 	for b in buyer_article_numbers_list:
+		for x in b[5]:
+			overall_delays_list.append(x)
+		for y in b[6]:
+			overall_new_orders_list.append(y)
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
 			for c in d.confirmations:
@@ -447,7 +486,21 @@ def list_plans():
 				b[0].append(new_delivery)
 				b[1].remove(o)
 
+	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list
+
+@bp.route('/', methods=['GET', 'POST'])
+def list_plans():
+
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list = all_plans()
+
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
+
+@bp.route('/dashboard', methods=['GET'])
+def dashboard():
+
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list = all_plans()
+	
+	return render_template('planning/dashboard.html', title="Dashboard", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks, overall_delays_list=overall_delays_list, overall_new_orders_list=overall_new_orders_list)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
 def list_plans_buyer_article_number(buyer_article_number):
@@ -511,7 +564,14 @@ def list_plans_buyer_article_number(buyer_article_number):
 	
 	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
 
+	overall_delays_list = []
+	overall_new_orders_list = []
+
 	for b in buyer_article_numbers_list:
+		for x in b[5]:
+			overall_delays_list.append(x)
+		for y in b[6]:
+			overall_new_orders_list.append(y)
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
 			for c in d.confirmations:
@@ -560,7 +620,7 @@ def list_plans_buyer_article_number(buyer_article_number):
 				)
 				b[0].append(new_delivery)
 				b[1].remove(o)
-
+	
 	return render_template('planning/list.html', title=f"Planning - {short_text} - {buyer_article_number}", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
 
 @bp.route('/filter', methods=['GET','POST'])

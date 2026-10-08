@@ -19,7 +19,7 @@ def index():
 		<a href="{{ url_for('settings.edit_settings') }}">Settings</a><br>
 		<a href="{{ url_for('planning.list_plans') }}">Planning</a>
 	)'''
-	return redirect(url_for('planning.list_plans'))
+	return redirect(url_for('planning.dashboard'))
 
 if __name__ == '__main__':
     app.run(debug=True, host=SERVER_IP)

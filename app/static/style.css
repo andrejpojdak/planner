@@ -1,17 +1,171 @@
 * {
-	font-family: "Shippori Antique", sans-serif;
-	font-weight: 400;
-	font-style: normal;
+	margin: 0 0 0 0;
 }
+body {
+    font-family: "Inter", Arial, sans-serif;
+	font-weight: 500;
+	background-color: #F5F7FA;
+}
+a {
+	text-decoration: none;
+	color: black;
+}
+a:hover {
+	background-color: black;
+	color: white;
+}
+/* Menu */
+
 .menu {
-	display:	flex;
-	justify-content:	space-between;
-	align-items: center;
+	position: relative;
+	top: 0;
+	width: 100%;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    background: #17365d;
+    color: #ffffff;
+    box-sizing: border-box;
+    font-family: Inter, Arial, sans-serif;
+    border-bottom: 1px solid #d9e2ec;
+	gap: 40px;
 }
-#flex-left {
+.menu .logo {
+	font-weight: bold;
+	display: flex;
 	gap: 10px;
-	display:	flex;
 }
+.logo-icon {
+	height: 20px;
+	width: 20px;
+}
+.logo-icon:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+.menu nav {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.menu nav a {
+    position: relative;
+    height: 100%;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    color: #dbe7f5;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+        background 150ms ease,
+        color 150ms ease;
+}
+.menu nav a:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+.menu nav a.active {
+    color: #ffffff;
+    font-weight: 600;
+}
+.menu nav a.active::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 0;
+    height: 6px;
+    background: #3b82f6;
+    border-radius: 3px 3px 0 0;
+}
+.menu .menu-right {
+    margin-left: auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.menu .menu-right {
+    margin-left: auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.menu .menu-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #dbe7f5;
+    cursor: pointer;
+    font-size: 17px;
+    transition:
+        background 150ms ease,
+        color 150ms ease;
+}
+.menu .menu-icon:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+}
+.menu .menu-icon a:hover {
+    background: rgba(255, 255, 255, 0);
+    color: #ffffff;
+}
+.menu .user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-left: 8px;
+    padding: 5px 8px 5px 5px;
+
+    border-radius: 8px;
+
+    color: #ffffff;
+    cursor: pointer;
+
+    transition: background 150ms ease;
+}
+.menu .user:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.menu .user-avatar {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #e8eef7;
+    color: #17365d;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+.menu .user-name {
+    font-size: 13px;
+    font-weight: 500;
+}
+/* Container */
+#main-container {
+	margin: 15px;
+}
+/* Table */
+
 table.assignment_list {
 	width: auto;
 }
@@ -86,14 +240,6 @@ table thead {
 }
 table tbody {
 	font-size: 12px;
-}
-a {
-	text-decoration: none;
-	color: black;
-}
-a:hover {
-	background-color: black;
-	color: white;
 }
 td#apply {
 	text-align: center;
@@ -317,4 +463,40 @@ tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 	color: white;
 	font-style: italic;
 	font-weight: bold;
+}
+.tiles {
+	display: flex;
+	gap: 10px;
+}
+.tile {
+	position: relative;
+	display: flexbox;
+	height: 100px;
+	width: 100px;
+	padding: 20px;
+	font-size:large;
+}
+.tile-red {
+	border: 1px solid rgb(255, 150, 150);
+	background-color: rgb(255, 230, 230);
+}
+.tile-yellow {
+	border: 1px solid lightgray;
+	background-color: rgb(254, 255, 230);
+}
+.count {
+	font-size:x-large;
+}
+.tile-table {
+    border: none;
+    border-collapse: collapse;
+}
+.tile-table th,
+.tile-table td {
+    border: none;
+}
+#switch {
+	position: fixed;
+	top: 0;
+	right: 0;
 }

@@ -57,7 +57,10 @@ def create_app(config=None):
 		data = {
 			"seafreight": 50,
 			"railfreight": 25,
-			"airfreight": 12
+			"airfreight": 12,
+			"brasil_delta":	63,
+			"portugal_delta":	14,
+			"leadtime":	270
 		}
 
 		for k, v in data.items():

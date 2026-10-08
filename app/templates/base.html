@@ -3,17 +3,16 @@
 <head>
 	<title>{% block title %}Bridge-EU{% endblock %}</title>
 	<meta charset="UTF-8">
-	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link id="mainStylesheet" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Shippori+Antique&family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 	<script src="{{ url_for('static', filename='js/color.row.js')  }}"></script>
 	<script src="{{ url_for('static', filename='js/material.fetch.js') }}"></script>
 </head>
 <body>
-
-<h1>{{ title }}</h1>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 	{% if messages %}
@@ -24,18 +23,58 @@
 {% endwith %}
 
 <div class="menu">
-	<p id="flex-left">
-		<a href="{{ url_for('deliveries.list_deliveries') }}">Deliveries</a>|
-		<a href="{{ url_for('orders.list_orders') }}">Orders</a> |
-		<a href="{{ url_for('materials.list_materials') }}">Materials</a> |
-		<a href="{{ url_for('planning.list_plans') }}">Planning</a> |
-		<a href="{{ url_for('settings.edit_settings') }}">Settings</a> |
-		<a href="{{ url_for('assignments.list_assignments') }}">Assignments</a> |
-		<a href="{{ url_for('tls.list_tls') }}">Transport Lists</a> |
-		<a href="{{ url_for('sent.list_sent') }}">Sent</a> |
+	 <div class="logo">
+        <img class="logo-icon" src="{{ url_for('static', filename='img/planner.png') }}"></img>
+        PLANNER
+    </div>
+	<nav id="flex-left">
+		<a href="{{ url_for('planning.dashboard') }}">Dashboard</a>
+		<a href="{{ url_for('deliveries.list_deliveries') }}">Deliveries</a>
+		<a href="{{ url_for('orders.list_orders') }}">Orders</a>
+		<a href="{{ url_for('materials.list_materials') }}">Materials</a>
+		<a href="{{ url_for('planning.list_plans') }}">Planning</a>
+		<a href="{{ url_for('assignments.list_assignments') }}">Assignments</a>
+		<a href="{{ url_for('tls.list_tls') }}">Transport Lists</a>
+		<a href="{{ url_for('sent.list_sent') }}">Sent</a>
 		<a href="{{ url_for('planning.zlpi') }}">ZLPI</a>
-	</p>
+	</nav>
+	<div class="menu-right">
+		<button class="menu-icon">
+			<a href="{{ url_for('settings.edit_settings') }}">
+				<img class="logo-icon" src="{{ url_for('static', filename='img/notification.png') }}"></img>
+			</a>
+		</button>
+		<button class="menu-icon">
+			<a href="{{ url_for('settings.edit_settings') }}">
+		        <img class="logo-icon" src="{{ url_for('static', filename='img/gear.png') }}"></img>
+			</a>
+		</button>
+		<div class="user">
+			<div class="user-avatar">JD</div>
+			<span class="user-name">John Doe</span>
+		</div>
+	</div>
 </div>
-{% block content %}{% endblock %}
+
+<div id="main-container">
+	<div class="title-container">
+		<span class="title-icon">
+			
+		</span>
+		<h2>{{ title }}</h2>
+	</div>
+	{% block content %}{% endblock %}
+</div>
+
+<script>
+
+document.querySelectorAll('.menu nav a').forEach(link => {
+	console.log(link.pathname, window.location.pathname);
+    if (link.pathname === window.location.pathname) {
+        link.classList.add('active');
+    }
+});
+
+</script>
 </body>
 </html>

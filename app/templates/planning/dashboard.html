@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="tiles">
+	<div class="tile tile-red">
+		<table class="tile-table">
+			<tr>
+				<td>
+					<div class="count">&#10071;</div>
+				</td>
+				<td>
+					<div class="count">{{ overall_delays_list|length }}</div>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					{% if overall_delays_list|length == 1 %}
+					delayed<br>order
+					{% else %}
+					delayed<br>orders
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div class="tile tile-yellow">
+		<table class="tile-table">
+			<tr>
+				<td>
+					<div class="count">🛒</div>
+				</td>
+				<td>
+					<div class="count">{{ overall_new_orders_list|length }}</div>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					{% if overall_new_orders_list|length == 1 %}
+					order<br>needed
+					{% else %}
+					orders<br>needed
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+{% endblock %}
