@@ -322,8 +322,8 @@
 	{% for b in buyer_article_numbers_list %}
 			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
 				<td colspan="4"><img class="arrow" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>&nbsp;&nbsp;{{ b[0][0].buyer_article_number }}&nbsp;{{ b[0][0].article_description }}&nbsp;<a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">&#8801;</a></td>
-				<td colspan="1"><span class="error"></span><a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a></td>
-				<td colspan="2"><span class="error"></span><a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a></td>
+				<td colspan="1"><span class="green">&#10004;&nbsp;</span><a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a></td>
+				<td colspan="2"><span class="green">&#10004;&nbsp;</span><a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a></td>
 				{% if b[8] is none %}
 				<td colspan="3"></td>
 				{% elif '%' in b[8] %}
