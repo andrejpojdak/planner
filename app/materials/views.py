@@ -5,7 +5,7 @@ from ..models import Material
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, DecimalField, SubmitField, IntegerField
-from wtforms.validators import DataRequired, Optional, NumberRange
+from wtforms.validators import DataRequired, Optional, NumberRange, Regexp
 from bs4 import BeautifulSoup
 import os
 import re
@@ -17,8 +17,9 @@ class MaterialForm(FlaskForm):
     short_text = StringField('Short text', validators=[DataRequired()])
     gross_weight = DecimalField('Gross weight', validators=[DataRequired(), NumberRange(min=0.000001, message="Gross weight must be greater than 0")], places=3)
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
-    box_qty = IntegerField('Box Qty', validators=[Optional(), NumberRange(min=1)])
+    box_qty = IntegerField('Box Qty', validators=[DataRequired(), NumberRange(min=1)])
     comment = StringField('Comment', validators=[Optional()])
+    safety_stock = StringField('Safety Stock (pcs or % of yearly demand)', validators=[Optional(), Regexp(r'^[1-9]\d*(?:pcs|%)$', message='For safety stock enter a positive integer followed by "pcs" or a percentage, e.g. 100pcs or 25%.')])
     submit = SubmitField('Save')
 
 class ImportForm(FlaskForm):
@@ -87,8 +88,9 @@ def create_material():
     args_short_text=request.args.get('short_text', '')
     args_gross_weight=float(request.args.get('gross_weight', 0))
     args_manufacturer=request.args.get('manufacturer', '')
-    args_box_qty=request.args.get('box_qty', '')
+    args_box_qty = request.args.get('box_qty', type=int)
     args_comment=request.args.get('comment', '')
+    args_safety_stock=request.args.get('safety_stock', '')
   
     form = MaterialForm(
         material_code=args_material_code,
@@ -96,7 +98,8 @@ def create_material():
         gross_weight=args_gross_weight,
         manufacturer=args_manufacturer,
         box_qty=args_box_qty,
-        comment=args_comment
+        comment=args_comment,
+        safety_stock=args_safety_stock
         )
 
     if form.validate_on_submit():
@@ -105,8 +108,9 @@ def create_material():
             short_text=form.short_text.data,
             gross_weight=float(form.gross_weight.data) if form.gross_weight.data is not None else None,
             manufacturer=form.manufacturer.data,
-            box_qty=form.box_qty.data,
-            comment=form.comment.data
+            box_qty=form.box_qty.data if form.box_qty.data else 1,
+            comment=form.comment.data,
+            safety_stock=form.safety_stock.data
             )
         if Material.query.filter(Material.material_code == m.material_code).first():
             flash(f'Material code {m.material_code} already exists.', 'danger')
@@ -137,6 +141,7 @@ def edit_material():
         m.manufacturer = form.manufacturer.data
         m.box_qty = form.box_qty.data
         m.comment = form.comment.data
+        m.safety_stock = form.safety_stock.data
         db.session.commit()
         flash('Material updated.', 'success')
         return redirect(next_url or url_for('materials.list_materials'))
@@ -198,7 +203,9 @@ def import_html():
                          short_text=row['short_text'],
                          gross_weight=row['gross_weight'],
                          manufacturer=manufacturer,
-                         box_qty=1)
+                         box_qty=1,
+                         comment='',
+                         safety_stock='')
 
             db.session.add(m)
             added += 1

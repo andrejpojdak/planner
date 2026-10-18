@@ -17,6 +17,21 @@ from datetime import date
 
 bp = Blueprint('planning', __name__)
 
+class ConfirmedDeliveries():
+
+	def __init__(self, confirmed_deliveries, buyer_article_number, orders, box_qty, gross_weight, comment, delays, to_order_list, safety_stock, safety_stock_string, yearly_demand):
+			self.confirmed_deliveries = confirmed_deliveries
+			self.buyer_article_number = buyer_article_number
+			self.orders = orders
+			self.box_qty = box_qty
+			self.gross_weight = gross_weight
+			self.comment = comment
+			self.delays = delays
+			self.to_order_list = to_order_list
+			self.safety_stock = safety_stock
+			self.safety_stock_string = safety_stock_string
+			self.yearly_demand = yearly_demand
+
 class Confirmations():
 	
 	def __init__(self, id, order_number, order_qty, order_fob, order_transport, order_eta, order_confirmed, order_sales_prices, order_supplier, order_orig_qty, order_ecv, order_eds, order_comment, order_rmb, order_tl):
@@ -49,8 +64,10 @@ def iso_week_range(isoweek_cwMMYY_format):
 
 	return monday, sunday
 
-def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment):
-	
+def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dict):
+
+	import copy
+
 	def compute_eta(fob, transport):
 		
 		s = Settings.query.filter_by(key="seafreight").first()
@@ -63,6 +80,11 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 			"RAIL": r.value
 		}
 		return fob + timedelta(days=freight_map.get(transport, 0))
+	
+	material = Material.query.filter(Material.material_code == buyer_article_number).first()
+	box_qty = material.box_qty if material else 1
+	gross_weight = material.gross_weight if material else 0		
+	comment = material.comment if material else ''
 
 	brasil_delta = Settings.query.filter_by(key="brasil_delta").first().value
 	portugal_delta = Settings.query.filter_by(key="portugal_delta").first().value
@@ -88,6 +110,8 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 	deliveries.sort(key=lambda d: d.delivery_date)
 	orders.sort(key=lambda o: (not o.sales_price, o.in_stock_date is None, o.in_stock_date, o.eta is None, o.eta))
 	confirmed_deliveries = []
+
+	safety_stock, safety_stock_string, yearly_demand_qty, stock_df_html, stock_alert_list = analyze_safety_stock(buyer_article_number, copy.deepcopy(deliveries), copy.deepcopy(orders), brasil_delta, portugal_delta)
 
 	###Start of Assignment
 	if assignments_dict:
@@ -324,7 +348,7 @@ def deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_di
 
 	delays, to_order_list = analyze_delays(confirmed_deliveries)
 	
-	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list
+	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list, safety_stock, safety_stock_string, yearly_demand_qty, stock_df_html, stock_alert_list
 
 def analyze_delays(confirmed_deliveries):
 
@@ -420,14 +444,11 @@ def all_plans():
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
-		box_qty = material.box_qty if material else 1
-		gross_weight = material.gross_weight if material else 0		
-		comment = material.comment if material else ''
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
+		buyer_article_numbers_list.append(deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dict))
 
 	overall_delays_list = []
 	overall_new_orders_list = []
@@ -487,6 +508,164 @@ def all_plans():
 				b[1].remove(o)
 
 	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list
+
+def yearly_demand(deliveries):
+
+	today = date.today()
+	today_plus_365 = today + timedelta(days=365)
+
+	yearly_demand_qty = sum(
+		delivery.delivery_quantity
+		for delivery in deliveries
+		if today <= delivery.delivery_date <= today_plus_365
+	)
+	
+	return yearly_demand_qty
+
+def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta, portugal_delta):
+	
+	import pandas as pd
+
+	class Stock():
+
+		def __init__(self, safety_stock_qty, safety_stock_string, yearly_demand_qty, stock_df_html, stock_alert_list):
+			
+			self.safety_stock_qty = safety_stock_qty
+			self.safety_stock_string = safety_stock_string
+			self.yearly_demand_qty = yearly_demand_qty
+			self.stock_df_html = stock_df_html
+			self.stock_alert_list = stock_alert_list
+
+	def get_order_available_qty_excluding_sent(order_id):
+		assignment_list = Assignments.query.filter(Assignments.order_id == order_id, Assignments.sent == True).all()
+		sum_of_assignment_list = sum(a.qty for a in assignment_list)
+		order_qty = Order.query.filter(Order.id == order_id).first().quantity
+		return order_qty - sum_of_assignment_list
+	
+	safety_stock_string = Material.query.filter(Material.material_code == buyer_article_number).first().safety_stock
+
+	if '%' in safety_stock_string:
+
+		safety_stock_perc = int(safety_stock_string.removesuffix("%")) / 100
+		yearly_demand_qty = yearly_demand(deliveries)
+		safety_stock = yearly_demand_qty * safety_stock_perc
+
+		stock_obj = Stock(
+			int(safety_stock),
+			safety_stock_string,
+			yearly_demand_qty,
+			None,
+			[]
+		)
+	
+	elif 'pcs' in safety_stock_string:
+
+		safety_stock = int(safety_stock_string.removesuffix("pcs"))
+		yearly_demand_qty = yearly_demand(deliveries)
+
+		stock_obj = Stock(
+			int(safety_stock),
+			safety_stock_string,
+			yearly_demand_qty,
+			None,
+			[]
+		)
+	else:
+		return None, None, None, None, None
+	
+	stock_orders = []
+	remaining_orders = []
+	remaining_deliveries = []
+	stock_analyze_list = []
+
+	for o in orders[:]:
+		o.available_quantity_excluding_sent = get_order_available_qty_excluding_sent(o.id)
+		if o.available_quantity_excluding_sent > 0 and o.sales_price:
+			stock_orders.append(o)
+		if o.available_quantity_excluding_sent > 0 and not o.sales_price and o.eta:
+			remaining_orders.append(o)
+
+	current_stock_qty = sum(so.available_quantity_excluding_sent for so in stock_orders)
+
+	for d in deliveries:
+		if d.sent is not True:
+			remaining_deliveries.append(d)
+
+	stock_analyze_list = remaining_orders + remaining_deliveries
+	stock_analyze_list = sorted(
+		stock_analyze_list,
+		key=lambda obj: obj.delivery_date if isinstance(obj, Delivery) else obj.eta
+	)
+
+	stock_df = pd.DataFrame(columns=['SO/PO', '+/-', 'Date', 'Stock', 'Alert'])
+	stock_df.loc[len(stock_df)] = {
+		'SO/PO': 'Current stock',
+		'+/-': '',
+		'Date': '',
+		'Stock': current_stock_qty,
+		'Alert': ''
+	}
+
+	for i in stock_analyze_list:
+		if isinstance(i, Delivery):
+
+			delta = 0
+			if 'brasil' in str(d.plant_name).lower():
+				delta = brasil_delta
+			if 'portugal' in str(d.plant_name).lower():
+				delta = portugal_delta
+			i.delivery_date = i.delivery_date - timedelta(days = delta)
+			
+			current_stock_qty = current_stock_qty - i.delivery_quantity
+
+			if current_stock_qty < stock_obj.safety_stock_qty:
+				
+				stock_obj.stock_alert_list.append(( i.delivery_date, current_stock_qty - stock_obj.safety_stock_qty ))
+				
+				stock_df.loc[len(stock_df)] = {
+					'SO/PO': f'{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}',
+					'+/-': f'-{i.delivery_quantity}',
+					'Date': i.delivery_date,
+					'Stock': current_stock_qty,
+					'Alert': current_stock_qty - stock_obj.safety_stock_qty
+				}
+
+			else:
+
+				stock_df.loc[len(stock_df)] = {
+					'SO/PO': f'{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}',
+					'+/-': f'-{i.delivery_quantity}',
+					'Date': i.delivery_date,
+					'Stock': current_stock_qty,
+					'Alert': ''
+				}
+		else:
+
+			current_stock_qty = current_stock_qty + i.available_quantity_excluding_sent
+			
+			if current_stock_qty < stock_obj.safety_stock_qty:
+				
+				stock_obj.stock_alert_list.append(( i.delivery_date, current_stock_qty - stock_obj.safety_stock_qty ))
+			
+				stock_df.loc[len(stock_df)] = {
+					'SO/PO': f'{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}',
+					'+/-': f'-{i.delivery_quantity}',
+					'Date': i.delivery_date,
+					'Stock': current_stock_qty,
+					'Alert': current_stock_qty - stock_obj.safety_stock_qty
+				}
+			else:
+				stock_df.loc[len(stock_df)] = {
+					'SO/PO': i.order_number,
+					'+/-': f'+{i.available_quantity_excluding_sent}',
+					'Date': i.eta,
+					'Stock': current_stock_qty,
+					'Alert': ''
+				}
+	stock_df["Date"] = pd.to_datetime(stock_df["Date"]).dt.strftime("%d.%m.%Y").fillna("")
+	stock_obj.stock_df_html = stock_df.to_html(index=False).replace('class="dataframe"', f'class="stock-df"')
+	
+	return stock_obj.safety_stock_qty, stock_obj.safety_stock_string, stock_obj.yearly_demand_qty, stock_obj.stock_df_html, stock_obj.stock_alert_list, 
 
 @bp.route('/', methods=['GET', 'POST'])
 def list_plans():
@@ -554,15 +733,11 @@ def list_plans_buyer_article_number(buyer_article_number):
 	
 	material = Material.query.filter(Material.material_code == buyer_article_number).first()
 	short_text = material.short_text if material else ''
-	box_qty = material.box_qty if material else 1
-	gross_weight = material.gross_weight if material else 0
-	comment = material.comment if material else ''
-
 	for d in deliveries:
 		d.article_description = material.short_text if material else '<material_not_found>'
 		#d.plant_name = material.manufacturer if material else '<material_not_found>'
 	
-	buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
+	buyer_article_numbers_list.append(deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dict))
 
 	overall_delays_list = []
 	overall_new_orders_list = []
@@ -693,14 +868,11 @@ def filter():
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
-		box_qty = material.box_qty if material else 1
-		gross_weight = material.gross_weight if material else 0		
-		comment = material.comment if material else ''
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
+		buyer_article_numbers_list.append(deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dict))
 
 	filtered_list = []
 	for b in buyer_article_numbers_list:
@@ -804,7 +976,7 @@ def filter():
 		]
 		
 		if len(result) > 0:
-			filtered_list.append((result, b[1], b[2], b[3], b[4]))
+			filtered_list.append((result, b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9]))
 		
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, filters=filters, plant_names=plant_names, weeks=weeks)
 
@@ -852,14 +1024,11 @@ def zlpi():
 		orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.buyer_article_number).all()
 
 		material = Material.query.filter(Material.material_code == buyer_article_number).first()
-		box_qty = material.box_qty if material else 1
-		gross_weight = material.gross_weight if material else 0		
-		comment = material.comment if material else ''
 		for d in deliveries:
 			d.article_description = material.short_text if material else '<material_not_found>'
 			#d.plant_name = material.manufacturer if material else '<material_not_found>'
 		
-		buyer_article_numbers_list.append(deliveries_confirm(deliveries, orders, box_qty, gross_weight, assignments_dict, comment))
+		buyer_article_numbers_list.append(deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dict))
 
 	for b in buyer_article_numbers_list:
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table

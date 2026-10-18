@@ -55,7 +55,7 @@ def edit_settings():
 		l.value = form.leadtime.data
 
 		db.session.commit()
-		return redirect(url_for('settings.edit_settings'))
+		return redirect(url_for('planning.dashboard'))
 
 	# GET request → populate form
 	form.seafreight.data = s.value

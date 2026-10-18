@@ -35,6 +35,8 @@
 	</select>
 	</div>
 
+	<span id="collapse">- Collapse all</span>
+	
 	<input id="tl-name" placeholder="Enter TL name">
 	</input>
 	<button id="create-tl-button">
@@ -319,9 +321,44 @@
     <tbody>
 	{% for b in buyer_article_numbers_list %}
 			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
-				<td colspan="10"><a href="{{ url_for('planning.list_plans_buyer_article_number', buyer_article_number=b[0][0].buyer_article_number) }}">{{ b[0][0].buyer_article_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[0][0].article_description }}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">{{ b[4] if b[4] else ''}}</span></td>
-				<td colspan="3"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }} pcs/box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ b[3] }} kg/pc</a></td>
-				<td colspan="11"></td>
+				<td colspan="4"><img class="arrow" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>&nbsp;&nbsp;{{ b[0][0].buyer_article_number }}&nbsp;{{ b[0][0].article_description }}&nbsp;<a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">&#8801;</a></td>
+				<td colspan="1"><span class="error"></span><a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a></td>
+				<td colspan="2"><span class="error"></span><a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a></td>
+				{% if b[8] is none %}
+				<td colspan="3"></td>
+				{% elif '%' in b[8] %}
+				<td colspan="3">
+					{% if b[11]|length  > 0 %}
+					<span class="error">&#10006;&nbsp;</span>
+					{% else %}
+					<span class="green">&#10004;&nbsp;</span>
+					{% endif %}
+					<a href="#" onclick="document.getElementById('stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Safety Stock {{ b[7] }}pcs ({{ b[8] }} of {{ b[9] }}pcs)</a>
+					<div class="stock-table"  id="stock-df-{{ b[0][0].buyer_article_number }}">
+						{{ b[0][0].buyer_article_number }}
+						{{ b[0][0].article_description }}
+						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.stock-table').style.display = 'none'">x</span><br><br>
+						{{b[10]|safe}}
+					</div>
+				</td>
+				{% else %}
+				<td colspan="3">
+					{% if b[11]|length  > 0 %}
+					<span class="error">&#10006;&nbsp;</span>
+					{% else %}
+					<span class="green">&#10004;&nbsp;</span>
+					{% endif %}
+					<a href="#" onclick="document.getElementById('stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Safety Stock {{ b[7] }}pcs (of {{ b[9] }}pcs)</a>
+					<div class="stock-table" id="stock-df-{{ b[0][0].buyer_article_number }}"> 
+						{{ b[0][0].buyer_article_number }}
+						{{ b[0][0].article_description }}
+						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.stock-table').style.display = 'none'">x</span><br><br>
+						{{b[10]|safe}}
+					</div>
+				</td>
+				{% endif %}
+				<td colspan="4"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }}pcs/box&nbsp;{{ b[3] }}kg/pc</a></td>
+				<td colspan="10"><span class="comment">{{ b[4] if b[4] else ''}}</span></td>
 			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}
@@ -687,7 +724,7 @@ document.querySelectorAll('#planning tbody tr:not([data-sent="True"]):not(.statu
   }
 });
 
-colorRows(document.querySelectorAll("tbody tr:not(.status)"), 5);
+colorRows(document.querySelectorAll("table.dataframe tbody tr:not(.status)"), 5);
 
 document.querySelectorAll(".quickfilter").forEach(el => {
     el.addEventListener("change", function () {
@@ -790,5 +827,20 @@ document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb =>
 
 create_tl_button.onclick = create_tl;
 
+
+const collapse_button = document.getElementById("collapse");
+let collapsed = false;
+
+collapse_button.addEventListener("click", function () {
+    const rows = document.querySelectorAll("table#planning > tbody > tr:not(.status)");
+
+    collapsed = !collapsed;
+
+    rows.forEach(row => {
+        row.style.display = collapsed ? "none" : "";
+    });
+
+    collapse_button.textContent = collapsed ? "+ Expand all" : "− Collapse all";
+});
 </script>
 {% endblock %}

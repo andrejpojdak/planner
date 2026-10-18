@@ -19,7 +19,7 @@ a:hover {
 .menu {
 	position: relative;
 	top: 0;
-	width: 100%;
+	width: 100vw;
     height: 58px;
     display: flex;
     align-items: center;
@@ -171,7 +171,8 @@ table.assignment_list {
 }
 table.assignment_list td {
 	color: blue;
-}table {
+}
+table {
 	border-collapse: collapse;
 	width:100%;
 	table-layout: auto;
@@ -251,12 +252,17 @@ tr:has(.actions:hover) {
 	background-color: lightgray;
 }
 .flash {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	position: fixed;
+	bottom: 20px;
+	left: 10px;
+	width: 96%;
 	padding: 12px 16px;
-	margin: 10px 0;
 	border-radius: 6px;
 	font-family: system-ui, sans-serif;
 	font-size: 15px;
 	font-weight: 500;
+	z-index: 999;
 }
 .success {
 	background-color: #e6ffed;
@@ -499,4 +505,45 @@ tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 	position: fixed;
 	top: 0;
 	right: 0;
+}
+.error {
+	color: red;
+}
+.green {
+	color: green;
+}
+.arrow {
+	height: 12px;
+    display: inline-block;
+    transform-origin: center center;
+}
+#collapse {
+	color: grey;
+	font-size: small;
+    cursor: pointer;
+}
+#collapse:hover {
+	color: black;
+}
+.stock-table {
+	display: none;
+	position: fixed;
+	top: 200px;
+	left: 100px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	background-color: white;
+	padding: 20px;
+	z-index: 999;
+}
+table.stock-df > tbody > tr > td:nth-child(4)  {
+	text-align: right;
+	font-weight: bold;
+}
+table.stock-df > tbody > tr > td:nth-child(2)  {
+	text-align: right;
+}
+table.stock-df > tbody > tr > td:nth-child(5)  {
+	text-align: right;
+	color: red;
+	font-weight: bold;
 }

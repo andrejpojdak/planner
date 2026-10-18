@@ -75,6 +75,30 @@
           <input name="box_qty" placeholder=" " class="filter narrow" value=""></input>
           {% endif %}
         </th>
+        <th>Comment
+          <br>
+          {% if filters %}
+            {% if filters.get('box_qty') %}
+            <input name="comment" class="filter narrow" value="{{ filters.get('comment') }}"></input>
+            {% else %}          
+            <input name="comment" placeholder=" " class="filter narrow" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="comment" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        </th>
+        <th>Safety Stock
+          <br>
+          {% if filters %}
+            {% if filters.get('box_qty') %}
+            <input name="safety_stock" class="filter narrow" value="{{ filters.get('safety_stock') }}"></input>
+            {% else %}          
+            <input name="safety_stock" placeholder=" " class="filter narrow" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="safety_stock" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        </th>
         <th>Actions
           <br>
           <input class="filter verynarrow" placeholder=" " disabled>
@@ -88,6 +112,8 @@
         <td>{{ ('%.3f'|format(m.gross_weight)).replace('.', ',') if m.gross_weight is not none else '' }}</td>
         <td>{{ m.manufacturer }}</td>
         <td>{{ m.box_qty }}</td>
+        <td>{{ m.comment }}</td>
+        <td>{{ m.safety_stock }}</td>
         <td class="actions"><a href="{{ url_for('materials.edit_material', id=m.id) }}">Edit</a>
           <form method="post" action="{{ url_for('materials.delete_material', id=m.id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form></td>
       </tr>
