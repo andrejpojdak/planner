@@ -623,7 +623,7 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 				stock_obj.stock_alert_list.append(( i.delivery_date, current_stock_qty - stock_obj.safety_stock_qty ))
 				
 				stock_df.loc[len(stock_df)] = {
-					'SO/PO': f'{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}',
+					'SO/PO': f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
 					'+/-': f'-{i.delivery_quantity}',
 					'Date': i.delivery_date,
 					'Stock': current_stock_qty,
@@ -633,7 +633,7 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 			else:
 
 				stock_df.loc[len(stock_df)] = {
-					'SO/PO': f'{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}',
+					'SO/PO': f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
 					'+/-': f'-{i.delivery_quantity}',
 					'Date': i.delivery_date,
 					'Stock': current_stock_qty,
@@ -648,7 +648,7 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 				stock_obj.stock_alert_list.append(( i.delivery_date, current_stock_qty - stock_obj.safety_stock_qty ))
 			
 				stock_df.loc[len(stock_df)] = {
-					'SO/PO': f'{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}',
+					'SO/PO': f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
 					'+/-': f'-{i.delivery_quantity}',
 					'Date': i.delivery_date,
 					'Stock': current_stock_qty,
@@ -976,7 +976,7 @@ def filter():
 		]
 		
 		if len(result) > 0:
-			filtered_list.append((result, b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9]))
+			filtered_list.append((result, b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11]))
 		
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, filters=filters, plant_names=plant_names, weeks=weeks)
 
