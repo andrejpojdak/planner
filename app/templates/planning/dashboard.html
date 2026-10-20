@@ -3,50 +3,113 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+
+<br>
 <div class="tiles">
-	<div class="tile tile-red">
-		<table class="tile-table">
-			<tr>
-				<td>
-					<div class="count">&#10071;</div>
-				</td>
-				<td>
-					<div class="count">{{ overall_delays_list|length }}</div>
-				</td>
-			</tr>
-			<tr>
-				<td></td>
-				<td>
-					{% if overall_delays_list|length == 1 %}
-					delayed<br>order
-					{% else %}
-					delayed<br>orders
-					{% endif %}
-				</td>
-			</tr>
-		</table>
+
+	{% if overall_delays_list|length == 0 %}
+	<div class="tile">
+		<h4>Delayed Orders</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No delayed orders.</span>
+		</div>
 	</div>
-	<div class="tile tile-yellow">
-		<table class="tile-table">
-			<tr>
-				<td>
-					<div class="count">🛒</div>
-				</td>
-				<td>
-					<div class="count">{{ overall_new_orders_list|length }}</div>
-				</td>
-			</tr>
-			<tr>
-				<td></td>
-				<td>
-					{% if overall_new_orders_list|length == 1 %}
-					order<br>needed
-					{% else %}
-					orders<br>needed
-					{% endif %}
-				</td>
-			</tr>
-		</table>
+	{% else %}
+	<a href="#" class="tile-link">
+		<div class="tile" >
+			<h4>Delayed Orders</h4>
+			<br>
+			<div class="count right">
+				<h2 class="error">!<span class="black">&nbsp;{{ overall_delays_list|length }}</h2>
+			</div>
+		</div>
+	</a>
+	{% endif %}
+
+	{% if overall_new_orders_list|length == 0 %}
+	<div class="tile">
+		<h4>Orders Needed</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No orders needed.</span>
+		</div>
 	</div>
+	{% else %}
+	<a href="#" class="tile-link">
+		<div class="tile" >
+			<h4>Orders Needed</h4>
+			<br>
+			<div class="count right">
+				<h2 class="error">&#x1F6D2;<span class="black">&nbsp;{{ overall_new_orders_list|length }}</h2>
+			</div>
+		</div>
+	</a>
+	{% endif %}
+
+	{% if overall_new_orders_list|length == 0 %}
+	<div class="tile">
+		<h4>Safety Stock</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No safety stock alerts.</span>
+		</div>
+	</div>
+	{% else %}
+	<a href="#" class="tile-link">
+		<div class="tile" >
+			<h4>Safety Stock</h4>
+			<br>
+			<div class="count right">
+				<h2 class="orange">&#8615;<span class="black">&nbsp;{{ overall_new_orders_list|length }}</h2>
+			</div>
+		</div>
+	</a>
+	{% endif %}
+
+	{% if overall_new_orders_list|length == 0 %}
+	<div class="tile">
+		<h4>Overstock</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No overstock alerts.</span>
+		</div>
+	</div>
+	{% else %}
+	<a href="#" class="tile-link">
+		<div class="tile" >
+			<h4>Overstock</h4>
+			<br>
+			<div class="count right">
+				<h2 class="blue">&#8613;<span class="black">&nbsp;{{ overall_new_orders_list|length }}</h2>
+			</div>
+		</div>
+	</a>
+	{% endif %}
+</div>
+
+{% if overall_delays_list|length != 0 %}
+<div id="delayed" class="lists">
+	<h3>Delayed Orders</h3>
+	<br>
+	{{ overall_delays_list_df|safe }}
+</div>
+{% endif %}
+
+{% if overall_new_orders_list|length != 0 %}
+<div id="new" class="lists">
+	<h3>Orders Needed</h3>
+	<br>
+	{{ overall_new_orders_list_df|safe }}
+</div>
+{% endif %}
+
+<div id="delayed" class="lists">
+	<h3>Safety Stock</h3>
+	<br>
+</div>
+<div id="delayed" class="lists">
+	<h3>Overstock</h3>
+	<br>
 </div>
 {% endblock %}

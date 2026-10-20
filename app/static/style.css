@@ -470,6 +470,24 @@ tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 	font-style: italic;
 	font-weight: bold;
 }
+.lists {
+	background-color: white;
+	border: 1px solid lightgray;
+	margin-top: 15px;
+	padding: 20px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+table.delayed-df > tbody > tr > td:nth-child(9) {
+	color: red;
+	font-weight: bold;
+}
+table.dashboard > tbody > tr > td:last-child {
+	font-size: large;
+	width: 30px;
+}
+table.dashboard > tbody > tr:has(> td:hover) {
+    background-color: whitesmoke;
+}
 .tiles {
 	display: flex;
 	gap: 10px;
@@ -477,34 +495,51 @@ tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 .tile {
 	position: relative;
 	display: flexbox;
-	height: 100px;
-	width: 100px;
+	height: 180px;
+	width: 180px;
 	padding: 20px;
 	font-size:large;
-}
-.tile-red {
-	border: 1px solid rgb(255, 150, 150);
-	background-color: rgb(255, 230, 230);
-}
-.tile-yellow {
 	border: 1px solid lightgray;
-	background-color: rgb(254, 255, 230);
+	background-color: white;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.tile-link:hover > div.tile {
+	color: black;
+	background-color: whitesmoke;
 }
 .count {
 	font-size:x-large;
+	padding-top: 15px;
 }
-.tile-table {
-    border: none;
-    border-collapse: collapse;
+.tile-text {
+	font-size: 15px;
 }
 .tile-table th,
 .tile-table td {
     border: none;
 }
+h4 {
+	padding: 10px;
+	border-bottom: 1px solid lightgray;
+}
 #switch {
 	position: fixed;
 	top: 0;
 	right: 0;
+}
+.right {
+	float: right;
+	padding-right: 35px;
+}
+.black {
+	color: black;
+	font-weight: normal;
+}
+.orange {
+	color: orange;
+}
+.blue {
+	color: blue;
 }
 .error {
 	color: red;

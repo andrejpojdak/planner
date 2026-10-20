@@ -108,7 +108,11 @@ def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dic
 			o.eta = eta
 	
 	deliveries.sort(key=lambda d: d.delivery_date)
-	orders.sort(key=lambda o: (not o.sales_price, o.in_stock_date is None, o.in_stock_date, o.eta is None, o.eta))
+	orders.sort(key=lambda o: (
+		not o.sales_price,
+		o.eta is None,
+		o.eta
+	))
 	confirmed_deliveries = []
 
 	safety_stock, safety_stock_string, yearly_demand_qty_safety_stock, stock_df_html, stock_alert_list = analyze_safety_stock(buyer_article_number, copy.deepcopy(deliveries), copy.deepcopy(orders), brasil_delta, portugal_delta)
@@ -343,7 +347,8 @@ def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dic
 		d.confirmations.sort(
 			key=lambda c: (
 				c.order_sales_price is None,
-				c.order_sales_price if c.order_sales_price is not None else 0
+				c.order_eta is None,
+				c.order_eta
 			)
 		)
 
@@ -371,14 +376,14 @@ def analyze_delays(confirmed_deliveries):
 		
 		for c in cd.confirmations:
 			if c.id is None and (today + timedelta(days = leadtime + delta)) > cd.delivery_date:
-				to_order_list.append((cd.id, cd.delivery_date))
+				to_order_list.append((cd.buyer_article_number, cd.plant_name, f"{cd.delivery_schedule_number.lstrip('0')}-{cd.delivery_schedule_position}", cd.article_description, cd.delivery_date))
 			if Assignments.query.filter(Assignments.delivery_id == cd.id, Assignments.order_id == c.id, Assignments.sent == True).all():
 				c.sent = True
 			else:
 				c.sent = False
 			if c.order_confirmed is not None and c.sent is False:
 				if cd.delivery_date < (c.order_confirmed + timedelta(days = delta)):
-					delay_list.append((cd.id, c.id, c.order_qty))
+					delay_list.append((cd.buyer_article_number, cd.plant_name, f"{cd.delivery_schedule_number.lstrip('0')}-{cd.delivery_schedule_position}", cd.article_description, cd.original_qty, c.order_supplier, c.order_number, c.order_qty, ((c.order_confirmed + timedelta(days = delta)) - cd.delivery_date).days))
 
 	return delay_list, to_order_list
 
@@ -453,12 +458,22 @@ def all_plans():
 
 	overall_delays_list = []
 	overall_new_orders_list = []
+	overall_safety_stock_list = []
+	overall_over_stock_list = []
 
 	for b in buyer_article_numbers_list:
+
 		for x in b[5]:
 			overall_delays_list.append(x)
 		for y in b[6]:
 			overall_new_orders_list.append(y)
+		if b[11]:
+			for p in b[11]:
+				overall_safety_stock_list.append(p)
+		if b[16]:
+			for q in b[16]:
+				overall_over_stock_list.append(q)
+
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
 			for c in d.confirmations:
@@ -508,7 +523,7 @@ def all_plans():
 				b[0].append(new_delivery)
 				b[1].remove(o)
 
-	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list
+	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list
 
 def yearly_demand(deliveries):
 
@@ -839,16 +854,97 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 @bp.route('/', methods=['GET', 'POST'])
 def list_plans():
 
-	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list = all_plans()
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list = all_plans()
 
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
 
 @bp.route('/dashboard', methods=['GET'])
 def dashboard():
 
-	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list = all_plans()
+	import pandas as pd
+
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list = all_plans()
+	print(overall_safety_stock_list)
+	print(overall_over_stock_list)
+	#Delays
+	overall_delays_list_df = pd.DataFrame(columns=[
+		'Plant Name',
+		'SO Number',
+		'SAP Article Description',
+		'Req. Qty',
+		'Conf. Qty',
+		'Supplier',
+		'PO No.',
+		'Conf. Qty',
+		'Delay',
+		''
+	])
+
+	overall_delays_list.sort(key=lambda x: x[8], reverse=True) 
+
+	for odl in overall_delays_list:
+
+		from html import escape
+		
+		url = url_for('planning.list_plans', _anchor=str(odl[0]))
+		url_link = f'<a href="{escape(url, quote=True)}" title="View plan">&#128065;</a>'
+		
+		overall_delays_list_df.loc[len(overall_delays_list_df)] = {
+			'Plant Name':	odl[1],
+			'SO Number'	:	odl[2],
+			'SAP Article Description':	odl[3],
+			'Req. Qty'	:	odl[4],
+			'Supplier'	:	odl[5],
+			'PO No.'	:	odl[6],
+			'Conf. Qty'	:	odl[7],
+			'Delay'		:	f"{odl[8]} days",
+			''			:	url_link
+		}
 	
-	return render_template('planning/dashboard.html', title="Dashboard", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks, overall_delays_list=overall_delays_list, overall_new_orders_list=overall_new_orders_list)
+	overall_delays_list_df = overall_delays_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="delayed-df dashboard"')
+
+	#New orders
+	overall_new_orders_list_df = pd.DataFrame(columns=[
+			'Plant Name',
+			'SO Number',
+			'SAP Article Description',
+			'Req. Date',
+			''
+		])
+
+	#Only unique materials
+	overall_new_orders_list = list({row[0]: row for row in reversed(overall_new_orders_list)}.values())[::-1]
+	
+	overall_new_orders_list.sort(key=lambda x: x[4], reverse=False) 
+
+	for onol in overall_new_orders_list:
+
+		from html import escape
+		
+		url = url_for('planning.list_plans', _anchor=str(onol[0]))
+		url_link = f'<a href="{escape(url, quote=True)}" title="View plan">&#128065;</a>'
+		
+		overall_new_orders_list_df.loc[len(overall_new_orders_list_df)] = {
+			'Plant Name':	onol[1],
+			'SO Number'	:	onol[2],
+			'SAP Article Description':	onol[3],
+			'Req. Date'	:	f'{onol[4].strftime("%d.%m.%Y")} ({onol[4].strftime("%B %Y")})',
+			''			:	url_link
+		}
+
+	overall_new_orders_list_df = overall_new_orders_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="new-orders-df dashboard"')
+
+	return render_template(
+		'planning/dashboard.html',
+		title="Dashboard",
+		buyer_article_numbers_list=buyer_article_numbers_list,
+		plant_names=plant_names,
+		weeks=weeks,
+		overall_delays_list=overall_delays_list,
+		overall_delays_list_df=overall_delays_list_df,
+		overall_new_orders_list=overall_new_orders_list,
+		overall_new_orders_list_df=overall_new_orders_list_df
+	)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
 def list_plans_buyer_article_number(buyer_article_number):
