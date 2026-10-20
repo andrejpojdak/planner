@@ -469,10 +469,10 @@ def all_plans():
 			overall_new_orders_list.append(y)
 		if b[11]:
 			for p in b[11]:
-				overall_safety_stock_list.append(p)
+				overall_safety_stock_list.append((b[0][0].buyer_article_number, b[0][0].plant_name, b[0][0].article_description, p[0], p[1]))
 		if b[16]:
 			for q in b[16]:
-				overall_over_stock_list.append(q)
+				overall_over_stock_list.append((b[0][0].buyer_article_number, b[0][0].plant_name, b[0][0].article_description, q[0], q[1]))
 
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
@@ -787,7 +787,7 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 		}
 	
 	else:
-		over_stock_obj.over_stock_alert_list.append(( date.today(), over_stock_obj.over_stock_qty - current_stock_qty ))
+		over_stock_obj.over_stock_alert_list.append(( date.today(), current_stock_qty - over_stock_obj.over_stock_qty ))
 
 		over_stock_df.loc[len(over_stock_df)] = {
 			'SO/PO': 'Current stock',
@@ -804,7 +804,7 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 
 			if current_stock_qty > over_stock_obj.over_stock_qty:
 				
-				over_stock_obj.over_stock_alert_list.append(( i.delivery_date, over_stock_obj.over_stock_qty - current_stock_qty ))
+				over_stock_obj.over_stock_alert_list.append(( i.delivery_date, current_stock_qty - over_stock_obj.over_stock_qty ))
 				
 				over_stock_df.loc[len(over_stock_df)] = {
 					'SO/PO': f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
@@ -829,7 +829,7 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 			
 			if current_stock_qty > over_stock_obj.over_stock_qty:
 				
-				over_stock_obj.over_stock_alert_list.append(( i.available_quantity_excluding_sent, over_stock_obj.over_stock_qty - current_stock_qty ))
+				over_stock_obj.over_stock_alert_list.append(( i.eta, current_stock_qty - over_stock_obj.over_stock_qty ))
 			
 				over_stock_df.loc[len(over_stock_df)] = {
 					'SO/PO': i.order_number,
@@ -864,8 +864,7 @@ def dashboard():
 	import pandas as pd
 
 	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list = all_plans()
-	print(overall_safety_stock_list)
-	print(overall_over_stock_list)
+
 	#Delays
 	overall_delays_list_df = pd.DataFrame(columns=[
 		'Plant Name',
@@ -912,7 +911,7 @@ def dashboard():
 			''
 		])
 
-	#Only unique materials
+	###Only unique materials
 	overall_new_orders_list = list({row[0]: row for row in reversed(overall_new_orders_list)}.values())[::-1]
 	
 	overall_new_orders_list.sort(key=lambda x: x[4], reverse=False) 
@@ -934,6 +933,62 @@ def dashboard():
 
 	overall_new_orders_list_df = overall_new_orders_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="new-orders-df dashboard"')
 
+	#Safety stock
+	overall_safety_stock_list_df = pd.DataFrame(columns=[
+			'Plant Name',
+			'SAP Article Description',
+			'Date',
+			'Qty',
+			''
+		])
+
+	overall_safety_stock_list.sort(key=lambda x: x[4], reverse=False) 
+
+	for ossl in overall_safety_stock_list:
+	
+			from html import escape
+			
+			url = url_for('planning.list_plans', _anchor=str(ossl[0]))
+			url_link = f'<a href="{escape(url, quote=True)}" title="View plan">&#128065;</a>'
+			
+			overall_safety_stock_list_df.loc[len(overall_safety_stock_list_df)] = {
+				'Plant Name':	ossl[1],
+				'SAP Article Description'	:	ossl[2],
+				'Date'	:	f'{ossl[3].strftime("%d.%m.%Y")} ({ossl[3].strftime("%B %Y")})',
+				'Qty'	:	ossl[4],
+				''			:	url_link
+			}
+
+	overall_safety_stock_list_df = overall_safety_stock_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="safetystock-df dashboard"')
+
+	#Over stock
+	overall_over_stock_list_df = pd.DataFrame(columns=[
+			'Plant Name',
+			'SAP Article Description',
+			'Date',
+			'Qty',
+			''
+		])
+
+	overall_over_stock_list.sort(key=lambda x: x[4], reverse=True) 
+
+	for oosl in overall_over_stock_list:
+	
+			from html import escape
+			
+			url = url_for('planning.list_plans', _anchor=str(oosl[0]))
+			url_link = f'<a href="{escape(url, quote=True)}" title="View plan">&#128065;</a>'
+			
+			overall_over_stock_list_df.loc[len(overall_over_stock_list_df)] = {
+				'Plant Name':	oosl[1],
+				'SAP Article Description'	:	oosl[2],
+				'Date'	:	f'{oosl[3].strftime("%d.%m.%Y")} ({oosl[3].strftime("%B %Y")})',
+				'Qty'	:	oosl[4],
+				''			:	url_link
+			}
+
+	overall_over_stock_list_df = overall_over_stock_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="overstock-df dashboard"')
+
 	return render_template(
 		'planning/dashboard.html',
 		title="Dashboard",
@@ -943,7 +998,11 @@ def dashboard():
 		overall_delays_list=overall_delays_list,
 		overall_delays_list_df=overall_delays_list_df,
 		overall_new_orders_list=overall_new_orders_list,
-		overall_new_orders_list_df=overall_new_orders_list_df
+		overall_new_orders_list_df=overall_new_orders_list_df,
+		overall_safety_stock_list=overall_safety_stock_list,
+		overall_safety_stock_list_df=overall_safety_stock_list_df,
+		overall_over_stock_list=overall_over_stock_list,
+		overall_over_stock_list_df=overall_over_stock_list_df
 	)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
