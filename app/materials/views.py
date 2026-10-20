@@ -20,6 +20,7 @@ class MaterialForm(FlaskForm):
     box_qty = IntegerField('Box Qty', validators=[DataRequired(), NumberRange(min=1)])
     comment = StringField('Comment', validators=[Optional()])
     safety_stock = StringField('Safety Stock (pcs or % of yearly demand)', validators=[Optional(), Regexp(r'^[1-9]\d*(?:pcs|%)$', message='For safety stock enter a positive integer followed by "pcs" or a percentage, e.g. 100pcs or 25%.')])
+    over_stock = StringField('Over Stock (pcs or % of yearly demand)', validators=[Optional(), Regexp(r'^[1-9]\d*(?:pcs|%)$', message='For over stock enter a positive integer followed by "pcs" or a percentage, e.g. 100pcs or 25%.')])
     submit = SubmitField('Save')
 
 class ImportForm(FlaskForm):
@@ -91,6 +92,7 @@ def create_material():
     args_box_qty = request.args.get('box_qty', type=int)
     args_comment=request.args.get('comment', '')
     args_safety_stock=request.args.get('safety_stock', '')
+    args_over_stock=request.args.get('over_stock', '')
   
     form = MaterialForm(
         material_code=args_material_code,
@@ -99,7 +101,8 @@ def create_material():
         manufacturer=args_manufacturer,
         box_qty=args_box_qty,
         comment=args_comment,
-        safety_stock=args_safety_stock
+        safety_stock=args_safety_stock,
+        over_stock=args_over_stock
         )
 
     if form.validate_on_submit():
@@ -110,7 +113,8 @@ def create_material():
             manufacturer=form.manufacturer.data,
             box_qty=form.box_qty.data if form.box_qty.data else 1,
             comment=form.comment.data,
-            safety_stock=form.safety_stock.data
+            safety_stock=form.safety_stock.data,
+            over_stock=form.over_stock.data
             )
         if Material.query.filter(Material.material_code == m.material_code).first():
             flash(f'Material code {m.material_code} already exists.', 'danger')
@@ -142,6 +146,7 @@ def edit_material():
         m.box_qty = form.box_qty.data
         m.comment = form.comment.data
         m.safety_stock = form.safety_stock.data
+        m.over_stock = form.over_stock.data
         db.session.commit()
         flash('Material updated.', 'success')
         return redirect(next_url or url_for('materials.list_materials'))
@@ -205,7 +210,8 @@ def import_html():
                          manufacturer=manufacturer,
                          box_qty=1,
                          comment='',
-                         safety_stock='')
+                         safety_stock='',
+                         over_stock='')
 
             db.session.add(m)
             added += 1

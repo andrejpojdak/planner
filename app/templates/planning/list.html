@@ -335,6 +335,7 @@
 					{% endif %}
 					<a href="#" onclick="document.getElementById('stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Safety Stock {{ b[7] }}pcs ({{ b[8] }} of {{ b[9] }}pcs)</a>
 					<div class="stock-table"  id="stock-df-{{ b[0][0].buyer_article_number }}">
+						<h3>Safety Stock</h3>
 						{{ b[0][0].buyer_article_number }}
 						{{ b[0][0].article_description }}
 						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.stock-table').style.display = 'none'">x</span><br><br>
@@ -350,6 +351,7 @@
 					{% endif %}
 					<a href="#" onclick="document.getElementById('stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Safety Stock {{ b[7] }}pcs (of {{ b[9] }}pcs)</a>
 					<div class="stock-table" id="stock-df-{{ b[0][0].buyer_article_number }}"> 
+						<h3>Safety Stock</h3>
 						{{ b[0][0].buyer_article_number }}
 						{{ b[0][0].article_description }}
 						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.stock-table').style.display = 'none'">x</span><br><br>
@@ -357,8 +359,43 @@
 					</div>
 				</td>
 				{% endif %}
+				{% if b[13] is none %}
+				<td colspan="5"></td>
+				{% elif '%' in b[13] %}
+				<td colspan="5">
+					{% if b[16]|length  > 0 %}
+					<span class="error">&#10006;&nbsp;</span>
+					{% else %}
+					<span class="green">&#10004;&nbsp;</span>
+					{% endif %}
+					<a href="#" onclick="document.getElementById('over-stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Over Stock {{ b[12] }}pcs ({{ b[13] }} of {{ b[14] }}pcs)</a>
+					<div class="over-stock-table"  id="over-stock-df-{{ b[0][0].buyer_article_number }}">
+						<h3>Over Stock</h3>
+						{{ b[0][0].buyer_article_number }}
+						{{ b[0][0].article_description }}
+						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.over-stock-table').style.display = 'none'">x</span><br><br>
+						{{b[15]|safe}}
+					</div>
+				</td>
+				{% else %}
+				<td colspan="5">
+					{% if b[16]|length  > 0 %}
+					<span class="error">&#10006;&nbsp;</span>
+					{% else %}
+					<span class="green">&#10004;&nbsp;</span>
+					{% endif %}
+					<a href="#" onclick="document.getElementById('over-stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Over Stock {{ b[12] }}pcs (of {{ b[14] }}pcs)</a>
+					<div class="over-stock-table" id="over-stock-df-{{ b[0][0].buyer_article_number }}"> 
+						<h3>Over Stock</h3>
+						{{ b[0][0].buyer_article_number }}
+						{{ b[0][0].article_description }}
+						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.over-stock-table').style.display = 'none'">x</span><br><br>
+						{{b[15]|safe}}
+					</div>
+				</td>
+				{% endif %}
 				<td colspan="4"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }}pcs/box&nbsp;{{ b[3] }}kg/pc</a></td>
-				<td colspan="10"><span class="comment">{{ b[4] if b[4] else ''}}</span></td>
+				<td colspan="5"><span class="comment">{{ b[4] if b[4] else ''}}</span></td>
 			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}

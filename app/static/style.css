@@ -544,6 +544,31 @@ table.stock-df > tbody > tr > td:nth-child(2)  {
 }
 table.stock-df > tbody > tr > td:nth-child(5)  {
 	text-align: right;
+	font-style: italic;
 	color: red;
+	font-weight: bold;
+}
+
+.over-stock-table {
+	display: none;
+	position: fixed;
+	top: 200px;
+	left: 500px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	background-color: white;
+	padding: 20px;
+	z-index: 999;
+}
+table.over-stock-df > tbody > tr > td:nth-child(4)  {
+	text-align: right;
+	font-weight: bold;
+}
+table.over-stock-df > tbody > tr > td:nth-child(2)  {
+	text-align: right;
+}
+table.over-stock-df > tbody > tr > td:nth-child(5)  {
+	text-align: right;
+	font-style: italic;
+	color: green;
 	font-weight: bold;
 }

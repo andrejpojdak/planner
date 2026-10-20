@@ -90,13 +90,25 @@
         <th>Safety Stock
           <br>
           {% if filters %}
-            {% if filters.get('box_qty') %}
+            {% if filters.get('safety_stock') %}
             <input name="safety_stock" class="filter narrow" value="{{ filters.get('safety_stock') }}"></input>
             {% else %}          
             <input name="safety_stock" placeholder=" " class="filter narrow" value=""></input>
             {% endif %}
           {% else %} 
           <input name="safety_stock" placeholder=" " class="filter narrow" value=""></input>
+          {% endif %}
+        </th>
+        <th>Over Stock
+          <br>
+          {% if filters %}
+            {% if filters.get('over_stock') %}
+            <input name="over_stock" class="filter narrow" value="{{ filters.get('over_stock') }}"></input>
+            {% else %}          
+            <input name="over_stock" placeholder=" " class="filter narrow" value=""></input>
+            {% endif %}
+          {% else %} 
+          <input name="over_stock" placeholder=" " class="filter narrow" value=""></input>
           {% endif %}
         </th>
         <th>Actions
@@ -114,6 +126,7 @@
         <td>{{ m.box_qty }}</td>
         <td>{{ m.comment }}</td>
         <td>{{ m.safety_stock }}</td>
+        <td>{{ m.over_stock }}</td>
         <td class="actions"><a href="{{ url_for('materials.edit_material', id=m.id) }}">Edit</a>
           <form method="post" action="{{ url_for('materials.delete_material', id=m.id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form></td>
       </tr>

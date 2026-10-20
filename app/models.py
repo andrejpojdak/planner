@@ -12,6 +12,7 @@ class Material(db.Model):
 	box_qty = db.Column(db.Integer, nullable=True)
 	comment = db.Column(db.String(120))
 	safety_stock = db.Column(db.String(120))
+	over_stock = db.Column(db.String(120))
 	created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 	def __repr__(self):
