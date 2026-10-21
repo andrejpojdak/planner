@@ -551,6 +551,7 @@ h4 {
 	height: 12px;
     display: inline-block;
     transform-origin: center center;
+    transform: rotate(0deg);
 }
 #collapse {
 	color: grey;
@@ -606,4 +607,17 @@ table.over-stock-df > tbody > tr > td:nth-child(5)  {
 	font-style: italic;
 	color: green;
 	font-weight: bold;
+}
+img.arrow {
+    cursor: pointer;
+}
+/* Hide planning detail rows, but preserve rows containing stock tables */
+table#planning > tbody > tr:not(.status):not(.filter-row):not(:has(.stock-df, .over-stock-df)) {
+    display: none;
+}
+
+/* Ensure the stock tables themselves are not hidden by this rule */
+table.stock-df,
+table.over-stock-df {
+    display: table;
 }
