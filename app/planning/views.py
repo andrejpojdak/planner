@@ -96,11 +96,14 @@ def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dic
 			d.delivery_quantity = d.sufficient_quantity
 		else:
 			d.original_qty = d.delivery_quantity
-	
+
+	unconfirmed_orders = []
+
 	for o in orders:
 		o.orig_qty = o.quantity
 		if o.transport == "UNCONFIRMED":
 			o.eta = None
+			unconfirmed_orders.append(o)
 		elif o.in_stock_date:
 			o.eta = o.in_stock_date
 		else:
@@ -354,7 +357,7 @@ def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dic
 
 	delays, to_order_list = analyze_delays(confirmed_deliveries)
 	
-	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list, safety_stock, safety_stock_string, yearly_demand_qty_safety_stock, stock_df_html, stock_alert_list, over_stock, over_stock_string, yearly_demand_qty_over_stock, over_stock_df_html, over_stock_alert_list
+	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list, safety_stock, safety_stock_string, yearly_demand_qty_safety_stock, stock_df_html, stock_alert_list, over_stock, over_stock_string, yearly_demand_qty_over_stock, over_stock_df_html, over_stock_alert_list, unconfirmed_orders
 
 def analyze_delays(confirmed_deliveries):
 
@@ -460,6 +463,7 @@ def all_plans():
 	overall_new_orders_list = []
 	overall_safety_stock_list = []
 	overall_over_stock_list = []
+	overall_unconfirmed_orders_list = []
 
 	for b in buyer_article_numbers_list:
 
@@ -473,6 +477,9 @@ def all_plans():
 		if b[16]:
 			for q in b[16]:
 				overall_over_stock_list.append((b[0][0].buyer_article_number, b[0][0].plant_name, b[0][0].article_description, q[0], q[1]))
+		if b[17]:
+			for r in b[17]:
+				overall_unconfirmed_orders_list.append((r.buyer_article_number, r.supplier, r.order_number, r.article_description, r.fob))
 
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
@@ -523,7 +530,7 @@ def all_plans():
 				b[0].append(new_delivery)
 				b[1].remove(o)
 
-	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list
+	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list
 
 def yearly_demand(deliveries):
 
@@ -854,7 +861,7 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 @bp.route('/', methods=['GET', 'POST'])
 def list_plans():
 
-	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list = all_plans()
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list = all_plans()
 
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
 
@@ -863,7 +870,7 @@ def dashboard():
 
 	import pandas as pd
 
-	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list = all_plans()
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list = all_plans()
 
 	#Delays
 	overall_delays_list_df = pd.DataFrame(columns=[
@@ -989,6 +996,34 @@ def dashboard():
 
 	overall_over_stock_list_df = overall_over_stock_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="overstock-df dashboard"')
 
+	#Unconfirmed
+	overall_unconfirmed_orders_list_df = pd.DataFrame(columns=[
+			'Supplier',
+			'Order Number',
+			'SAP Article Description',
+			'FOB',
+			''
+		])
+
+	overall_unconfirmed_orders_list.sort(key=lambda x: x[3], reverse=True) 
+
+	for ouol in overall_unconfirmed_orders_list:
+	
+			from html import escape
+			
+			url = url_for('planning.list_plans', _anchor=str(ouol[0]))
+			url_link = f'<a href="{escape(url, quote=True)}" title="View plan">&#128065;</a>'
+			
+			overall_unconfirmed_orders_list_df.loc[len(overall_unconfirmed_orders_list_df)] = {
+				'Supplier':	ouol[1],
+				'Order Number'	:	ouol[2],
+				'SAP Article Description'	:	ouol[3],
+				'FOB'	:	f'{ouol[4].strftime("%d.%m.%Y")} ({ouol[4].strftime("%B %Y")})',
+				''			:	url_link
+			}
+
+	overall_unconfirmed_orders_list_df = overall_unconfirmed_orders_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="unconfirmed-df dashboard"')
+
 	return render_template(
 		'planning/dashboard.html',
 		title="Dashboard",
@@ -1002,7 +1037,9 @@ def dashboard():
 		overall_safety_stock_list=overall_safety_stock_list,
 		overall_safety_stock_list_df=overall_safety_stock_list_df,
 		overall_over_stock_list=overall_over_stock_list,
-		overall_over_stock_list_df=overall_over_stock_list_df
+		overall_over_stock_list_df=overall_over_stock_list_df,
+		overall_unconfirmed_orders_list=overall_unconfirmed_orders_list,
+		overall_unconfirmed_orders_list_df=overall_unconfirmed_orders_list_df
 	)
 
 @bp.route('/query/<buyer_article_number>', methods=['GET'])

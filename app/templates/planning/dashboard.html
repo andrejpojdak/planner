@@ -86,6 +86,27 @@
 		</div>
 	</a>
 	{% endif %}
+
+
+	{% if overall_unconfirmed_orders_list|length == 0 %}
+	<div class="tile">
+		<h4>Unconfirmed Orders</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No unconfirmed orders.</span>
+		</div>
+	</div>
+	{% else %}
+	<a href="#" class="tile-link">
+		<div class="tile" >
+		<h4>Unconfirmed Orders</h4>
+			<br>
+			<div class="count right">
+				<h2 class="blue">&#8613;<span class="black">&nbsp;{{ overall_unconfirmed_orders_list|length }}</h2>
+			</div>
+		</div>
+	</a>
+	{% endif %}
 </div>
 
 {% if overall_delays_list|length != 0 %}
@@ -116,7 +137,15 @@
 <div id="delayed" class="lists">
 	<h3>Overstock</h3>
 	<br>
-{{ overall_over_stock_list_df|safe }}
+	{{ overall_over_stock_list_df|safe }}
+</div>
+{% endif %}
+
+{% if overall_unconfirmed_orders_list|length != 0 %}
+<div id="unconfirmed" class="lists">
+	<h3>Unconfirmed orders</h3>
+	<br>
+	{{ overall_unconfirmed_orders_list_df|safe }}
 </div>
 {% endif %}
 

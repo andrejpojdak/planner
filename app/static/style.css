@@ -198,6 +198,9 @@ tr.status {
 	border-top: 2px solid black;
 	border-bottom: 2px solid black;
 }
+tr.status td {
+	vertical-align: top;
+}
 th {
 	vertical-align: bottom;	
 }
@@ -209,6 +212,9 @@ th {
 }
 .narrow {
     width: 45px;
+}
+.midnormal {
+    width: 70px;
 }
 .normal {
     width: 90px;
@@ -463,6 +469,12 @@ tr:has(input:checked) {
 .comment {
 	font-style: italic;
 	color: blue;
+	font-size: 12px;
+}
+.boxes {
+	font-style: italic;
+	color: blue;
+	font-size: 12px;
 }
 tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 	background-color: purple;

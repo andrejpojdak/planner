@@ -19,6 +19,7 @@
 		{% endif %}
 	{% endfor %}
 	</select>
+
 	<select name="quick_order_week_confirmed" class="quickfilter">
 		<option value="">Conf. Week</option>
 		{% for week in weeks %}
@@ -33,6 +34,11 @@
 		{% endif %}
 	{% endfor %}
 	</select>
+
+	<form action="{{ url_for('planning.list_plans') }}" method="get">
+		<button type="submit">Reset all filters</button>
+	</form>
+
 	</div>
 
 	<span id="collapse">- Collapse all</span>
@@ -99,12 +105,12 @@
 				<br>
 				{% if filters %}
 				{% if filters.get('article_description') %}
-				<input name="article_description" class="filter normal" value="{{ filters.get('article_description') }}"></input>
+				<input name="article_description" class="filter wide" value="{{ filters.get('article_description') }}"></input>
 				{% else %}          
-				<input name="article_description" placeholder=" " class="filter normal" value=""></input>
+				<input name="article_description" placeholder=" " class="filter wide" value=""></input>
 				{% endif %}
 				{% else %} 
-				<input name="article_description" placeholder=" " class="filter normal" value=""></input>
+				<input name="article_description" placeholder=" " class="filter wide" value=""></input>
 				{% endif %}
 			</th>
 			<th>Req. Qty
@@ -123,48 +129,48 @@
 				<br>
 				{% if filters %}
 				{% if filters.get('delivery_date') %}
-				<input type="date" name="delivery_date" class="filter normal" value="{{ filters.get('delivery_date') }}" required></input>
+				<input type="date" name="delivery_date" class="filter midnormal" value="{{ filters.get('delivery_date') }}" required></input>
 				{% else %}
-				<input type="date" name="delivery_date" class="filter normal" value="" required></input>
+				<input type="date" name="delivery_date" class="filter midnormal" value="" required></input>
 				{% endif %}
 				{% else %}
-				<input type="date" name="delivery_date" class="filter normal" value="" required></input>
+				<input type="date" name="delivery_date" class="filter midnormal" value="" required></input>
 				{% endif %}
 			</th>
 			<th>Req. Week
 				<br>
 				{% if filters %}
 				{% if filters.get('delivery_week') %}
-				<input name="delivery_week" class="filter normal" value="{{ filters.get('delivery_week') }}"></input>
+				<input name="delivery_week" class="filter narrow" value="{{ filters.get('delivery_week') }}"></input>
 				{% else %}          
-				<input name="delivery_week" placeholder=" " class="filter normal" value=""></input>
+				<input name="delivery_week" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 				{% else %}
-				<input name="delivery_week" placeholder=" " class="filter normal" value=""></input>
+				<input name="delivery_week" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 			</th>
 			<th>Conf. Date
 				<br>
 				{% if filters %}
 				{% if filters.get('order_confirmed') %}
-				<input type="date" name="order_confirmed" class="filter normal" value="{{ filters.get('order_confirmed') }}" required></input>
+				<input type="date" name="order_confirmed" class="filter midnormal" value="{{ filters.get('order_confirmed') }}" required></input>
 				{% else %}
-				<input type="date" name="order_confirmed" class="filter normal" value="" required></input>
+				<input type="date" name="order_confirmed" class="filter midnormal" value="" required></input>
 				{% endif %}
 				{% else %}
-				<input type="date" name="order_confirmed" class="filter normal" value="" required></input>
+				<input type="date" name="order_confirmed" class="filter midnormal" value="" required></input>
 				{% endif %}
 			</th>
 			<th>Conf. Week
 				<br>
 				{% if filters %}
 				{% if filters.get('order_week_confirmed') %}
-				<input name="order_week_confirmed" class="filter normal" value="{{ filters.get('order_week_confirmed') }}"></input>
+				<input name="order_week_confirmed" class="filter narrow" value="{{ filters.get('order_week_confirmed') }}"></input>
 				{% else %}
-				<input name="order_week_confirmed" placeholder=" " class="filter normal" value=""></input>
+				<input name="order_week_confirmed" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 				{% else %}
-				<input name="order_week_confirmed" placeholder=" " class="filter normal" value=""></input>
+				<input name="order_week_confirmed" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 			</th>
 			<th>Stock
@@ -307,12 +313,12 @@
 				<br>
 				{% if filters %}
 				{% if filters.get('order_fob') %}
-				<input type="date" name="order_fob" class="filter normal" value="{{ filters.get('order_fob') }}" required></input>
+				<input type="date" name="order_fob" class="filter midnormal" value="{{ filters.get('order_fob') }}" required></input>
 				{% else %}
-				<input type="date" name="order_fob" class="filter normal" value="" required></input>
+				<input type="date" name="order_fob" class="filter midnormal" value="" required></input>
 				{% endif %}
 				{% else %}
-				<input type="date" name="order_fob" class="filter normal" value="" required></input>
+				<input type="date" name="order_fob" class="filter midnormal" value="" required></input>
 				{% endif %}
 			</th>
 			<th></th>
@@ -321,26 +327,35 @@
     <tbody>
 	{% for b in buyer_article_numbers_list %}
 			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
-				<td colspan="4"><img class="arrow" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>&nbsp;&nbsp;{{ b[0][0].buyer_article_number }}&nbsp;{{ b[0][0].article_description }}&nbsp;<a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">&#8801;</a></td>
-				<td colspan="1">
+				<td colspan="4">
+					<img class="arrow" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>
+					&nbsp;&nbsp;{{ b[0][0].buyer_article_number }}&nbsp;{{ b[0][0].article_description }}&nbsp;<a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">&#8801;</a>
+					<br>
+					<a class="comment" href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[4] if b[4] else ''}}</a>
+				</td>
+				<td colspan="2">
+
 					{% if b[5]|length == 0 %}
 					<span class="green">&#10004;&nbsp;</span>
 					{% else %}
 					<span class="error">&#10006;&nbsp;</span>
 					{% endif %}
 					<a href="{{ url_for('deliveries.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Deliveries</a>
-				</td>
-				<td colspan="2">
+
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
 					{% if b[6]|length == 0 %}
 					<span class="green">&#10004;&nbsp;</span>
 					{% else %}
 					<span class="error">&#10006;&nbsp;</span>
 					{% endif %}
-					<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a></td>
+					<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a>
+				
+				</td>
 				{% if b[8] is none %}
-				<td colspan="3"></td>
+				<td colspan="4"></td>
 				{% elif '%' in b[8] %}
-				<td colspan="3">
+				<td colspan="4">
 					{% if b[11]|length > 0 %}
 					<span class="error">&#10006;&nbsp;</span>
 					{% else %}
@@ -356,7 +371,7 @@
 					</div>
 				</td>
 				{% else %}
-				<td colspan="3">
+				<td colspan="4">
 					{% if b[11]|length  > 0 %}
 					<span class="error">&#10006;&nbsp;</span>
 					{% else %}
@@ -372,16 +387,24 @@
 					</div>
 				</td>
 				{% endif %}
+				<td colspan="1"></td>				
 				{% if b[13] is none %}
-				<td colspan="5"></td>
+				<td colspan="6">
+					<br>
+					<a class="boxes" href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }}pcs/box&nbsp;{{ b[3] }}kg/pc</a>
+				</td>
 				{% elif '%' in b[13] %}
-				<td colspan="5">
+				<td colspan="6">
 					{% if b[16]|length  > 0 %}
 					<span class="error">&#10006;&nbsp;</span>
 					{% else %}
 					<span class="green">&#10004;&nbsp;</span>
 					{% endif %}
 					<a href="#" onclick="document.getElementById('over-stock-df-{{ b[0][0].buyer_article_number }}').style.display = 'block'; return false;">Over Stock {{ b[12] }}pcs ({{ b[13] }} of {{ b[14] }}pcs)</a>
+					
+					<br>
+					<a class="boxes" href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }}pcs/box&nbsp;{{ b[3] }}kg/pc</a>
+
 					<div class="over-stock-table"  id="over-stock-df-{{ b[0][0].buyer_article_number }}">
 						<h3>Over Stock</h3>
 						{{ b[0][0].buyer_article_number }}
@@ -391,7 +414,7 @@
 					</div>
 				</td>
 				{% else %}
-				<td colspan="5">
+				<td colspan="6">
 					{% if b[16]|length  > 0 %}
 					<span class="error">&#10006;&nbsp;</span>
 					{% else %}
@@ -407,8 +430,7 @@
 					</div>
 				</td>
 				{% endif %}
-				<td colspan="4"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[2] }}pcs/box&nbsp;{{ b[3] }}kg/pc</a></td>
-				<td colspan="5"><span class="comment">{{ b[4] if b[4] else ''}}</span></td>
+				<td colspan="7"></td>
 			</tr>
       {% for d in b[0] %}
 		{% for c in d.confirmations %}
@@ -494,6 +516,8 @@
 				{% endif %}
 				{% if c.order_transport is none %}
 				<td></td>
+				{% elif c.order_transport == 'UNCONFIRMED' %}
+				<td>UNC</td>
 				{% else %}
 				<td>{{ c.order_transport }}</td>
 				{% endif %}
@@ -645,6 +669,8 @@
 				{% endif %}
 				{% if c.order_transport is none %}
 				<td></td>
+				{% elif c.order_transport == 'UNCONFIRMED' %}
+				<td>UNC</td>
 				{% else %}
 				<td>{{ c.order_transport }}</td>
 				{% endif %}
@@ -878,12 +904,19 @@ document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb =>
 create_tl_button.onclick = create_tl;
 
 
+
+//Collapsing/expanding
+
 const planningTable = document.querySelector("table#planning");
 const collapse_button = document.getElementById("collapse");
+
 let collapsed = true;
 
-// Select only rows belonging directly to the planning table,
-// excluding rows inside nested tables such as b[15].
+// Expand automatically if the URL contains any query parameter
+const params = new URLSearchParams(window.location.search);
+const openedViaFilter = params.size > 0;
+
+// Select only rows directly belonging to the planning table
 function planningRows(selector = "") {
     return planningTable
         ? planningTable.querySelectorAll(
@@ -892,12 +925,16 @@ function planningRows(selector = "") {
         : [];
 }
 
-// Initial button text
-if (collapse_button) {
-    collapse_button.textContent = "+ Expand all";
+// Update the expand/collapse button text
+function updateCollapseButton() {
+    if (collapse_button) {
+        collapse_button.textContent = collapsed
+            ? "+ Expand all"
+            : "− Collapse all";
+    }
 }
 
-// Show or hide one group's direct detail rows and rotate its arrow
+// Show or hide one group's detail rows and rotate its arrow
 function toggleGroup(id, expand) {
     if (!planningTable) return;
 
@@ -911,8 +948,9 @@ function toggleGroup(id, expand) {
         `.status#${CSS.escape(id)}`
     )[0];
 
-    const arrow = statusRow?.querySelector(":scope > td img.arrow")
-        || statusRow?.querySelector("img.arrow");
+    const arrow =
+        statusRow?.querySelector(":scope > td img.arrow") ||
+        statusRow?.querySelector("img.arrow");
 
     if (arrow) {
         arrow.style.transform = expand
@@ -921,51 +959,89 @@ function toggleGroup(id, expand) {
     }
 }
 
-// Expand/collapse all groups
-collapse_button?.addEventListener("click", function () {
-    collapsed = !collapsed;
+// Expand all groups and all direct detail rows
+function expandAll() {
+    if (!planningTable) return;
 
     planningRows(".status").forEach(row => {
         if (row.id) {
-            toggleGroup(row.id, !collapsed);
+            toggleGroup(row.id, true);
         }
     });
 
-    // Handle only direct detail rows in the planning table
-    const rows = planningRows(
-        ":not(.status):not(.filter-row)"
-    );
-
-    rows.forEach(row => {
-        row.style.display = collapsed ? "none" : "table-row";
+    // Show all direct detail rows, excluding status and filter rows
+    planningRows(":not(.status):not(.filter-row)").forEach(row => {
+        row.style.display = "table-row";
     });
 
-    // Rotate only arrows belonging to direct planning rows
+    // Rotate arrows belonging to direct planning rows only
     planningRows().forEach(row => {
         row.querySelectorAll("img.arrow").forEach(arrow => {
-            arrow.style.transform = collapsed
-                ? "rotate(0deg)"
-                : "rotate(90deg)";
+            arrow.style.transform = "rotate(90deg)";
         });
     });
 
-    collapse_button.textContent = collapsed
-        ? "+ Expand all"
-        : "− Collapse all";
+    collapsed = false;
+    updateCollapseButton();
+}
+
+// Collapse all groups and all direct detail rows
+function collapseAll() {
+    if (!planningTable) return;
+
+    planningRows(".status").forEach(row => {
+        if (row.id) {
+            toggleGroup(row.id, false);
+        }
+    });
+
+    planningRows(":not(.status):not(.filter-row)").forEach(row => {
+        row.style.display = "none";
+    });
+
+    planningRows().forEach(row => {
+        row.querySelectorAll("img.arrow").forEach(arrow => {
+            arrow.style.transform = "rotate(0deg)";
+        });
+    });
+
+    collapsed = true;
+    updateCollapseButton();
+}
+
+// Initial button text
+updateCollapseButton();
+
+// Expand automatically when any query parameter exists
+if (openedViaFilter) {
+    expandAll();
+}
+
+// Expand/collapse all button
+collapse_button?.addEventListener("click", function () {
+    if (collapsed) {
+        expandAll();
+    } else {
+        collapseAll();
+    }
 });
 
-// Individual arrow click
+// Handle individual group arrow clicks
 document.addEventListener("click", function (event) {
     const arrow = event.target.closest("img.arrow");
+
     if (!arrow || !planningTable) return;
 
-    // Ignore arrows inside nested tables, including b[15]
+    // Ignore arrows inside nested tables
     if (arrow.closest("table") !== planningTable) return;
 
     const statusRow = arrow.closest("tr.status");
+
     if (!statusRow || !statusRow.id) return;
 
-    const rows = planningRows(`.${CSS.escape(statusRow.id)}`);
+    const rows = planningRows(
+        `.${CSS.escape(statusRow.id)}`
+    );
 
     if (!rows.length) return;
 
@@ -974,14 +1050,14 @@ document.addEventListener("click", function (event) {
     toggleGroup(statusRow.id, expand);
 });
 
-// Expand group specified in URL hash, e.g. /planning/#1400675169
+// Expand the group specified in the URL hash
 function expandHashGroup() {
     if (!planningTable) return;
 
     let id;
 
     try {
-        id = decodeURIComponent(location.hash.slice(1));
+        id = decodeURIComponent(window.location.hash.slice(1));
     } catch {
         return;
     }
