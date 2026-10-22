@@ -331,7 +331,7 @@
 					<img class="arrow" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>
 					&nbsp;&nbsp;{{ b[0][0].buyer_article_number }}&nbsp;{{ b[0][0].article_description }}&nbsp;<a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">&#8801;</a>
 					<br>
-					<a class="comment" href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[4] if b[4] else ''}}</a>
+					<div class="comment"><a href="{{ url_for('materials.edit_material', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">{{ b[4] if b[4] else ''}}</a></div>
 				</td>
 				<td colspan="2">
 
@@ -447,7 +447,7 @@
 				{% if c.sent == True %}
 				<td>{{ d.article_description }}</td>
 				{% else %}
-				<td><a href="{{ url_for('planning.list_plans_buyer_article_number', buyer_article_number=b[0][0].buyer_article_number) }}">{{ d.article_description }}</a></td>
+				<td><a href="{{ url_for('planning.list_plans', _anchor=b[0][0].buyer_article_number) }}">{{ d.article_description }}</a></td>
 				{% endif %}
 				<td>{{ d.original_qty }}{{ '(' ~ d.sufficient_quantity ~ ')' if d.sufficient_quantity else ''}}</td>
 				{% if c.sent == True %}
@@ -507,7 +507,7 @@
 				{% if c.order_comment is none %}
 				<td></td>
 				{% else %}
-				<td>{{ c.order_comment }}</td>
+				<td title="{{ c.order_comment }}">{{ c.order_comment }}</td>
 				{% endif %}
 				{% if c.order_rmb is none %}
 				<td></td>
@@ -600,7 +600,7 @@
 				{% if c.sent == True %}
 				<td>{{ d.article_description }}</td>
 				{% else %}
-				<td><a href="{{ url_for('planning.list_plans_buyer_article_number', buyer_article_number=b[0][0].buyer_article_number) }}">{{ d.article_description }}</a></td>
+				<td><a href="{{ url_for('planning.list_plans', _anchor=b[0][0].buyer_article_number) }}">{{ d.article_description }}</a></td>
 				{% endif %}
 				<td></td>
 				{% if c.sent == True %}
@@ -660,7 +660,7 @@
 				{% if c.order_comment is none %}
 				<td></td>
 				{% else %}
-				<td>{{ c.order_comment }}</td>
+				<td title="{{ c.order_comment }}">{{ c.order_comment }}</td>
 				{% endif %}
 				{% if c.order_rmb is none %}
 				<td></td>

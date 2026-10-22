@@ -214,7 +214,7 @@
           <div id="menu-container">
             <div id="menu-icon">&#9776;</div>
             <div id="menu">
-              <a href="{{ url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number ) }}">Plan</a><br>
+              <a href="{{ url_for('planning.list_plans', _anchor=d.buyer_article_number ) }}">Plan</a><br>
               <a href="{{ url_for('deliveries.edit_delivery', delivery_id=d.id) }}">Edit</a><br>
               <a href="{{ url_for('orders.create_order', buyer_article_number=d.buyer_article_number ) }}">Create new PO</a><br>
               <form method="post" action="{{ url_for('deliveries.delete_delivery', delivery_id=d.id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>

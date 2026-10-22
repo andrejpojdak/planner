@@ -200,6 +200,8 @@ tr.status {
 }
 tr.status td {
 	vertical-align: top;
+	border-left: none;
+	border-right: none;
 }
 th {
 	vertical-align: bottom;	
@@ -470,6 +472,15 @@ tr:has(input:checked) {
 	font-style: italic;
 	color: blue;
 	font-size: 12px;
+	max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.comment > a {
+	color: blue;
+}.comment > a:hover {
+	color: white;
 }
 .boxes {
 	font-style: italic;
@@ -622,6 +633,12 @@ table.over-stock-df > tbody > tr > td:nth-child(5)  {
 }
 img.arrow {
     cursor: pointer;
+}
+table#planning > tbody > tr > td:nth-child(16) {
+	max-width: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 /* Hide planning detail rows, but preserve rows containing stock tables */
 table#planning > tbody > tr:not(.status):not(.filter-row):not(:has(.stock-df, .over-stock-df)) {

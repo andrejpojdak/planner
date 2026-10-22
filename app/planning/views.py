@@ -1041,7 +1041,7 @@ def dashboard():
 		overall_unconfirmed_orders_list=overall_unconfirmed_orders_list,
 		overall_unconfirmed_orders_list_df=overall_unconfirmed_orders_list_df
 	)
-
+'''
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
 def list_plans_buyer_article_number(buyer_article_number):
 
@@ -1158,7 +1158,7 @@ def list_plans_buyer_article_number(buyer_article_number):
 				b[1].remove(o)
 	
 	return render_template('planning/list.html', title=f"Planning - {short_text} - {buyer_article_number}", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
-
+'''
 @bp.route('/filter', methods=['GET','POST'])
 def filter():
 	
