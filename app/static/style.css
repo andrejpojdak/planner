@@ -198,6 +198,9 @@ tr.status {
 	border-top: 2px solid black;
 	border-bottom: 2px solid black;
 }
+tr.status:hover {
+	background-color: white;
+}
 tr.status td {
 	vertical-align: top;
 	border-left: none;
@@ -468,24 +471,22 @@ tr:has(input:checked) {
 	left: 700px;
 	top: 220px;
 }
-.comment {
-	font-style: italic;
-	color: blue;
-	font-size: 12px;
+.boxes {
 	max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.comment > a {
-	color: blue;
-}.comment > a:hover {
+.boxes > a {
+	font-style: italic;
+	color: grey;
+	font-size: 14px;
+}
+.boxes > a:hover {
 	color: white;
 }
-.boxes {
-	font-style: italic;
+a.comment {
 	color: blue;
-	font-size: 12px;
 }
 tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 	background-color: purple;
