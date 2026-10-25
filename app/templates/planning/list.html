@@ -450,8 +450,18 @@
 			{% if loop.first %}
 			<tr data-sent="{{ c.sent }}" class="{{ b[0][0].buyer_article_number }}">
 				<td>{{ d.plant_name }}</td>
-				<td>{{ d.ecv }}</td>
-				<td>{{ d.eds }}</td>
+				
+				{% if c.order_ecv is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_ecv }}</td>
+				{% endif %}
+				{% if c.order_eds is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_eds }}</td>
+				{% endif %}
+
 				{% if d.delivery_schedule_number == none and d.delivery_schedule_position == none%}
 				<td></td>
 				{% else %}
@@ -605,8 +615,18 @@
 			{% else %}
 			<tr data-sent="{{ c.sent }}" class="{{ b[0][0].buyer_article_number }}">
 				<td>{{ d.plant_name }}</td>
-				<td>{{ d.ecv }}</td>
-				<td>{{ d.eds }}</td>
+				
+				{% if c.order_ecv is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_ecv }}</td>
+				{% endif %}
+				{% if c.order_eds is none %}
+				<td></td>
+				{% else %}
+				<td>{{ c.order_eds }}</td>
+				{% endif %}
+				
 				{% if d.delivery_schedule_number == none and d.delivery_schedule_position == none%}
 				<td></td>
 				{% else %}

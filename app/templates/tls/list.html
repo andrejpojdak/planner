@@ -53,7 +53,7 @@
             <div id="menu-icon">&#9776;</div>
             <div id="menu">
               <a href="{{ url_for('tls.change_qty', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">Edit</a><br>
-              <form method="post" action="{{ url_for('tls.delete_tl', delivery_id=a.delivery_id, order_id=a.order_id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
+              <form method="post" class="delete-form" action="{{ url_for('tls.delete_tl', delivery_id=a.delivery_id, order_id=a.order_id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
             </div>
           </div>
         </td>
@@ -108,6 +108,7 @@ function sent_tl() {
 }
 
 const sent_button = document.getElementById("sent-button");
+const delete_forms = document.querySelectorAll(".delete-form");
 
 document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => {
     cb.addEventListener("change", function () {
@@ -116,6 +117,12 @@ document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb =>
         ).length > 0;
 
         sent_button.style.display = hasChecked ? 'block' : 'none';
+
+        // Hide every delete form when any checkbox changes
+        delete_forms.forEach(form => {
+            form.style.display = hasChecked ? "none" : "block";
+        });
+
     });
 });
 
