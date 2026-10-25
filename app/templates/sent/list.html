@@ -40,9 +40,13 @@
     </tbody>
 </table>
 
+<script src="{{ url_for('static', filename='js/hide.qty.js')  }}"></script>
+
 <script>
 
 colorRows(document.querySelectorAll("tbody tr:not(.status)"), 3);
+
+hideDuplicateValues(document.querySelector("table"), 4);
 
 </script>
 {% endblock %}

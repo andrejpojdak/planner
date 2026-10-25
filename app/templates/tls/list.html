@@ -31,7 +31,7 @@
       <tr>
         <td>{{ a.plant_name }}</td>
         <td><a href="{{ url_for('tls.query_tl', tl_name=a.tl_name) }}">{{ a.tl_name if a.tl_name else '' }}</a></td>
-	    <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
+	      <td>{{ a.delivery_schedule_number.lstrip('0') }}-{{ a.delivery_schedule_position }}</td>
         <td>{{ a.short_text }}</td>
         <td>{{ a.delivery_quantity }}</td>
 				<td>{{ a.delivery_date.strftime('%d.%m.%Y') }}</td>
@@ -40,14 +40,14 @@
           <span class="tl-values available_qty" data-delivery-id="{{ a.delivery_id }}" data-order-id="{{ a.order_id }}" data-qty="{{ a.order_qty }}">{{ a.order_qty }}</span>
         </td>
         <td>{{ a.order_number }}</td>
-		{% if a.sales_price is none %}
-		<td></td>
-		{% else %}
-        <td>{{ '%.4f' % a.sales_price }}</td>
-		{% endif %}
-		<td>
-			<input type="checkbox">
-		</td>
+        {% if a.sales_price is none %}
+        <td></td>
+        {% else %}
+            <td>{{ '%.4f' % a.sales_price }}</td>
+        {% endif %}
+        <td>
+          <input type="checkbox">
+        </td>
         <td class="actions">
           <div id="menu-container">
             <div id="menu-icon">&#9776;</div>
@@ -58,11 +58,13 @@
           </div>
         </td>
 	  </tr>
-      {% else %}
-      <tr><td colspan=12>No assignments yet.</td></tr>
-      {% endfor %}
+    {% else %}
+    <tr><td colspan=12>No assignments yet.</td></tr>
+    {% endfor %}
     </tbody>
 </table>
+
+<script src="{{ url_for('static', filename='js/hide.qty.js')  }}"></script>
 
 <script>
 function sent_tl() {
@@ -120,6 +122,8 @@ document.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb =>
 sent_button.onclick = sent_tl;
 
 colorRows(document.querySelectorAll("tbody tr:not(.status)"), 2);
+
+hideDuplicateValues(document.querySelector("table"), 5);
 
 </script>
 {% endblock %}
