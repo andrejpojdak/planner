@@ -48,28 +48,27 @@ def create_app(config=None):
 	from .sent.views import bp as sent_bp
 	app.register_blueprint(sent_bp, url_prefix="/sent")
 
-	# create DB tables for quick start
+	# Create database tables and initialize default settings
 	with app.app_context():
 		db.create_all()
 
 		from .models import Settings
-		
+		from sqlalchemy.dialects.sqlite import insert
+
 		data = {
 			"seafreight": 50,
 			"railfreight": 25,
 			"airfreight": 12,
-			"brasil_delta":	63,
-			"portugal_delta":	14,
-			"leadtime":	270
+			"brasil_delta": 63,
+			"portugal_delta": 14,
+			"leadtime": 270
 		}
 
-		for k, v in data.items():
-			setting = Settings.query.get(k)
-			if setting:
-				continue
-			else:
-				db.session.add(Settings(key=k, value=v))
-		
-		db.session.commit()
+		stmt = insert(Settings).values(
+			[{"key": k, "value": v} for k, v in data.items()]
+		).on_conflict_do_nothing(index_elements=["key"])
 
+		db.session.execute(stmt)
+		db.session.commit()
+	
 	return app

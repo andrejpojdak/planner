@@ -21,6 +21,7 @@ def list_sent():
 			Delivery.delivery_quantity.label("delivery_quantity"),
 			Order.order_number.label("order_number"),
 			Assignments.qty.label("order_qty"),
+			Assignments.tl_name.label("tl_name"),
 			Assignments.delivery_id.label("delivery_id"),
 			Assignments.order_id.label("order_id"),
 			Assignments.tl.label("tl"),
