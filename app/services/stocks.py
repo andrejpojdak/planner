@@ -134,7 +134,7 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 			
 			if current_stock_qty < stock_obj.safety_stock_qty:
 				
-				stock_obj.stock_alert_list.append(( i.available_quantity_excluding_sent, current_stock_qty - stock_obj.safety_stock_qty ))
+				stock_obj.stock_alert_list.append(( i.eta, current_stock_qty - stock_obj.safety_stock_qty ))
 			
 				stock_df.loc[len(stock_df)] = {
 					'SO/PO': i.order_number,
