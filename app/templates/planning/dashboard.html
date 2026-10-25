@@ -4,21 +4,19 @@
 
 {% block content %}
 
-<br>
 <div class="tiles">
 
 	{% if overall_delays_list|length == 0 %}
 	<div class="tile">
-		<h4>Delayed Orders</h4>
+		<h4>Delayed<br>Orders</h4>
 		<div class="count">
 			<span class="green">&#10004;</span>
 			<span class="tile-text">&nbsp;No delayed orders.</span>
 		</div>
 	</div>
 	{% else %}
-	<a href="#" class="tile-link">
 		<div class="tile" >
-			<h4>Delayed Orders</h4>
+			<h4>Delayed<br>Orders</h4>
 			<br>
 			<div class="count right">
 				<h2 class="error">!<span class="black">&nbsp;{{ overall_delays_list|length }}</h2>
@@ -27,18 +25,36 @@
 	</a>
 	{% endif %}
 
+	{% if overall_unconfirmed_orders_list|length == 0 %}
+	<div class="tile">
+		<h4>Unconfirmed<br>Orders</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No unconfirmed orders.</span>
+		</div>
+	</div>
+	{% else %}
+		<div class="tile" >
+		<h4>Unconfirmed<br>Orders</h4>
+			<br>
+			<div class="count right">
+				<h2 class="purple">&#9083;<span class="black">&nbsp;{{ overall_unconfirmed_orders_list|length }}</h2>
+			</div>
+		</div>
+	</a>
+	{% endif %}
+
 	{% if overall_new_orders_list|length == 0 %}
 	<div class="tile">
-		<h4>Orders Needed</h4>
+		<h4>New<br>Orders</h4>
 		<div class="count">
 			<span class="green">&#10004;</span>
 			<span class="tile-text">&nbsp;No orders needed.</span>
 		</div>
 	</div>
 	{% else %}
-	<a href="#" class="tile-link">
 		<div class="tile" >
-			<h4>Orders Needed</h4>
+			<h4>New<br>Orders</h4>
 			<br>
 			<div class="count right">
 				<h2 class="error">&#x1F6D2;<span class="black">&nbsp;{{ overall_new_orders_list|length }}</h2>
@@ -49,16 +65,15 @@
 
 	{% if overall_safety_stock_list|length == 0 %}
 	<div class="tile">
-		<h4>Safety Stock</h4>
+		<h4>Safety<br>Stock</h4>
 		<div class="count">
 			<span class="green">&#10004;</span>
 			<span class="tile-text">&nbsp;No safety stock alerts.</span>
 		</div>
 	</div>
 	{% else %}
-	<a href="#" class="tile-link">
 		<div class="tile" >
-			<h4>Safety Stock</h4>
+			<h4>Safety<br>Stock</h4>
 			<br>
 			<div class="count right">
 				<h2 class="orange">&#8615;<span class="black">&nbsp;{{ overall_safety_stock_list|length }}</h2>
@@ -69,16 +84,15 @@
 
 	{% if overall_over_stock_list|length == 0 %}
 	<div class="tile">
-		<h4>Overstock</h4>
+		<h4>Over<br>Stock</h4>
 		<div class="count">
 			<span class="green">&#10004;</span>
 			<span class="tile-text">&nbsp;No overstock alerts.</span>
 		</div>
 	</div>
 	{% else %}
-	<a href="#" class="tile-link">
 		<div class="tile" >
-			<h4>Overstock</h4>
+			<h4>Over<br>Stock</h4>
 			<br>
 			<div class="count right">
 				<h2 class="blue">&#8613;<span class="black">&nbsp;{{ overall_over_stock_list|length }}</h2>
@@ -87,26 +101,6 @@
 	</a>
 	{% endif %}
 
-
-	{% if overall_unconfirmed_orders_list|length == 0 %}
-	<div class="tile">
-		<h4>Unconfirmed Orders</h4>
-		<div class="count">
-			<span class="green">&#10004;</span>
-			<span class="tile-text">&nbsp;No unconfirmed orders.</span>
-		</div>
-	</div>
-	{% else %}
-	<a href="#" class="tile-link">
-		<div class="tile" >
-		<h4>Unconfirmed Orders</h4>
-			<br>
-			<div class="count right">
-				<h2 class="blue">&#8613;<span class="black">&nbsp;{{ overall_unconfirmed_orders_list|length }}</h2>
-			</div>
-		</div>
-	</a>
-	{% endif %}
 </div>
 
 {% if overall_delays_list|length != 0 %}
@@ -117,9 +111,17 @@
 </div>
 {% endif %}
 
+{% if overall_unconfirmed_orders_list|length != 0 %}
+<div id="unconfirmed" class="lists">
+	<h3>Unconfirmed orders</h3>
+	<br>
+	{{ overall_unconfirmed_orders_list_df|safe }}
+</div>
+{% endif %}
+
 {% if overall_new_orders_list|length != 0 %}
 <div id="new" class="lists">
-	<h3>Orders Needed</h3>
+	<h3>New Orders</h3>
 	<br>
 	{{ overall_new_orders_list_df|safe }}
 </div>
@@ -135,18 +137,25 @@
 
 {% if overall_over_stock_list|length != 0 %}
 <div id="delayed" class="lists">
-	<h3>Overstock</h3>
+	<h3>Over Stock</h3>
 	<br>
 	{{ overall_over_stock_list_df|safe }}
 </div>
 {% endif %}
+<script>
 
-{% if overall_unconfirmed_orders_list|length != 0 %}
-<div id="unconfirmed" class="lists">
-	<h3>Unconfirmed orders</h3>
-	<br>
-	{{ overall_unconfirmed_orders_list_df|safe }}
-</div>
-{% endif %}
+function styleThirdTd() {
+    document.querySelectorAll("table.new-orders-df tbody tr").forEach(row => {
+        const td = row.querySelectorAll(":scope > td")[2];
 
+        if (td.textContent == 'New material!') {
+            td.style.color = "red";
+            td.style.fontWeight = "bold";
+        }
+    });
+}
+
+styleThirdTd();
+
+</script>
 {% endblock %}

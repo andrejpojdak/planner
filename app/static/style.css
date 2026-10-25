@@ -1,3 +1,11 @@
+:root {
+    --menu-color: #17365d;
+    --text-color: #333;
+    --title-color: #214f87;
+    --border-color: lightgrey;
+    --border-radius: 5px;
+    --blur-amount: 0.25px;
+}
 * {
 	margin: 0 0 0 0;
 }
@@ -5,6 +13,9 @@ body {
     font-family: "Inter", Arial, sans-serif;
 	font-weight: 500;
 	background-color: #F5F7FA;
+}
+.blurred {
+    filter: blur(var(--blur-amount));
 }
 a {
 	text-decoration: none;
@@ -24,7 +35,7 @@ a:hover {
     display: flex;
     align-items: center;
     padding: 0 22px;
-    background: #17365d;
+    background: var(--menu-color);
     color: #ffffff;
     box-sizing: border-box;
     font-family: Inter, Arial, sans-serif;
@@ -162,7 +173,7 @@ a:hover {
 }
 /* Container */
 #main-container {
-	margin: 15px;
+	margin: 10px;
 }
 /* Table */
 
@@ -199,7 +210,7 @@ tr.status {
 	border-bottom: 2px solid black;
 }
 tr.status:hover {
-	background-color: white;
+	background-color: rgb(181, 191, 222);
 }
 tr.status td {
 	vertical-align: top;
@@ -497,9 +508,9 @@ tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 .lists {
 	background-color: white;
 	border: 1px solid lightgray;
-	margin-top: 15px;
 	padding: 20px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	border: 1px solid lightgrey;
+	border-radius: 15px;
 }
 table.delayed-df > tbody > tr > td:nth-child(9) {
 	color: red;
@@ -512,9 +523,19 @@ table.dashboard > tbody > tr > td:last-child {
 table.dashboard > tbody > tr:has(> td:hover) {
     background-color: whitesmoke;
 }
+.title-container {
+	padding: 20px;
+	border: 1px solid lightgray;
+	background-color: white;
+	border: 1px solid lightgrey;
+	border-radius: 15px;
+	color: var(--title-color);
+	margin-bottom: 10px;
+}
 .tiles {
 	display: flex;
 	gap: 10px;
+	margin-bottom: 10px;
 }
 .tile {
 	position: relative;
@@ -525,11 +546,14 @@ table.dashboard > tbody > tr:has(> td:hover) {
 	font-size:large;
 	border: 1px solid lightgray;
 	background-color: white;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	border: 1px solid lightgrey;
+	border-radius: 15px;
 }
-.tile-link:hover > div.tile {
+.tile:hover {
 	color: black;
 	background-color: whitesmoke;
+	border: 1px solid lightgrey;
+	border-radius: 15px;
 }
 .count {
 	font-size:x-large;
@@ -544,7 +568,8 @@ table.dashboard > tbody > tr:has(> td:hover) {
 }
 h4 {
 	padding: 10px;
-	border-bottom: 1px solid lightgray;
+	border-bottom: 1px solid var(--border-color);
+    filter: blur(var(--blur-amount));
 }
 #switch {
 	position: fixed;
@@ -565,8 +590,15 @@ h4 {
 .blue {
 	color: blue;
 }
+.purple {
+	color: purple;
+}
 .error {
 	color: red;
+}
+.redwhite {
+	color: white;
+	background-color: red;
 }
 .green {
 	color: green;
@@ -576,6 +608,9 @@ h4 {
     display: inline-block;
     transform-origin: center center;
     transform: rotate(0deg);
+}
+.negative {
+	filter: invert(1);
 }
 #collapse {
 	color: grey;

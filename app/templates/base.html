@@ -27,7 +27,7 @@
 <div class="menu">
 	 <div class="logo">
         <img class="logo-icon" src="{{ url_for('static', filename='img/planner.png') }}"></img>
-        PLANNER
+        <span class="blurred">PLANNER</span>
     </div>
 	<nav id="flex-left">
 		<a href="{{ url_for('planning.dashboard') }}">Dashboard</a>
@@ -56,9 +56,8 @@
 <div id="main-container">
 	<div class="title-container">
 		<span class="title-icon">
-			
 		</span>
-		<h2>{{ title }}</h2>
+		<h2 class="blurred">{{ title }}</h2>
 	</div>
 	{% block content %}{% endblock %}
 </div>

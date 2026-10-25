@@ -25,11 +25,13 @@
       <p>{{ form.submit() }}</p>
     </form>
     <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+  
+    {% for error in form.safety_stock.errors %}
+      <div class="error">{{ error }}</div>
+    {% endfor %}
+    {% for error in form.over_stock.errors %}
+      <div class="error">{{ error }}</div>
+    {% endfor %}
+      
   {% endif %}
-  {% for error in form.safety_stock.errors %}
-    <div class="error">{{ error }}</div>
-  {% endfor %}
-  {% for error in form.over_stock.errors %}
-    <div class="error">{{ error }}</div>
-  {% endfor %}
 {% endblock %}

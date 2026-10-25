@@ -336,7 +336,7 @@ def import_csv():
 			flash(f'Create material {k} - {v} in "Materials" section!', 'danger')
 		flash(f'Imported {added} deliveries. Previous matching entries removed.', 'success')
 		
-		return redirect(url_for('deliveries.list_deliveries'))
+		return redirect(url_for('planning.dashboard'))
 	return render_template('deliveries/form.html', title="Import", import_only=True, form=form)
 
 @bp.route('/filter', methods=['GET','POST'])

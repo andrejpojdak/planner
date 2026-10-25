@@ -54,8 +54,10 @@ def assign():
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.fob).all()
 
 	available_qty = order_available_qty(order_id)
-	
-	if Assignments.query.filter(Assignments.delivery_id == delivery_id).filter(Assignments.order_id == order_id).first():
+
+	assignment_exists = Assignments.query.filter(Assignments.delivery_id == delivery_id).filter(Assignments.order_id == order_id).first()
+	if assignment_exists:
+		qty = assignment_exists.qty
 		max_qty = available_qty + qty
 		return render_template('assignments/form.html', max_qty=max_qty, edit=1, action="Save", title="Edit assignment", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty)
 

@@ -326,6 +326,15 @@
 	</thead>
     <tbody>
 	{% for b in buyer_article_numbers_list %}
+			{% if 'material_not_found' in b[0][0].article_description %}
+			<tr class="status redwhite" id="{{ b[0][0].buyer_article_number }}">
+					<td colspan="6">
+						<img class="arrow negative" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>
+						&nbsp;&nbsp;{{ b[0][0].buyer_article_number }}&nbsp;New material! Import or create new material first!
+						<br>
+						&nbsp;
+					</td>
+			{% else %}
 			<tr class="status" id="{{ b[0][0].buyer_article_number }}">
 				<td colspan="4">
 					<img class="arrow" src="{{ url_for('static', filename='img/down-arrow.png') }}"/>
@@ -337,7 +346,6 @@
 					</div>
 				</td>
 				<td colspan="2">
-
 					{% if b[5]|length == 0 %}
 					<span class="green">&#10004;&nbsp;</span>
 					{% else %}
@@ -353,8 +361,9 @@
 					<span class="error">&#10006;&nbsp;</span>
 					{% endif %}
 					<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a>
-				
 				</td>
+			{% endif %}
+
 				{% if b[8] is none %}
 				<td colspan="4"></td>
 				{% elif '%' in b[8] %}
@@ -552,7 +561,9 @@
 				{% else %}
 				<td>{{ c.order_fob.strftime('%d.%m.%Y') }}</td>
 				{% endif %}
-				{% if c.id is none %}
+				{% if 'material_not_found' in b[0][0].article_description %}
+				<td></td>
+				{% elif c.id is none %}
 				<td class="actions">
 					<div id="menu-container">
 						<div id="menu-icon">&#9776;</div>
@@ -568,7 +579,7 @@
 						</div>
 					</div>
 				</td>
-				{% elif c.order_orig_qty == 'stock' or c.sent == True %}
+				{% elif c.order_orig_qty == 'stock' or c.sent == True or 'material_not_found' in b[0][0].article_description %}
 				<td></td>
 				{% else %}
 				<td class="actions">
@@ -705,7 +716,9 @@
 				{% else %}
 				<td>{{ c.order_fob.strftime('%d.%m.%Y') }}</td>
 				{% endif %}
-				{% if c.id is none %}
+				{% if 'material_not_found' in b[0][0].article_description %}
+				<td></td>
+				{% elif c.id is none %}
 				<td class="actions">
 					<div id="menu-container">
 						<div id="menu-icon">&#9776;</div>

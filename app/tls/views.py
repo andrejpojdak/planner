@@ -4,8 +4,9 @@ from ..models import Assignments
 from ..models import Order
 from ..models import Delivery
 from ..models import Material
+from ..models import Settings
 import os, csv, re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 bp = Blueprint('tls', __name__)
 
@@ -68,7 +69,7 @@ def query_tl():
 		.filter(Assignments.tl == True, Assignments.sent != True, Assignments.tl_name == tl_name)
 		.all()
 	)
-	return render_template('tls/list.html', title="Transport Lists", assignments=assignments)
+	return render_template('tls/list.html', title=f"Transport Lists - {tl_name}", assignments=assignments)
 
 @bp.route('/create', methods=['GET', 'POST'])
 def create_tl():
@@ -148,7 +149,7 @@ def edit_tl(delivery_id, order_id):
 	db.session.commit()
 
 	flash(f"TL of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
-	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or url_for('tls.list_tls'))
+	return redirect(url_for('planning.list_plans', _anchor=d.buyer_article_number) or url_for('tls.list_tls'))
 
 @bp.route('/delete/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
 def delete_tl(delivery_id, order_id):
@@ -168,10 +169,13 @@ def delete_tl(delivery_id, order_id):
 
 	flash(f"TL of {query.qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } deleted.", 'danger')
 
-	return redirect(url_for('planning.list_plans_buyer_article_number', buyer_article_number=d.buyer_article_number) or url_for('tls.list_tls'))
+	return redirect(url_for('planning.list_plans', _anchor=d.buyer_article_number) or url_for('tls.list_tls'))
 
 @bp.route('/tl_sent', methods=['GET', 'POST'])
 def sent():
+
+	from ..services.get_confirmed_date import get_confirmed_date
+
 	for item in request.get_json():
 		
 		delivery_id = item.get("delivery_id")
@@ -187,6 +191,8 @@ def sent():
 			query_assignment.assign = False
 			query_assignment.tl = False
 			query_assignment.sent = True
+			query_assignment.sent_date = get_confirmed_date(delivery_id, order_id)
+	
 			db.session.add(query_assignment)
 			db.session.commit()
 

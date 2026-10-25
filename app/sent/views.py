@@ -25,12 +25,14 @@ def list_sent():
 			Assignments.order_id.label("order_id"),
 			Assignments.tl.label("tl"),
 			Assignments.sent.label("sent"),
+			Assignments.sent_date.label("sent_date"),
 			Material.material_code.label("buyer_article_number")
 		)
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
 		.join(Order, Order.id == Assignments.order_id)
 		.join(Material, Material.material_code == Delivery.buyer_article_number)
 		.filter(Assignments.sent == True)
+		.order_by(Material.material_code, Assignments.sent_date)
 		.all()
 	)
 	return render_template('sent/list.html', title="Sent", sent=sent)
