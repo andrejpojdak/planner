@@ -3,10 +3,15 @@ from ..models import Material
 from .yearly_demand import yearly_demand
 from .get_order_available_qty_excluding_sent import get_order_available_qty_excluding_sent
 from ..models import Delivery
+from ..models import Settings
+
 from datetime import date, timedelta
 
 def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta, portugal_delta):
-	
+
+	# Percentage of safety stock value after which alerts will be created
+	THRESHOLD = 10
+
 	class Stock():
 
 		def __init__(self, safety_stock_qty, safety_stock_string, yearly_demand_qty, stock_df_html, stock_alert_list):
@@ -16,8 +21,12 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 			self.yearly_demand_qty = yearly_demand_qty
 			self.stock_df_html = stock_df_html
 			self.stock_alert_list = stock_alert_list
-
+	
 	safety_stock_string = Material.query.filter(Material.material_code == buyer_article_number).first().safety_stock
+	
+	leadtime = Settings.query.filter_by(key="leadtime").first().value
+	today = date.today()
+	eol = today + timedelta(days = leadtime)
 
 	if '%' in safety_stock_string:
 
@@ -77,7 +86,10 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 			i.delivery_date = i.delivery_date - timedelta(days = delta)
 	
 	stock_analyze_list = sorted(
-		stock_analyze_list,
+		(
+			obj for obj in stock_analyze_list
+			if (obj.delivery_date if isinstance(obj, Delivery) else obj.eta) < eol
+		),
 		key=lambda obj: obj.delivery_date if isinstance(obj, Delivery) else obj.eta
 	)
 	stock_df = pd.DataFrame(columns=['SO/PO', '+/-', 'Date', 'Stock', 'Alert'])
@@ -92,14 +104,15 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 		}
 	
 	else:
-		stock_obj.stock_alert_list.append(( date.today(), current_stock_qty - stock_obj.safety_stock_qty ))
+		if round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100*(-1)) > THRESHOLD:
+			stock_obj.stock_alert_list.append(( date.today(), current_stock_qty - stock_obj.safety_stock_qty ))
 
 		stock_df.loc[len(stock_df)] = {
 			'SO/PO': 'Current stock',
 			'+/-': '',
 			'Date': '',
 			'Stock': current_stock_qty,
-			'Alert': current_stock_qty - stock_obj.safety_stock_qty
+			'Alert': f'{current_stock_qty - stock_obj.safety_stock_qty} ({round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100)}%)'
 		}
 	
 	for i in stock_analyze_list:
@@ -109,14 +122,15 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 
 			if current_stock_qty < stock_obj.safety_stock_qty:
 				
-				stock_obj.stock_alert_list.append(( i.delivery_date, current_stock_qty - stock_obj.safety_stock_qty ))
+				if round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100*(-1)) > THRESHOLD:
+					stock_obj.stock_alert_list.append(( i.delivery_date, current_stock_qty - stock_obj.safety_stock_qty ))
 				
 				stock_df.loc[len(stock_df)] = {
 					'SO/PO': f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
 					'+/-': f'-{i.delivery_quantity}',
 					'Date': i.delivery_date,
 					'Stock': current_stock_qty,
-					'Alert': current_stock_qty - stock_obj.safety_stock_qty
+					'Alert': f'{current_stock_qty - stock_obj.safety_stock_qty} ({round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100)}%)'
 				}
 
 			else:
@@ -133,15 +147,16 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 			current_stock_qty = current_stock_qty + i.available_quantity_excluding_sent
 			
 			if current_stock_qty < stock_obj.safety_stock_qty:
-				
-				stock_obj.stock_alert_list.append(( i.eta, current_stock_qty - stock_obj.safety_stock_qty ))
-			
+
+				if round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100*(-1)) > THRESHOLD:
+					stock_obj.stock_alert_list.append(( i.eta, current_stock_qty - stock_obj.safety_stock_qty ))
+
 				stock_df.loc[len(stock_df)] = {
 					'SO/PO': i.order_number,
 					'+/-': f'+{i.available_quantity_excluding_sent}',
 					'Date': i.eta,
 					'Stock': current_stock_qty,
-					'Alert': current_stock_qty - stock_obj.safety_stock_qty
+					'Alert': f'{current_stock_qty - stock_obj.safety_stock_qty} ({round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100)}%)'
 				}
 			else:
 				stock_df.loc[len(stock_df)] = {
@@ -158,7 +173,8 @@ def analyze_safety_stock(buyer_article_number, deliveries, orders, brasil_delta,
 
 def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, portugal_delta):
 	
-	import pandas as pd
+	# Percentage of safety stock value after which alerts will be created
+	THRESHOLD = 10
 
 	class OverStock():
 
@@ -171,6 +187,10 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 			self.over_stock_alert_list = over_stock_alert_list
 
 	over_stock_string = Material.query.filter(Material.material_code == buyer_article_number).first().over_stock
+	
+	leadtime = Settings.query.filter_by(key="leadtime").first().value
+	today = date.today()
+	eol = today + timedelta(days = leadtime)
 
 	if '%' in over_stock_string:
 
@@ -230,10 +250,12 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 			i.delivery_date = i.delivery_date - timedelta(days = delta)
 	
 	over_stock_analyze_list = sorted(
-		over_stock_analyze_list,
-		key=lambda obj: obj.delivery_date if isinstance(obj, Delivery) else obj.eta
-	)
-
+			(
+				obj for obj in over_stock_analyze_list
+				if (obj.delivery_date if isinstance(obj, Delivery) else obj.eta) < eol
+			),
+			key=lambda obj: obj.delivery_date if isinstance(obj, Delivery) else obj.eta
+		)
 	over_stock_df = pd.DataFrame(columns=['SO/PO', '+/-', 'Date', 'Stock', 'Alert'])
 
 	if current_stock_qty < over_stock_obj.over_stock_qty:
@@ -246,15 +268,17 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 		}
 	
 	else:
-		over_stock_obj.over_stock_alert_list.append(( date.today(), current_stock_qty - over_stock_obj.over_stock_qty ))
+		if round((current_stock_qty - over_stock_obj.over_stock_qty)/over_stock_obj.over_stock_qty*100) > THRESHOLD:
+			over_stock_obj.over_stock_alert_list.append(( date.today(), current_stock_qty - over_stock_obj.over_stock_qty ))
 
 		over_stock_df.loc[len(over_stock_df)] = {
 			'SO/PO': 'Current stock',
 			'+/-': '',
 			'Date': '',
 			'Stock': current_stock_qty,
-			'Alert': str('+') + str(current_stock_qty - over_stock_obj.over_stock_qty)
+			'Alert': f'+{current_stock_qty - over_stock_obj.over_stock_qty} ({round((current_stock_qty - over_stock_obj.over_stock_qty)/over_stock_obj.over_stock_qty*100)}%)'
 		}
+				#f'{current_stock_qty - stock_obj.safety_stock_qty} ({round((current_stock_qty - stock_obj.safety_stock_qty)/stock_obj.safety_stock_qty*100)}%)'
 	
 	for i in over_stock_analyze_list:
 		if isinstance(i, Delivery):
@@ -263,14 +287,15 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 
 			if current_stock_qty > over_stock_obj.over_stock_qty:
 				
-				over_stock_obj.over_stock_alert_list.append(( i.delivery_date, current_stock_qty - over_stock_obj.over_stock_qty ))
+				if round((current_stock_qty - over_stock_obj.over_stock_qty)/over_stock_obj.over_stock_qty*100) > THRESHOLD:
+					over_stock_obj.over_stock_alert_list.append(( i.delivery_date, current_stock_qty - over_stock_obj.over_stock_qty ))
 				
 				over_stock_df.loc[len(over_stock_df)] = {
 					'SO/PO': f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
 					'+/-': f'-{i.delivery_quantity}',
 					'Date': i.delivery_date,
 					'Stock': current_stock_qty,
-					'Alert': str('+') + str(current_stock_qty - over_stock_obj.over_stock_qty)
+					'Alert': f'+{current_stock_qty - over_stock_obj.over_stock_qty} ({round((current_stock_qty - over_stock_obj.over_stock_qty)/over_stock_obj.over_stock_qty*100)}%)'
 				}
 
 			else:
@@ -287,15 +312,16 @@ def analyze_over_stock(buyer_article_number, deliveries, orders, brasil_delta, p
 			current_stock_qty = current_stock_qty + i.available_quantity_excluding_sent
 			
 			if current_stock_qty > over_stock_obj.over_stock_qty:
-				
-				over_stock_obj.over_stock_alert_list.append(( i.eta, current_stock_qty - over_stock_obj.over_stock_qty ))
+
+				if round((current_stock_qty - over_stock_obj.over_stock_qty)/over_stock_obj.over_stock_qty*100) > THRESHOLD:
+					over_stock_obj.over_stock_alert_list.append(( i.eta, current_stock_qty - over_stock_obj.over_stock_qty ))
 			
 				over_stock_df.loc[len(over_stock_df)] = {
 					'SO/PO': i.order_number,
 					'+/-': f'+{i.available_quantity_excluding_sent}',
 					'Date': i.eta,
 					'Stock': current_stock_qty,
-					'Alert': str('+') + str(current_stock_qty - over_stock_obj.over_stock_qty)
+					'Alert': f'+{current_stock_qty - over_stock_obj.over_stock_qty} ({round((current_stock_qty - over_stock_obj.over_stock_qty)/over_stock_obj.over_stock_qty*100)}%)'
 				}
 			else:
 				over_stock_df.loc[len(over_stock_df)] = {

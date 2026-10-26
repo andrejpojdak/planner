@@ -361,11 +361,18 @@
 					<span class="error">&#10006;&nbsp;</span>
 					{% endif %}
 					<a href="{{ url_for('orders.query', buyer_article_number=b[0][0].buyer_article_number, next=request.full_path) }}">Orders</a>
+
+					<br>
+
+					<span class="inactive-comments">Yearly Demand: {{ b[19] }}pcs</span>
 				</td>
 			{% endif %}
 
 				{% if b[8] is none %}
-				<td colspan="4"></td>
+				<td colspan="4">
+					<br>
+					<span class="inactive-comments">Overall Stock: {{ b[18] }}pcs</span>
+				</td>
 				{% elif '%' in b[8] %}
 				<td colspan="4">
 					{% if b[11]|length > 0 %}
@@ -381,6 +388,10 @@
 						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.stock-table').style.display = 'none'">x</span><br><br>
 						{{b[10]|safe}}
 					</div>
+
+					<br>
+					
+					<span class="inactive-comments">Overall Stock: {{ b[18] }}pcs</span>
 				</td>
 				{% else %}
 				<td colspan="4">
@@ -397,6 +408,10 @@
 						<span style="position: absolute; top: 2px; right: 5px; cursor: pointer; font-size:large;" onclick="this.closest('.stock-table').style.display = 'none'">x</span><br><br>
 						{{b[10]|safe}}
 					</div>
+					
+					<br>
+					
+					<span class="inactive-comments">Overall Stock: {{ b[18] }}pcs</span>
 				</td>
 				{% endif %}
 				<td colspan="1"></td>				

@@ -195,6 +195,7 @@ def split_order(order_id):
 	o.article_description = material.short_text if material else '<material_not_found>'
 	weight = material.gross_weight if material else ''
 	o.unit_weight = weight
+	o.sales_price = None
 
 	form = OrderForm(obj=o)
 	form.buyer_article_number.render_kw = { "readonly": True}

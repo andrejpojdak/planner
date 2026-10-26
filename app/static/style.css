@@ -482,6 +482,11 @@ tr:has(input:checked) {
 	left: 700px;
 	top: 220px;
 }
+.inactive-comments {
+	font-style: italic;
+	color: grey;
+	font-size: 14px;
+}
 .boxes {
 	max-width: 300px;
     overflow: hidden;

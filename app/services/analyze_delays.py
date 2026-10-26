@@ -14,7 +14,7 @@ def analyze_delays(confirmed_deliveries):
 	to_order_list = []
 
 	for cd in confirmed_deliveries:
-		print(cd.article_description)
+		
 		delta = 0
 		if 'brasil' in str(cd.plant_name).lower():
 			delta = brasil_delta
