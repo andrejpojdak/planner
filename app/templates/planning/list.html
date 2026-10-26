@@ -492,6 +492,8 @@
 				{% endif %}
 				{% if c.order_orig_qty is none %}
 				<td>?</td>
+				{% elif c.sent == True or c.order_tl %}
+				<td></td>
 				{% else %}
 				<td>{{ c.order_orig_qty }}</td>
 				{% endif %}
@@ -657,6 +659,8 @@
 				{% endif %}
 				{% if c.order_orig_qty is none %}
 				<td>?</td>
+				{% elif c.sent == True or c.order_tl %}
+				<td></td>
 				{% else %}
 				<td>{{ c.order_orig_qty }}</td>
 				{% endif %}
