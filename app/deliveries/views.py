@@ -307,7 +307,6 @@ def import_csv():
 					db.session.delete(delivery_obj)
 
 		db.session.commit()
-		breakpoint()
 		
 		# Insert rows
 		added = 0
