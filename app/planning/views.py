@@ -14,6 +14,7 @@ import os, csv, re
 from datetime import date, timedelta
 from datetime import datetime
 from datetime import date
+from dotenv import load_dotenv
 
 from ..services.deliveries_confirm import deliveries_confirm
 from ..services.confirmations import Confirmations
@@ -669,3 +670,82 @@ def zlpi():
 	df.to_excel("zlpi.xlsx", index=False)
 
 	return jsonify(zlpi), 200
+
+@bp.route('/xlsx_backup', methods=['GET', 'POST'])
+def xlsx_backup():
+
+	import pandas as pd
+
+	load_dotenv()
+	DOWNLOAD_FOLDER = os.getenv("DOWNLOAD_FOLDER")
+
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list = all_plans()
+
+	rows = []
+
+	for b in buyer_article_numbers_list:
+		for d in b[0]:
+			for i, c in enumerate(d.confirmations):
+				if i == 0:
+					row = {
+						"Plant Name":	d.plant_name,
+						"ECV"		:	c.order_ecv if c.order_ecv else '',
+						"EDS"		:	c.order_eds if c.order_eds else '',
+						"SO Number"	:	f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
+						"Article Description"		:	d.article_description,
+						"Req. Qty"	:	f"{d.original_qty}{f'({d.sufficient_quantity})' if d.sufficient_quantity is not None else ''}",
+						"Req. Date"	:	f"{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }",
+						"Req. Week"	:	f"{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }",
+						"Conf. Date":	f"{ c.order_confirmed.strftime('%d.%m.%Y') if c.order_confirmed else '?' }",
+						"Conf. Week":	f"{ c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '?' }",
+						"Stock"		:	'?' if c.order_orig_qty == None else ( '' if (c.sent == True or c.order_tl) else c.order_orig_qty),
+						"Conf. Qty"	:	'?' if c.order_qty == None else c.order_qty,
+						"TL"		:	'x' if c.order_tl else '',
+						"Sales Price"	:	f"{c.order_sales_price:.4f}".replace('.', ',') if c.order_sales_price else '',
+						"ETA"		:	c.order_eta.strftime('CW%V/%g') if c.order_eta else '',
+						"Comment"	:	c.order_comment if c.order_comment else '',
+						"RMB"		:	c.order_rmb if c.order_rmb else '',
+						"Freight"	:	c.order_transport if c.order_transport else '',
+						"Supplier"	:	c.order_supplier if c.order_supplier else '',
+						"PO Number"	:	c.order_number if c.id else '',
+						"ECV PO"		:	c.order_ecv if c.order_ecv else '',
+						"EDS PO"		:	c.order_eds if c.order_eds else '',
+						"FOB"		:	c.order_fob.strftime('%d.%m.%Y') if c.order_fob else ''
+					}
+				
+				else:
+					row = {
+						"Plant Name":	d.plant_name,
+						"ECV"		:	c.order_ecv if c.order_ecv else '',
+						"EDS"		:	c.order_eds if c.order_eds else '',
+						"SO Number"	:	f"{d.delivery_schedule_number.lstrip('0')}-{d.delivery_schedule_position}",
+						"Article Description"		:	d.article_description,
+						"Req. Qty"	:	'',
+						"Req. Date"	:	f"{ d.delivery_date.strftime('%d.%m.%Y') if d.delivery_date else '' }",
+						"Req. Week"	:	f"{ d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '' }",
+						"Conf. Date":	f"{ c.order_confirmed.strftime('%d.%m.%Y') if c.order_confirmed else '?' }",
+						"Conf. Week":	f"{ c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '?' }",
+						"Stock"		:	f"{ '?' if c.order_orig_qty == None else ( '' if (c.sent == True or c.order_tl) else c.order_orig_qty) }",
+						"Conf. Qty"	:	'?' if c.order_qty == None else c.order_qty,
+						"TL"		:	'x' if c.order_tl else '',
+						"Sales Price"	:	f"{c.order_sales_price:.4f}".replace('.', ',') if c.order_sales_price else '',
+						"ETA"		:	c.order_eta.strftime('CW%V/%g') if c.order_eta else '',
+						"Comment"	:	c.order_comment if c.order_comment else '',
+						"RMB"		:	c.order_rmb if c.order_rmb else '',
+						"Freight"	:	c.order_transport if c.order_transport else '',
+						"Supplier"	:	c.order_supplier if c.order_supplier else '',
+						"PO Number"	:	c.order_number if c.id else '',
+						"ECV PO"		:	c.order_ecv if c.order_ecv else '',
+						"EDS PO"		:	c.order_eds if c.order_eds else '',
+						"FOB"		:	c.order_fob.strftime('%d.%m.%Y') if c.order_fob else ''
+					}
+
+				rows.append(row)
+
+		# Add a separator row after each delivery schedule
+		rows.append({"Plant Name": "***********"})
+
+	df = pd.DataFrame(rows)
+	df.to_excel(os.path.join(DOWNLOAD_FOLDER, 'backup.xlsx'), index=False)
+
+	return 'OK'

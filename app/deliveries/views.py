@@ -252,13 +252,36 @@ def import_csv():
 		# Delete existing entries matching keys
 		for on, op in keys:
 			q = Delivery.query
+
 			if on:
-				q = q.filter(Delivery.delivery_schedule_number == on)
+				q = q.filter(
+					Delivery.delivery_schedule_number == on
+				)
 			if op:
-				q = q.filter(Delivery.delivery_schedule_position == op)
-			q = q.filter(Delivery.sent == None)
-			q.delete(synchronize_session=False)
+				q = q.filter(
+					Delivery.delivery_schedule_position == op
+				)
+
+			# Do not delete sent deliveries
+			q = q.filter(Delivery.sent.is_(None))
+
+			for delivery_obj in q.all():
+				# Check whether the delivery is currently assigned to a TL or an assignment
+				assigned_to_tl = (
+					Assignments.query
+					.filter(
+						Assignments.delivery_id == delivery_obj.id
+					)
+					.first()
+				)
+
+				if assigned_to_tl:
+					print(delivery_obj)
+				else:
+					db.session.delete(delivery_obj)
+
 		db.session.commit()
+		breakpoint()
 		# Insert rows
 		added = 0
 		for r in rows:
@@ -281,7 +304,7 @@ def import_csv():
 			delivery_date = get(['Delivery date','Delivery Date','DeliveryDate'])
 			delivery_date = datetime.strptime(delivery_date, "%d.%m.%Y").date()
 			delivery_quantity = get(['Delivery quantity','Delivery Quantity','DeliveryQuantity'])
-			if Delivery.query.filter(Delivery.delivery_schedule_number == delivery_schedule_number, Delivery.delivery_schedule_position == delivery_schedule_position, Delivery.delivery_date == delivery_date, Delivery.delivery_quantity == delivery_quantity, Delivery.sent == True).all():
+			if Delivery.query.filter(Delivery.delivery_schedule_number == delivery_schedule_number, Delivery.delivery_schedule_position == delivery_schedule_position, Delivery.delivery_date == delivery_date, Delivery.delivery_quantity == delivery_quantity).all():
 				continue
 			additional_information = get(['Additional information'])
 			#breakpoint()
