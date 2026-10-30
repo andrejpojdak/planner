@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Order
@@ -21,6 +21,10 @@ from ..services.confirmations import Confirmations
 from ..services.all_plans import all_plans
 
 bp = Blueprint('planning', __name__)
+
+load_dotenv()
+ZLPI_OUTPUT = os.getenv("ZLPI_OUTPUT")
+ZLPI_ARCHIVE = os.getenv("ZLPI_ARCHIVE")
 
 '''class ConfirmedDeliveries():
 
@@ -524,6 +528,56 @@ def filter():
 @bp.route('/zlpi', methods=['GET', 'POST'])
 def zlpi():
 
+	plant_names = [
+		row.plant_name
+		for row in (
+			Delivery.query
+			.with_entities(Delivery.plant_name)
+			.filter(Delivery.plant_name.ilike("%schaeffler%"))
+			.distinct()
+			.order_by(Delivery.plant_name)
+			.all()
+		)
+	]
+
+	if request.method == 'POST':
+
+		file = request.files['file']
+		plant_name = request.form.get("plant_name")
+
+		if 'xlsx' not in os.path.basename(file.filename):
+			return render_template('planning/zlpi.html', title='ZLPI', error=f'Subor "{os.path.basename(file.filename)}" nie je v pozadovanom formate XLSX!', plant_names=plant_names)
+		
+		if 'xlsx' not in file.filename:
+			return render_template('planning/zlpi.html', title='ZLPI', error=f'Subor "{os.path.basename(file_path)}" nie je v pozadovanom formate XLSX!', plant_names=plant_names)
+		
+		file_path = os.path.join(ZLPI_OUTPUT, file.filename)
+		
+		try:
+			file.save(file_path)
+		except OSError as e:
+				return render_template('planning/zlpi.html', title='ZLPI', error=f'Subor "{os.path.basename(file_path)}" je otvoreny uzivatelom!', plant_names=plant_names)
+		
+		return redirect(url_for('planning.zlpi_confirm', plant_name=plant_name, filename=file.filename))
+
+	return render_template('planning/zlpi.html', title='ZLPI', error='', plant_names=plant_names)
+
+@bp.route('/zlpi_confirm/<plant_name>/<filename>', methods=['GET', 'POST'])
+def zlpi_confirm(plant_name, filename):
+
+	from ..services.zlpi_planner import fill_schedule_response
+	from ..services.zip_old_files import zip_old_files
+	
+	zip_old_files(ZLPI_OUTPUT)
+
+	file_path = os.path.join(ZLPI_OUTPUT, filename)
+	plant_name = plant_name
+
+	updated_list = []
+	plant_name_order_position = Delivery.query.filter(Delivery.plant_name == plant_name).all()
+	for pnop in plant_name_order_position:
+		updated_list.append(f"{pnop.delivery_schedule_number.lstrip('0')}-{pnop.delivery_schedule_position.lstrip('0')}")
+	
 	buyer_article_numbers_list = []
 	buyer_article_numbers = [
 		row.buyer_article_number
@@ -656,7 +710,7 @@ def zlpi():
 			"position": d.delivery_schedule_position,
 			"part": d.article_description,
 			"req_qty": d.original_qty,
-			"req_day": d.delivery_date.strftime('%Y-%m-%d') if d.delivery_date else '',
+			"req_day": d.delivery_date if d.delivery_date else '',
 			"req_wk": d.delivery_date.strftime('CW%V/%g') if d.delivery_date else '',
 			"conf_wk": c.order_confirmed.strftime('CW%V/%g') if c.order_confirmed else '',
 			"conf_qty": c.order_qty
@@ -667,9 +721,22 @@ def zlpi():
 		if c.order_confirmed and c.order_qty
 	])
 
-	df.to_excel("zlpi.xlsx", index=False)
+	#df.to_excel("zlpi.xlsx", index=False)
 
-	return jsonify(zlpi), 200
+	message, not_found, messages, output = fill_schedule_response(updated_list, file_path, df)
+	
+	output = os.path.basename(output)
+	output_path = os.path.join(ZLPI_OUTPUT, output)
+	output_path = re.sub("/mnt/T", "T:", output_path)
+	output_path = output_path.replace("/", "\\")
+
+	#return jsonify(message, not_found, messages, output), 200
+
+	return render_template('planning/zlpi_spracovanie.html', title='ZLPI Spracovanie', file=filename, not_found=not_found, message=message, messages=messages, output=output, output_path=output_path)
+
+@bp.route('/download_zlpi/<filename>')
+def download_zlpi(filename):
+    return send_from_directory(ZLPI_OUTPUT, filename, as_attachment=True)
 
 @bp.route('/xlsx_backup', methods=['GET', 'POST'])
 def xlsx_backup():

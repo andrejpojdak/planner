@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<div class="lists" id="drop-area">
+	{% if message %}
+		<p style="text-align: center">{{ message }}</p>
+	{% endif %}
+	{% if messages %}
+	<a href="{{ url_for('planning.download_zlpi', filename=output) }}" id="textToCopy_zlpi">{{ output_path }}</a><br><br>
+	<div class="clip-board-container">
+		<img class="clipboard" src="{{ url_for('static', filename='img/clipboard.png') }}" id="zlpi_output" onclick="copyFallback()">
+		<br>
+		<span class="tooltip-clipboard" id="tooltip-clipboard">Skopirovat</span>
+	</div>
+
+	<br>
+
+	{% endif %}
+	{% if not_found %}
+		<p>Nenajdene polozky najblizsich 6 mesiacov</p>
+		<br>
+	{% endif %}
+	<table id="dataframe_red">
+	{% for item in not_found %}
+			<tr>
+				<td>{{ item[0] }}</td>
+				<td>{{ item[1] }}</td>
+				<td>{{ item[2] }}</td>
+				<td>{{ item[3] }}</td>
+			</tr>
+	{% endfor %}
+	</table>
+	<BR>
+	<BR>
+	{% if messages %}
+		<p style="text-align: center">ZLPI Potvrdenia</p>
+		<br>
+	{% endif %}
+	<table class="zlpi-table">
+	{% for m in messages %}
+			<tr>
+				<td>{{ m[0] }}</td>
+				<td>{{ m[1] }}</td>
+				<td>{{ m[2] }}</td>
+				<td>{{ m[3] }}</td>
+				<td>{{ m[4] }}</td>
+				<td>{{ m[5] }}</td>
+			</tr>
+	{% endfor %}
+	</table>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let lastValue = null;
+    let toggle = false;
+
+    // Alternate row colors and add borders when the first-column value changes
+    const rows = document.querySelectorAll('table.zlpi-table tr');
+
+    rows.forEach(function (row, index) {
+        if (index === 0) return; // Skip header
+
+        const firstCell = row.querySelector('td:first-child');
+        if (!firstCell) return;
+
+        const currentValue = firstCell.textContent.trim();
+
+        if (currentValue !== lastValue) {
+            toggle = !toggle;
+            lastValue = currentValue;
+
+            if (index > 1) {
+                rows[index - 1].style.borderBottom = '2px solid black';
+            }
+        }
+
+        row.style.backgroundColor = toggle ? '#DDECFB' : '#DBDCDD';
+    });
+
+    // Color the sixth column based on its status
+    rows.forEach(function (row) {
+        const cells = row.querySelectorAll('td');
+        const cell = cells[5]; // Sixth column
+
+        if (!cell) return;
+
+        const status = cell.textContent.trim();
+
+        if (status === 'OK') {
+            cell.style.color = 'limegreen';
+        } else if (status === 'NOT CONFIRMED') {
+            cell.style.color = 'grey';
+        } else {
+            cell.style.color = 'orange';
+        }
+
+        cell.style.backgroundColor = 'white';
+    });
+});
+
+function copyFallback() {
+    const source = document.getElementById('textToCopy_zlpi');
+    const tooltip = document.getElementById('tooltip-clipboard');
+
+    if (!source || !tooltip) return;
+
+    const text = source.innerText;
+
+    tooltip.classList.add('tooltip-clicked');
+    tooltip.innerText = 'Skopirovane';
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+
+    textarea.select();
+
+    try {
+        document.execCommand('copy');
+        tooltip.innerText = 'Skopirovane!';
+    } catch (err) {
+        alert('Copy failed: ' + err);
+    }
+
+    document.body.removeChild(textarea);
+}
+</script>
+
+{% endblock %}

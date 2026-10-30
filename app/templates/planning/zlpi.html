@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<form method="POST" enctype="multipart/form-data">
+	<input type="file" name="file" id="drop"><br><br>
+	<select id="plant_name" name="plant_name">
+		{% for plant in plant_names %}
+		<option value="{{ plant }}">{{ plant }}</option>
+		{% endfor %}
+	</select>
+	<button type="submit">Odoslať</button>
+</form>
+
+{% if error %}
+<p id="error" style="color: red;">{{ error }}</p>
+{% endif %}
+
+{% endblock %}

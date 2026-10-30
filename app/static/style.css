@@ -691,3 +691,67 @@ table.stock-df,
 table.over-stock-df {
     display: table;
 }
+img.clipboard {
+	height: 2%;
+	width: 2%;
+	display: inline;
+}
+img.clipboard:hover {
+	cursor: pointer;
+}
+img.clipboard:hover ~ .tooltip {
+	visibility: visible;
+}
+img.clipboard:hover ~ .tooltip-clipboard {
+	visibility: visible;
+}
+.tooltip {
+	position: relative;
+	left: -40px;
+	bottom: -30px;
+	background-color: black;
+	color: white;
+	padding: 5px;
+	visibility: hidden;
+}
+.tooltip-clipboard {
+	position: relative;
+	background-color: black;
+	color: white;
+	padding: 5px;
+	visibility: hidden;
+}
+.tooltip-clicked {
+	background-color: white;
+	color: black;
+	border: solid 3px lime;
+}
+#textToCopy {
+	font-size: 16px;
+}
+#textToCopy_zlpi {
+	font-size: 11px;
+}
+#drop-area {
+	text-align: center;
+}
+table#dataframe_red {
+	width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+table#dataframe_red,
+table#dataframe_red th,
+table#dataframe_red td {
+    border: 1px solid red;
+}
+table.zlpi-table {
+	width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+table.zlpi-table,
+table.zlpi-table tr,
+table.zlpi-table td {
+    border: 1px solid black;
+}
