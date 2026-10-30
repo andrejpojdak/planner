@@ -84,6 +84,7 @@ def all_plans():
 	overall_safety_stock_list = []
 	overall_over_stock_list = []
 	overall_unconfirmed_orders_list = []
+	overall_conflicts_list = []
 
 	for b in buyer_article_numbers_list:
 
@@ -100,6 +101,9 @@ def all_plans():
 		if b[17]:
 			for r in b[17]:
 				overall_unconfirmed_orders_list.append((r.buyer_article_number, r.supplier, r.order_number, r.article_description, r.fob))
+		if b[20]:
+			for q in b[20]:
+				overall_conflicts_list.append((q.buyer_article_number, q.plant_name, q.delivery_schedule_number, q.article_description, q.delivery_quantity, q.delivery_date))
 
 		# Assign a sent boolean value to a confirmation, if it is present in Assignemtns table
 		for d in b[0]:
@@ -150,4 +154,4 @@ def all_plans():
 				b[0].append(new_delivery)
 				b[1].remove(o)
 
-	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list
+	return buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list, overall_conflicts_list

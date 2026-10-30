@@ -9,6 +9,7 @@ from .confirmations import Confirmations
 from .stocks import analyze_over_stock, analyze_safety_stock
 from .get_current_stock_qty import get_current_stock_qty
 from .yearly_demand import yearly_demand
+from .get_conflicts import get_conflicts
 
 def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dict):
 
@@ -66,6 +67,7 @@ def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dic
 
 	current_stock_qty = get_current_stock_qty(copy.deepcopy(orders))
 	currenty_yearly_demand = yearly_demand(copy.deepcopy(deliveries))
+	conflicts = get_conflicts(copy.deepcopy(deliveries))
 
 	if Material.query.filter(Material.material_code == buyer_article_number).first() == None:
 		safety_stock, safety_stock_string, yearly_demand_qty_safety_stock, stock_df_html, stock_alert_list = None, None, None, None, None
@@ -314,4 +316,4 @@ def deliveries_confirm(buyer_article_number, deliveries, orders, assignments_dic
 
 	delays, to_order_list = analyze_delays(confirmed_deliveries)
 	
-	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list, safety_stock, safety_stock_string, yearly_demand_qty_safety_stock, stock_df_html, stock_alert_list, over_stock, over_stock_string, yearly_demand_qty_over_stock, over_stock_df_html, over_stock_alert_list, unconfirmed_orders, current_stock_qty, currenty_yearly_demand
+	return confirmed_deliveries, orders, box_qty, gross_weight, comment, delays, to_order_list, safety_stock, safety_stock_string, yearly_demand_qty_safety_stock, stock_df_html, stock_alert_list, over_stock, over_stock_string, yearly_demand_qty_over_stock, over_stock_df_html, over_stock_alert_list, unconfirmed_orders, current_stock_qty, currenty_yearly_demand, conflicts

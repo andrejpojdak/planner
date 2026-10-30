@@ -45,7 +45,7 @@ ZLPI_ARCHIVE = os.getenv("ZLPI_ARCHIVE")
 @bp.route('/', methods=['GET', 'POST'])
 def list_plans():
 
-	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list = all_plans()
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list, overall_conflicts_list = all_plans()
 
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=buyer_article_numbers_list, plant_names=plant_names, weeks=weeks)
 
@@ -54,7 +54,7 @@ def dashboard():
 
 	import pandas as pd
 
-	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list = all_plans()
+	buyer_article_numbers_list, plant_names, weeks, overall_delays_list, overall_new_orders_list, overall_safety_stock_list, overall_over_stock_list, overall_unconfirmed_orders_list, overall_conflicts_list = all_plans()
 
 	#Delays
 	overall_delays_list_df = pd.DataFrame(columns=[
@@ -208,6 +208,38 @@ def dashboard():
 
 	overall_unconfirmed_orders_list_df = overall_unconfirmed_orders_list_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="unconfirmed-df dashboard"')
 
+	#Conflicts
+	overall_conflicts_df = pd.DataFrame(columns=[
+		'Plant Name',
+		'SO Number',
+		'SAP Article Description',
+		'Req. Qty',
+		'Req. Date',
+		'Req. Week',
+		''
+	])
+
+	#overall_conflicts_list.sort(key=lambda x: x[8], reverse=True) 
+
+	for ocl in overall_conflicts_list:
+
+		from html import escape
+		
+		url = url_for('planning.list_plans', _anchor=str(ocl[0]))
+		url_link = f'<a href="{escape(url, quote=True)}" title="View plan">&#128065;</a>'
+		
+		overall_conflicts_df.loc[len(overall_conflicts_df)] = {
+			'Plant Name':	ocl[1],
+			'SO Number'	:	ocl[2].lstrip('0'),
+			'SAP Article Description':	ocl[3],
+			'Req. Qty'	:	ocl[4],
+			'Req. Date'	:	ocl[5].strftime("%d.%m.%Y"),
+			'Req. Week'	:	ocl[5].strftime("%d.%m.%Y"),
+			''			:	url_link
+		}
+	
+	overall_conflicts_df = overall_conflicts_df.to_html(index=False, escape=False, render_links=True).replace('class="dataframe"', f'class="conflicts-df dashboard"')
+
 	return render_template(
 		'planning/dashboard.html',
 		title="Dashboard",
@@ -223,7 +255,9 @@ def dashboard():
 		overall_over_stock_list=overall_over_stock_list,
 		overall_over_stock_list_df=overall_over_stock_list_df,
 		overall_unconfirmed_orders_list=overall_unconfirmed_orders_list,
-		overall_unconfirmed_orders_list_df=overall_unconfirmed_orders_list_df
+		overall_unconfirmed_orders_list_df=overall_unconfirmed_orders_list_df,
+		overall_conflicts_list=overall_conflicts_list,
+		overall_conflicts_df=overall_conflicts_df
 	)
 '''
 @bp.route('/query/<buyer_article_number>', methods=['GET'])
@@ -521,7 +555,7 @@ def filter():
 		]
 		
 		if len(result) > 0:
-			filtered_list.append((result, b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15], b[16], b[17], b[18], b[19]))
+			filtered_list.append((result, b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15], b[16], b[17], b[18], b[19], b[20]))
 		
 	return render_template('planning/list.html', title="Planning", buyer_article_numbers_list=filtered_list, filters=filters, plant_names=plant_names, weeks=weeks)
 

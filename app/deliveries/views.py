@@ -81,7 +81,7 @@ def create_delivery():
 	if form.validate_on_submit():
 		d = Delivery(
 			buyer_plant_id=form.buyer_plant_id.data,
-			plant_name=form.plant_name.data,
+			plant_name=form.plant_name.data.replace('\xa0', ' ').strip(),
 			unloading_point=form.unloading_point.data,
 			buyer_article_number=form.buyer_article_number.data,
 			article_description=form.article_description.data,
@@ -134,7 +134,7 @@ def edit_delivery(delivery_id):
 	form = DeliveryForm(obj=d)
 	if form.validate_on_submit():
 		d.buyer_plant_id = form.buyer_plant_id.data
-		d.plant_name = form.plant_name.data
+		d.plant_name = form.plant_name.data.replace('\xa0', ' ').strip()
 		d.unloading_point = form.unloading_point.data
 		d.buyer_article_number = form.buyer_article_number.data
 		d.article_description = form.article_description.data

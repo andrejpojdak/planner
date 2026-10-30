@@ -516,6 +516,7 @@ tr:not([data-sent="True"]) td:nth-child(16):not(:empty) {
 	padding: 20px;
 	border: 1px solid lightgrey;
 	border-radius: 15px;
+	margin-bottom: 10px;
 }
 table.delayed-df > tbody > tr > td:nth-child(9) {
 	color: red;

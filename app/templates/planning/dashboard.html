@@ -6,6 +6,24 @@
 
 <div class="tiles">
 
+	{% if overall_conflicts_list|length == 0 %}
+	<div class="tile">
+		<h4>Import<br>Conflicts</h4>
+		<div class="count">
+			<span class="green">&#10004;</span>
+			<span class="tile-text">&nbsp;No import conficts.</span>
+		</div>
+	</div>
+	{% else %}
+	<div class="tile">
+		<h4>Import<br>Conflicts</h4>
+		<br>
+		<div class="count right">
+			<h2 class="error">&#9888;<span class="black">&nbsp;{{ overall_conflicts_list|length }}</h2>
+		</div>
+	</div>
+	{% endif %}
+
 	{% if overall_delays_list|length == 0 %}
 	<div class="tile">
 		<h4>Delayed<br>Orders</h4>
@@ -15,14 +33,13 @@
 		</div>
 	</div>
 	{% else %}
-		<div class="tile" >
-			<h4>Delayed<br>Orders</h4>
-			<br>
-			<div class="count right">
-				<h2 class="error">!<span class="black">&nbsp;{{ overall_delays_list|length }}</h2>
-			</div>
+	<div class="tile">
+		<h4>Delayed<br>Orders</h4>
+		<br>
+		<div class="count right">
+			<h2 class="error">!<span class="black">&nbsp;{{ overall_delays_list|length }}</h2>
 		</div>
-	</a>
+	</div>
 	{% endif %}
 
 	{% if overall_unconfirmed_orders_list|length == 0 %}
@@ -34,14 +51,13 @@
 		</div>
 	</div>
 	{% else %}
-		<div class="tile" >
-		<h4>Unconfirmed<br>Orders</h4>
-			<br>
-			<div class="count right">
-				<h2 class="purple">&#9083;<span class="black">&nbsp;{{ overall_unconfirmed_orders_list|length }}</h2>
-			</div>
+	<div class="tile" >
+	<h4>Unconfirmed<br>Orders</h4>
+		<br>
+		<div class="count right">
+			<h2 class="purple">&#9083;<span class="black">&nbsp;{{ overall_unconfirmed_orders_list|length }}</h2>
 		</div>
-	</a>
+	</div>
 	{% endif %}
 
 	{% if overall_new_orders_list|length == 0 %}
@@ -53,14 +69,13 @@
 		</div>
 	</div>
 	{% else %}
-		<div class="tile" >
-			<h4>New<br>Orders</h4>
-			<br>
-			<div class="count right">
-				<h2 class="error">&#x1F6D2;<span class="black">&nbsp;{{ overall_new_orders_list|length }}</h2>
-			</div>
+	<div class="tile" >
+		<h4>New<br>Orders</h4>
+		<br>
+		<div class="count right">
+			<h2 class="error">&#x1F6D2;<span class="black">&nbsp;{{ overall_new_orders_list|length }}</h2>
 		</div>
-	</a>
+	</div>
 	{% endif %}
 
 	{% if overall_safety_stock_list|length == 0 %}
@@ -72,14 +87,13 @@
 		</div>
 	</div>
 	{% else %}
-		<div class="tile" >
-			<h4>Safety<br>Stock</h4>
-			<br>
-			<div class="count right">
-				<h2 class="orange">&#8615;<span class="black">&nbsp;{{ overall_safety_stock_list|length }}</h2>
-			</div>
+	<div class="tile" >
+		<h4>Safety<br>Stock</h4>
+		<br>
+		<div class="count right">
+			<h2 class="orange">&#8615;<span class="black">&nbsp;{{ overall_safety_stock_list|length }}</h2>
 		</div>
-	</a>
+	</div>
 	{% endif %}
 
 	{% if overall_over_stock_list|length == 0 %}
@@ -91,17 +105,24 @@
 		</div>
 	</div>
 	{% else %}
-		<div class="tile" >
-			<h4>Over<br>Stock</h4>
-			<br>
-			<div class="count right">
-				<h2 class="blue">&#8613;<span class="black">&nbsp;{{ overall_over_stock_list|length }}</h2>
-			</div>
+	<div class="tile">
+		<h4>Over<br>Stock</h4>
+		<br>
+		<div class="count right">
+			<h2 class="blue">&#8613;<span class="black">&nbsp;{{ overall_over_stock_list|length }}</h2>
 		</div>
-	</a>
+	</div>
 	{% endif %}
 
 </div>
+
+{% if overall_conflicts_list|length != 0 %}
+<div id="delayed" class="lists">
+	<h3>Import Conflicts</h3>
+	<br>
+	{{ overall_conflicts_df|safe }}
+</div>
+{% endif %}
 
 {% if overall_delays_list|length != 0 %}
 <div id="delayed" class="lists">
@@ -128,7 +149,7 @@
 {% endif %}
 
 {% if overall_safety_stock_list|length != 0 %}
-<div id="delayed" class="lists">
+<div id="safety" class="lists">
 	<h3>Safety Stock</h3>
 	<br>
 	{{ overall_safety_stock_list_df|safe }}
@@ -136,7 +157,7 @@
 {% endif %}
 
 {% if overall_over_stock_list|length != 0 %}
-<div id="delayed" class="lists">
+<div id="over" class="lists">
 	<h3>Over Stock</h3>
 	<br>
 	{{ overall_over_stock_list_df|safe }}
