@@ -12,9 +12,11 @@
       <p>{{ form.csv_file.label }}<br>{{ form.csv_file() }}</p>
       <p>{{ form.submit() }}</p>
     </form>
+
     <p><a href="{{ url_for('deliveries.list_deliveries') }}">Back to list</a></p>
   {% else %}
     <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+    <form id="delivery-delete" method="post" action="{{ url_for('deliveries.delete_delivery', delivery_id=id) }}" style="display:inline" onsubmit="return confirm('Delete this row?');"><button type="submit">Delete</button></form>
     <form method="post">
       {{ form.hidden_tag() }}
       <p>{{ form.submit() }}</p>

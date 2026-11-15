@@ -2,25 +2,8 @@
 
 {% block title %}Deliveries{% endblock %}
 
-{% block content %}
-
-<div>
-	<div id="flex-left">
-    {% if query %}
-    <a href="{{ url_for('deliveries.create_delivery', buyer_article_number=buyer_article_number, next=request.full_path) }}">Create new delivery</a>
-		{% else %}
-    <a href="{{ url_for('deliveries.create_delivery') }}">Create new delivery</a> |
-		{% endif %}
-    <a href="{{ url_for('deliveries.import_csv') }}">Import from CSV</a>
-		<form method="post" action="{{ url_for('deliveries.delete_all_deliveries') }}" onsubmit="return confirm('Delete ALL deliveries? This cannot be undone.');">
-			<button type="submit" disabled>Delete all deliveries</button>
-		</form>
-		<button id="del-selected-button" type="submit" disabled>Delete selected deliveries</button>
-	</div>
-</div>
-<br>
-<div>
-  Quick filters:
+{% block buttons %}
+<div id="right-container">
   <select name="plant_name" class="filter quickfilter">
     <option value="">Plant Name</option>
     {% for plant in plant_names %}
@@ -33,9 +16,20 @@
       {% else %}
       <option value="{{ plant }}">{{ plant }}</option>
       {% endif %}
-  {% endfor %}
+    {% endfor %}
   </select>
+  {% if query %}
+  <a href="{{ url_for('deliveries.create_delivery', buyer_article_number=buyer_article_number, next=request.full_path) }}">Create new delivery</a>
+  {% else %}
+  <a href="{{ url_for('deliveries.create_delivery') }}">Create new delivery</a> |
+  {% endif %}
+  <a href="{{ url_for('deliveries.import_csv') }}">Import from CSV</a>
+  <button id="del-selected-button" type="submit" disabled>Delete selected deliveries</button>
 </div>
+{% endblock %}
+
+{% block content %}
+
 <br>
  <table>
     <thead>

@@ -25,6 +25,7 @@ a:hover {
 	background-color: black;
 	color: white;
 }
+
 /* Menu */
 
 .menu {
@@ -172,8 +173,28 @@ a:hover {
     font-weight: 500;
 }
 /* Container */
-#main-container {
+div#main-container {
 	margin: 10px;
+}
+div#upper-container {
+	display: flex;
+	gap: 20px;
+}
+div#left-container {
+	width: 10%;
+}
+div#right-container {
+	width: 90%;
+	padding: 10px;
+	background-color: white;
+	border: 1px solid lightgrey;
+	border-radius: 7px;
+	color: var(--title-color);
+	margin-bottom: 10px;	
+}
+div#right-container select {
+	padding: 10px;
+	border: 1px solid lightgrey;
 }
 /* Table */
 
@@ -529,15 +550,7 @@ table.dashboard > tbody > tr > td:last-child {
 table.dashboard > tbody > tr:has(> td:hover) {
     background-color: whitesmoke;
 }
-.title-container {
-	padding: 20px;
-	border: 1px solid lightgray;
-	background-color: white;
-	border: 1px solid lightgrey;
-	border-radius: 15px;
-	color: var(--title-color);
-	margin-bottom: 10px;
-}
+
 .tiles {
 	display: flex;
 	gap: 10px;
@@ -755,4 +768,9 @@ table.zlpi-table,
 table.zlpi-table tr,
 table.zlpi-table td {
     border: 1px solid black;
+}
+#delivery-delete {
+	position: relative;
+	left: 600px;
+	font-size: 20px;
 }

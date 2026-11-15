@@ -54,12 +54,17 @@
 </div>
 
 <div id="main-container">
-	<div class="title-container">
-		<span class="title-icon">
-		</span>
-		<h2 class="blurred">{{ title }}</h2>
+
+	<div id="upper-container">
+		<div id="left-container">
+			<h2 class="blurred">{{ title }}</h2>
+		</div>
+		
+		{% block buttons %}{% endblock %}
 	</div>
-	{% block content %}{% endblock %}
+
+{% block content %}{% endblock %}
+
 </div>
 
 <script>

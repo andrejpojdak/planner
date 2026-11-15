@@ -151,14 +151,22 @@ def edit_delivery(delivery_id):
 		db.session.commit()
 		flash('Delivery updated.', 'success')
 		return redirect(url_for('planning.list_plans', _anchor=d.buyer_article_number) or next_url or url_for('deliveries.list_deliveries'))
-	return render_template('deliveries/form.html', title="Edit delivery", form=form, action='Edit', assignment_list=assignment_list)
+	return render_template('deliveries/form.html', title="Edit delivery", form=form, action='Edit', assignment_list=assignment_list, id=delivery_id)
 
 @bp.route('/delete/<int:delivery_id>', methods=['POST'])
 def delete_delivery(delivery_id):
+
 	d = Delivery.query.get_or_404(delivery_id)
-	db.session.delete(d)
-	db.session.commit()
-	flash('Delivery deleted.', 'warning')
+	
+	try:
+		db.session.delete(d)
+		db.session.commit()
+		flash('Delivery deleted.', 'warning')
+	
+	except Exception as e:
+		db.session.rollback()
+		flash("Delivery not deleted. Check active assignemnts or TLs!", "danger")
+
 	return redirect(url_for('planning.list_plans', _anchor=d.buyer_article_number) or url_for('deliveries.list_deliveries'))
 
 @bp.route('/delete_all', methods=['POST'])
