@@ -49,7 +49,6 @@ class Order(db.Model):
 	buyer_article_number = db.Column(db.String(255), nullable=True)
 	article_description = db.Column(db.String(1024), nullable=True)
 	order_number = db.Column(db.String(120), nullable=True, index=True)
-	order_position = db.Column(db.String(120), nullable=True, index=True)
 	fob = db.Column(db.Date)
 	transport = db.Column(db.String(120), nullable=True)
 	quantity = db.Column(db.Integer, nullable=True)
@@ -63,6 +62,7 @@ class Order(db.Model):
 	comment = db.Column(db.String(120), nullable=True)
 	created_at = db.Column(db.Date, default=datetime.datetime.utcnow)
 	in_stock_date = db.Column(db.Date)
+	charge = db.Column(db.String(50), nullable=True)
 	delivery_orders = db.relationship("Assignments", back_populates="order")
 	
 	def __repr__(self):

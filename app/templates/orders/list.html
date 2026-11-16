@@ -130,6 +130,18 @@
 				<input name="rmb" placeholder=" " class="filter narrow" value=""></input>
 				{% endif %}
 			</th>
+			<th>Heat Charge
+				<br>
+				{% if filters %}
+				{% if filters.get('charge') %}
+				<input name="charge" placeholder=" " class="filter narrow" value="{{ filters.get('charge') }}"></input>
+				{% else %}
+				<input name="charge" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+				{% else %}
+				<input name="charge" placeholder=" " class="filter narrow" value=""></input>
+				{% endif %}
+			</th>
 			<th>Comment
 				<br>
 				{% if filters %}
@@ -158,12 +170,25 @@
         <td>{{ o.transport }}</td>
         <td>{{ o.quantity }}</td>
         <td class="available_qty">{{ o.available_quantity }}</td>
-		<td>{{ o.ecv }}</td>
+		{% if o.ecv is none %}
+		<td></td>
+		{% else %}
+        <td>{{ o.ecv }}</td>
+		{% endif %}
+        {% if o.eds is none %}
+		<td></td>
+		{% else %}
         <td>{{ o.eds }}</td>
+		{% endif %}
 		{% if o.rmb is none %}
         <td></td>
     	{% else %}
 		<td>{{ o.rmb }}</td>
+		{% endif %}
+		{% if o.charge is none %}
+        <td></td>
+    	{% else %}
+		<td>{{ o.charge }}</td>
 		{% endif %}
 		{% if o.comment is none %}
         <td></td>
