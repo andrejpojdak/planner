@@ -2,6 +2,22 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block buttons %}
+<div class="upload-container" id="right-container">
+  <form id="uploadForm" method="POST" enctype="multipart/form-data">
+    <label class="drop-area" id="dropArea">
+      <strong>Drag excel file with delivery notes:&nbsp;</strong>
+      <input type="file" id="fileInput" name="file" required>
+    </label>
+    
+    <button type="submit" id="uploadBtn">
+      Upload File
+    </button>
+    <br>
+  </form>
+</div>
+{% endblock %}
+
 {% block content %}
 
 <button id="sent-button">

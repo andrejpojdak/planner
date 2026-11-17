@@ -10,8 +10,9 @@ from datetime import datetime, timedelta
 
 bp = Blueprint('tls', __name__)
 
-@bp.route('/', methods=['GET'])
+@bp.route('/', methods=['GET', 'POST'])
 def list_tls():
+
 	assignments = (
 		db.session.query(
 			Delivery.plant_name.label("plant_name"),
@@ -38,6 +39,38 @@ def list_tls():
 		.filter(Assignments.tl == True, Assignments.sent != True)
 		.all()
 	)
+
+	if request.method == 'POST':
+
+		file = request.files['file']
+
+		if 'xlsx' not in file.filename:
+			flash('File does not have .xlsx extension!', 'danger')
+			return render_template('tls/list.html', title="Transport Lists", assignments=assignments)
+
+		import pandas as pd
+		df = pd.read_excel(file)
+
+		for a in assignments:
+			for i, row in df.iterrows():
+				del_pos = f'{a.delivery_schedule_number.lstrip('0')}-{a.delivery_schedule_position.lstrip('0')}'
+				if all([
+					del_pos == row.iloc[0],
+					a.order_number == row['internal'].strip(),
+					a.order_qty == row['real quantity'],
+					a.del_note == None
+				]):
+					db.session.query(Assignments).filter(
+						Assignments.delivery_id == a.delivery_id,
+						Assignments.order_id == a.order_id
+					).update({
+						Assignments.del_note: row.iloc[-1]
+					}, synchronize_session=False)
+					flash(f'{row.iloc[-1]} updated.', 'info')
+
+		db.session.commit()
+		return redirect(url_for('tls.list_tls'))
+		
 	return render_template('tls/list.html', title="Transport Lists", assignments=assignments)
 
 @bp.route('/query/', methods=['GET'])
