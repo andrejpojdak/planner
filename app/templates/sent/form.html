@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<form method="post" action="{{ url_for('sent.edit_del_note', delivery_id=delivery_id, order_id=order_id) }}">
+
+  <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
+
+  <table class="assignment-table">
+      <thead>
+        <tr>
+          <th>Delivery</th>
+          <th>Assigned Qty</th>
+          <th>Order</th>
+          <th>TL Name</th>
+          <th>Delivery Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select name="deliveries" disabled>
+              {% for d in deliveries %}
+                {% if delivery_id == d.id %}
+                <option value="{{ d.id }}" selected>{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
+                {% else %}
+                <option value="{{ d.id }}">{{ d.delivery_schedule_number.lstrip('0') }}-{{ d.delivery_schedule_position }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_quantity }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('%d.%m.%Y') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ d.delivery_date.strftime('CW%V/%g') }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <input value="{{ qty }}" class="normal" name="qty" type="number" disabled></input>
+          </td>
+          <td>
+            <select name="orders" disabled>
+              {% for o in orders %}
+                {% if order_id == o.id %}
+                <option value="{{ o.id }}" selected>{{ o.order_number }}</option>
+                {% else %}
+                <option value="{{ o.id }}">{{ o.order_number }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            {% if tl_name is none %}
+            <input value="" class="normal" name="tl_name" type="text"></input>
+            {% else %}
+            <input value="{{ tl_name }}" class="normal" name="tl_name" type="text"></input>
+            {% endif %}
+          </td>
+          <td>
+            {% if del_note is none %}
+            <input value="" class="normal" name="del_note" type="text"></input>
+            {% else %}
+            <input value="{{ del_note }}" class="normal" name="del_note" type="text"></input>
+            {% endif %}
+          </td>
+      </tr>
+      </tbody>
+  </table>
+  <br>
+  <button type="submit">{{ action }}</button>
+
+</form>
+
+{% if edit %}
+<form method="post" action="{{ url_for('tls.delete_tl', delivery_id=delivery_id, order_id=order_id) }}" style="display:inline" onsubmit="return confirm('Delete this assignment?');">
+  <button type="submit">Delete</button>
+</form>
+{% endif %}
+
+{% endblock %}

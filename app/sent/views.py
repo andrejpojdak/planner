@@ -27,6 +27,7 @@ def list_sent():
 			Assignments.tl.label("tl"),
 			Assignments.sent.label("sent"),
 			Assignments.sent_date.label("sent_date"),
+			Assignments.del_note.label("del_note"),
 			Material.material_code.label("buyer_article_number")
 		)
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
@@ -37,3 +38,36 @@ def list_sent():
 		.all()
 	)
 	return render_template('sent/list.html', title="Sent", sent=sent)
+
+@bp.route('/change_del_note', methods=['GET'])
+def change_del_note():
+
+	delivery_id = int(request.args.get('delivery_id'))
+	order_id = int(request.args.get('order_id'))
+	qty = int(request.args.get('qty'))
+	buyer_article_number = request.args.get('buyer_article_number')
+
+	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_date).all()
+	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.fob).all()
+	assignment = db.session.get(Assignments, (delivery_id, order_id))
+
+	return render_template('sent/form.html', action="Save", title="Edit delivery note", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty, tl_name=assignment.tl_name, del_note=assignment.del_note)
+
+@bp.route('/edit/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
+def edit_del_note(delivery_id, order_id):
+	d = Delivery.query.filter(Delivery.id == delivery_id).first()
+	o =  Order.query.filter(Order.id == order_id).first()
+
+	tl_name = request.form.get("tl_name")
+	del_note = request.form.get("del_note")
+
+	assignment = db.session.get(Assignments, (delivery_id, order_id))
+
+	if assignment:
+		assignment.tl_name = tl_name or None
+		assignment.del_note = del_note or None
+
+	db.session.commit()
+
+	flash(f"Delivery note added.", 'success')
+	return redirect(url_for('sent.list_sent'))

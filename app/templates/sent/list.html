@@ -20,6 +20,7 @@
         <th>Conf. Qty</th>
         <th>Sent Date</th>
         <th>PO No.</th>
+        <th>Del. Note</th>
       </tr>
     </thead>
     <tbody>
@@ -35,6 +36,11 @@
         <td class="available_qty">{{ a.order_qty }}</td>
         <td>{{ a.sent_date.strftime('%d.%m.%Y') }}</td>
         <td>{{ a.order_number }}</td>
+        {% if a.del_note is none %}
+        <td><a href="{{ url_for('sent.change_del_note', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">Add</a></td>
+        {% else %}
+            <td><a href="{{ url_for('sent.change_del_note', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">{{ a.del_note }}</a></td>
+        {% endif %}
 	  </tr>
       {% else %}
       <tr><td colspan="8">No assignments yet.</td></tr>

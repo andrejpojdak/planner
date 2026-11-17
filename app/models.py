@@ -86,7 +86,8 @@ class Assignments(db.Model):
 	sent = db.Column(db.Boolean)
 	sent_date = db.Column(db.Date)
 	tl_name = db.Column(db.String(120))
-
+	del_note = db.Column(db.String(10))
+	
 	delivery = db.relationship("Delivery", back_populates="delivery_orders")
 	order = db.relationship("Order", back_populates="delivery_orders")
 

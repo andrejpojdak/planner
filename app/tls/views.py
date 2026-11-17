@@ -29,6 +29,7 @@ def list_tls():
 			Assignments.tl.label("tl"),
 			Assignments.tl_name.label("tl_name"),
 			Assignments.sent.label("sent"),
+			Assignments.del_note.label("del_note"),
 			Material.material_code.label("buyer_article_number")
 		)
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
@@ -61,6 +62,7 @@ def query_tl():
 			Assignments.tl.label("tl"),
 			Assignments.tl_name.label("tl_name"),
 			Assignments.sent.label("sent"),
+			Assignments.del_note.label("del_note"),
 			Material.material_code.label("buyer_article_number")
 		)
 		.join(Delivery, Delivery.id == Assignments.delivery_id)
@@ -103,7 +105,8 @@ def create_tl():
 				assign = False,
 				tl = True,
 				sent = False,
-				tl_name = tl_name
+				tl_name = tl_name,
+				del_note = None
 				)
 			db.session.add(a)
 			db.session.commit()			
@@ -128,28 +131,35 @@ def change_qty():
 
 	deliveries = Delivery.query.filter(Delivery.buyer_article_number == buyer_article_number).order_by(Delivery.delivery_date).all()
 	orders = Order.query.filter(Order.buyer_article_number == buyer_article_number).order_by(Order.fob).all()
-
+	assignment = db.session.get(Assignments, (delivery_id, order_id))
+	
 	from ..assignments.views import order_available_qty
 
 	available_qty = order_available_qty(order_id)
 	max_qty = available_qty + qty
 	
-	return render_template('tls/form.html', max_qty=max_qty, action="Save", title="Edit transport list", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty)
+	return render_template('tls/form.html', max_qty=max_qty, action="Save", title="Edit transport list", deliveries=deliveries, orders=orders, delivery_id=delivery_id, order_id=order_id, qty=qty, tl_name=assignment.tl_name, del_note=assignment.del_note)
 
 @bp.route('/edit/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
 def edit_tl(delivery_id, order_id):
 	d = Delivery.query.filter(Delivery.id == delivery_id).first()
 	o =  Order.query.filter(Order.id == order_id).first()
+
 	qty = request.form.get("qty")
+	tl_name = request.form.get("tl_name")
+	del_note = request.form.get("del_note")
+
 	assignment = db.session.get(Assignments, (delivery_id, order_id))
 
 	if assignment:
 		assignment.qty = qty
+		assignment.tl_name = tl_name or None
+		assignment.del_note = del_note or None
 
 	db.session.commit()
 
 	flash(f"TL of {qty}pcs from order {o.order_number} to delivery { d.delivery_schedule_number.lstrip('0') }-{ d.delivery_schedule_position }, { d.article_description }, { d.delivery_date.strftime('%d.%m.%Y') }, { d.delivery_date.strftime('CW%V/%g') } updated.", 'success')
-	return redirect(url_for('planning.list_plans', _anchor=d.buyer_article_number) or url_for('tls.list_tls'))
+	return redirect(url_for('tls.list_tls'))
 
 @bp.route('/delete/<int:delivery_id>/<int:order_id>', methods=['GET', 'POST'])
 def delete_tl(delivery_id, order_id):

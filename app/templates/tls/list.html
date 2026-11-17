@@ -22,6 +22,7 @@
         <th>Conf. Qty</th>
         <th>PO No.</th>
         <th>Sales Price</th>
+        <th>Delivery Note</th>
         <th>Sent</th>
         <th>Actions</th>
       </tr>
@@ -44,6 +45,11 @@
         <td></td>
         {% else %}
             <td>{{ '%.4f' % a.sales_price }}</td>
+        {% endif %}
+        {% if a.del_note is none %}
+        <td><a href="{{ url_for('tls.change_qty', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">Add</a></td>
+        {% else %}
+            <td><a href="{{ url_for('tls.change_qty', delivery_id=a.delivery_id, order_id=a.order_id, qty=a.order_qty, buyer_article_number=a.buyer_article_number) }}">{{ a.del_note }}</a></td>
         {% endif %}
         <td>
           <input type="checkbox">

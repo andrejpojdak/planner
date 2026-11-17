@@ -14,6 +14,8 @@
           <th>Delivery</th>
           <th>Assigned Qty</th>
           <th>Order</th>
+          <th>TL Name</th>
+          <th>Delivery Note</th>
         </tr>
       </thead>
       <tbody>
@@ -42,6 +44,20 @@
                 {% endif %}
               {% endfor %}
             </select>
+          </td>
+          <td>
+            {% if tl_name is none %}
+            <input value="" class="normal" name="tl_name" type="text"></input>
+            {% else %}
+            <input value="{{ tl_name }}" class="normal" name="tl_name" type="text"></input>
+            {% endif %}
+          </td>
+          <td>
+            {% if del_note is none %}
+            <input value="" class="normal" name="del_note" type="text"></input>
+            {% else %}
+            <input value="{{ del_note }}" class="normal" name="del_note" type="text"></input>
+            {% endif %}
           </td>
       </tr>
       </tbody>
