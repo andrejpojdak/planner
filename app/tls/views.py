@@ -53,7 +53,7 @@ def list_tls():
 
 		for a in assignments:
 			for i, row in df.iterrows():
-				del_pos = f'{a.delivery_schedule_number.lstrip('0')}-{a.delivery_schedule_position.lstrip('0')}'
+				del_pos = f"{a.delivery_schedule_number.lstrip('0')}-{a.delivery_schedule_position.lstrip('0')}"
 				if all([
 					del_pos == row.iloc[0],
 					a.order_number == row['internal'].strip(),
