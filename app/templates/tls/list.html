@@ -9,10 +9,6 @@
       <strong>Drag excel file with delivery notes:&nbsp;</strong>
       <input type="file" id="fileInput" name="file" required>
     </label>
-    
-    <button type="submit" id="uploadBtn">
-      Upload File
-    </button>
     <br>
   </form>
 </div>
@@ -89,6 +85,14 @@
 <script src="{{ url_for('static', filename='js/hide.qty.js')  }}"></script>
 
 <script>
+
+document.getElementById('fileInput').addEventListener('change', function() {
+    console.log();
+    if (this.files.length > 0) {
+        document.getElementById('uploadForm').submit();
+    }
+});
+
 function sent_tl() {
 
 	const checkboxes_checked = document.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)');

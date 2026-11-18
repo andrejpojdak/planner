@@ -9,8 +9,9 @@ from datetime import datetime
 
 bp = Blueprint('sent', __name__)
 
-@bp.route('/', methods=['GET'])
+@bp.route('/', methods=['GET', 'POST'])
 def list_sent():
+
 	sent = (
 		db.session.query(
 			Delivery.delivery_schedule_number.label("delivery_schedule_number"),
@@ -37,6 +38,38 @@ def list_sent():
 		.order_by(Material.material_code, Assignments.sent_date)
 		.all()
 	)
+
+	if request.method == 'POST':
+
+		file = request.files['file']
+
+		if 'xlsx' not in file.filename:
+			flash('File does not have .xlsx extension!', 'danger')
+			return redirect(url_for('sent.list_sent'))
+
+		import pandas as pd
+		df = pd.read_excel(file)
+
+		for a in sent:
+			for i, row in df.iterrows():
+				del_pos = f"{a.delivery_schedule_number.lstrip('0')}-{a.delivery_schedule_position.lstrip('0')}"
+				if all([
+					del_pos == row.iloc[0],
+					a.order_number == row['internal'].strip(),
+					a.order_qty == row['real quantity'],
+					a.del_note == None,
+					str(row.iloc[-1]).strip() != ""
+				]):
+					db.session.query(Assignments).filter(
+						Assignments.delivery_id == a.delivery_id,
+						Assignments.order_id == a.order_id
+					).update({
+						Assignments.del_note: str(row.iloc[-1]).strip()
+					}, synchronize_session=False)
+
+		db.session.commit()
+		return redirect(url_for('sent.list_sent'))
+	
 	return render_template('sent/list.html', title="Sent", sent=sent)
 
 @bp.route('/change_del_note', methods=['GET'])
@@ -64,8 +97,8 @@ def edit_del_note(delivery_id, order_id):
 	assignment = db.session.get(Assignments, (delivery_id, order_id))
 
 	if assignment:
-		assignment.tl_name = tl_name or None
-		assignment.del_note = del_note or None
+		assignment.tl_name = tl_name.strip() or None
+		assignment.del_note = del_note.strip() or None
 
 	db.session.commit()
 

@@ -46,7 +46,7 @@ def list_tls():
 
 		if 'xlsx' not in file.filename:
 			flash('File does not have .xlsx extension!', 'danger')
-			return render_template('tls/list.html', title="Transport Lists", assignments=assignments)
+			return redirect(url_for('tls.list_tls'))
 
 		import pandas as pd
 		df = pd.read_excel(file)
@@ -58,15 +58,15 @@ def list_tls():
 					del_pos == row.iloc[0],
 					a.order_number == row['internal'].strip(),
 					a.order_qty == row['real quantity'],
-					a.del_note == None
+					a.del_note == None,
+					str(row.iloc[-1]).strip() != ""
 				]):
 					db.session.query(Assignments).filter(
 						Assignments.delivery_id == a.delivery_id,
 						Assignments.order_id == a.order_id
 					).update({
-						Assignments.del_note: row.iloc[-1]
+						Assignments.del_note: str(row.iloc[-1]).strip()
 					}, synchronize_session=False)
-					flash(f'{row.iloc[-1]} updated.', 'info')
 
 		db.session.commit()
 		return redirect(url_for('tls.list_tls'))
@@ -186,8 +186,8 @@ def edit_tl(delivery_id, order_id):
 
 	if assignment:
 		assignment.qty = qty
-		assignment.tl_name = tl_name or None
-		assignment.del_note = del_note or None
+		assignment.tl_name = tl_name.strip() or None
+		assignment.del_note = del_note.strip() or None
 
 	db.session.commit()
 
