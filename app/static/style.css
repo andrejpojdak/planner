@@ -390,10 +390,28 @@ tr.end td {
 	padding: 5px;
 	height:auto;
 	width:auto;
-	border: 1px solid black;
+	border: 3px solid yellowgreen;
 	background-color: white;
 }
+#results li {
+	list-style: none;
+}
 #results li:hover {
+	background-color: lightgrey;
+}
+#price_results {
+	display: none;
+	position: absolute;
+	padding: 5px;
+	height:auto;
+	width:auto;
+	border: 3px solid yellowgreen;
+	background-color: white;
+}
+#price_results li {
+	list-style: none;
+}
+#price_results li:hover {
 	background-color: lightgrey;
 }
 .assignment-table {

@@ -1,4 +1,3 @@
-const API_BASE = window.location.origin;
 
 async function getMaterials(text) {
   try {

@@ -2,6 +2,12 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block head %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/material.fetch.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/prices.fetch.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 
 <p><a href="#" onclick="history.back(); return false;">← Back</a></p>
@@ -123,6 +129,7 @@
   <p>{{ form.eds.label }}<br>{{ form.eds(size=40) }}</p>
   <p>{{ form.purchase_price.label }}<br>{{ form.purchase_price(size=40, value='%.4f'|format(form.purchase_price.data) if form.purchase_price.data is not none else '') }}</p>
   <p>{{ form.sales_price.label }}<br>{{ form.sales_price(size=40, value='%.4f'|format(form.sales_price.data) if form.sales_price.data is not none else '') }}</p>
+  <div id="price_results"></div>
   <p>{{ form.charge.label }}<br>{{ form.charge(size=50) }}</p>
   <p>{{ form.in_stock_date.label }}<br>{{ form.in_stock_date(size=40) }}</p>
   <p>{{ form.rmb.label }}<br>{{ form.rmb(size=40) }}</p>
@@ -171,6 +178,9 @@ document.getElementById('quantity')
   .addEventListener('input', updateOverallWeight);
 
 
+const API_BASE = window.location.origin;
+
+//Material results
 const article_description = document.getElementById("article_description");
 const buyer_article_number = document.getElementById("buyer_article_number");
 const results = document.getElementById("results");
@@ -182,10 +192,19 @@ article_description.addEventListener("input", (e) => {
   getMaterials(a).then(data => {
     results.innerHTML = '';
     results.style.display = 'block';
+  
+    if (!data || data.length === 0) {
+          let li = document.createElement("li");
+          li.textContent = "No materials found.";
+          li.style.pointerEvents = "none";
+          results.appendChild(li);
+          return;
+      }
+    
     data.forEach(element => {
       let li = document.createElement("li");
       li.textContent = `${element.plant_name} : ${element.buyer_article_number} : ${element.article_descritption}`;
-      li.addEventListener("click", () => {
+      li.addEventListener("mousedown", () => {
         results.style.display = 'none';
         article_description.value = element.article_descritption;
         buyer_article_number.value = element.buyer_article_number;
@@ -195,6 +214,47 @@ article_description.addEventListener("input", (e) => {
 
   });
 
+});
+article_description.addEventListener("blur", () => {
+    results.style.display = "none";
+});
+
+//Price results
+const sales_price_input = document.getElementById("sales_price");
+const buyer_article_number_input = document.getElementById("buyer_article_number");
+const price_results = document.getElementById("price_results");
+
+sales_price_input.addEventListener("focus", (e) => {
+  
+  a = buyer_article_number_input.value;
+
+  getPrices(a).then(data => {
+    price_results.innerHTML = '';
+    price_results.style.display = 'block';
+
+    if (!data || data.length === 0) {
+          let li = document.createElement("li");
+          li.textContent = "No prices found.";
+          li.style.pointerEvents = "none";
+          price_results.appendChild(li);
+          return;
+      }
+    
+    data.forEach(element => {
+      let li = document.createElement("li");
+      li.textContent = `${element.sales_price} : ${element.plant_name} : ${element.buyer_article_number} : ${element.article_description}`;
+      li.addEventListener("mousedown", () => {
+        price_results.style.display = 'none';
+        sales_price_input.value = element.sales_price;
+      });
+      price_results.appendChild(li);
+    });
+
+  });
+
+});
+sales_price_input.addEventListener("blur", () => {
+    price_results.style.display = "none";
 });
 
 </script>

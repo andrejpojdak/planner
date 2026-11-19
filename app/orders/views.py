@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Order
@@ -271,3 +271,48 @@ def filter():
 		o.sap_article_description = material.short_text if material else '<material_not_found>'
 	
 	return render_template('orders/list.html', title="Orders", orders=orders, filters=filters)
+
+@bp.route('/query_sales_price', methods=['GET','POST'])
+def query_sales_price():
+
+	buyer_article_number = request.args.get('material', '')
+	
+	import pandas as pd
+	from dotenv import load_dotenv
+	import glob
+
+	load_dotenv()
+	PRICE_FILE_WILDCARD = os.getenv("PRICE_FILE_WILDCARD")
+	price_file = glob.glob(PRICE_FILE_WILDCARD)
+	
+	if price_file:
+		df = pd.read_excel(price_file[0], header=1)
+		df = df[["Plant", "S4-Hana number", "Mat Number", "Part Number", "Total cost EUR"]]
+		df["Plant"] = df["Plant"].ffill()
+		df = df.dropna(subset=["Total cost EUR"])
+		df["Mat Number"] = df["Mat Number"].fillna("").astype(str).str.replace("-", "", regex=False)
+		df["Total cost EUR"] = pd.to_numeric(df["Total cost EUR"], errors="coerce").round(4)
+		df = df.rename(columns={
+			"Plant": "plant_name",
+			"S4-Hana number": "buyer_article_number_s4",
+			"Mat Number": "buyer_article_number",
+			"Part Number": "article_description",
+			"Total cost EUR": "sales_price"
+		})
+		result = df.loc[df["buyer_article_number"] == buyer_article_number, ["plant_name", "buyer_article_number", "article_description", "sales_price"]].to_dict(orient="records")
+
+		if not result:
+			df = df.drop(columns=["buyer_article_number"])
+			df = df.rename(columns={
+				"buyer_article_number_s4": "buyer_article_number"
+			})
+			df = df.dropna(subset=["buyer_article_number"])
+			df["buyer_article_number"] = df["buyer_article_number"].astype(str)
+			result = df.loc[df["buyer_article_number"] == buyer_article_number, ["plant_name", "buyer_article_number", "article_description", "sales_price"]].to_dict(orient="records")
+
+		return result
+	
+	else:
+		return jsonify({
+			"not_found": "not_found"
+		})

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% block head %}
 <head>
 	<title>{% block title %}Bridge-EU{% endblock %}</title>
 	<meta charset="UTF-8">
@@ -10,10 +11,10 @@
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 	<script src="{{ url_for('static', filename='js/color.row.js')  }}"></script>
-	<script src="{{ url_for('static', filename='js/material.fetch.js') }}"></script>
 	<link rel="icon" type="image/png" href="{{ url_for('static', filename='img/planner.png') }}">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+{% endblock %}
 <body>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
