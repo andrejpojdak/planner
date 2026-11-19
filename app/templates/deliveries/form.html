@@ -2,6 +2,11 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block head %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/material.fetch.js') }}"></script>
+{% endblock %}
+
 <h1>{{ title }}</h1>
 
 {% block content %}
@@ -77,6 +82,9 @@
   {% endif %}
 <script>
 
+const API_BASE = window.location.origin;
+
+//Material results
 const article_description = document.getElementById("article_description");
 const buyer_article_number = document.getElementById("buyer_article_number");
 const plant_name = document.getElementById("plant_name");
@@ -89,21 +97,32 @@ article_description.addEventListener("input", (e) => {
   getMaterials(a).then(data => {
     results.innerHTML = '';
     results.style.display = 'block';
+
+    if (!data || data.length === 0) {
+          let li = document.createElement("li");
+          li.textContent = "No materials found.";
+          li.style.pointerEvents = "none";
+          results.appendChild(li);
+          return;
+      }
+    
     data.forEach(element => {
       let li = document.createElement("li");
       li.textContent = `${element.plant_name} : ${element.buyer_article_number} : ${element.article_descritption}`;
-      li.addEventListener("click", () => {
+      li.addEventListener("mousedown", () => {
         results.style.display = 'none';
         article_description.value = element.article_descritption;
         buyer_article_number.value = element.buyer_article_number;
         plant_name.value = element.plant_name;
-        console.log(li.textContent);
       });
       results.appendChild(li);
     });
 
   });
 
+});
+article_description.addEventListener("blur", () => {
+    results.style.display = "none";
 });
 
 </script>

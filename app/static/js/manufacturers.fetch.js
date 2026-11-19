@@ -1,0 +1,17 @@
+
+async function getManufacturers(text) {
+  try {
+    const fetchUrl =  API_BASE + "/materials/query_manufacturers?text=" + encodeURIComponent(text);
+    const response = await fetch(fetchUrl);
+
+    if (!response.ok) {
+      throw new Error("Request failed");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error:", error);
+  }
+
+}

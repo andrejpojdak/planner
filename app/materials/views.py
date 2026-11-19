@@ -251,6 +251,24 @@ def query_material():
         for material_code, short_text, gross_weight, manufacturer, box_qty in material_list
     ])
 
+@bp.route('/query_manufacturers', methods=['GET','POST'])
+def query_manufacturers():
+    text = request.args.get('text', '')
+    material_list = (
+        Material.query
+        .with_entities(Material.manufacturer)
+        .filter(Material.manufacturer.ilike(f'%{text}%'))
+        .order_by(Material.manufacturer.asc())
+        .distinct()
+        .all()
+    )
+    return jsonify([
+        {
+            "manufacturer": manufacturer
+        }
+        for (manufacturer,) in material_list
+    ])
+
 @bp.route('/filter', methods=['GET','POST'])
 def filter():
 	

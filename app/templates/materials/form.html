@@ -2,6 +2,11 @@
 
 {% block title %}Materials{% endblock %}
 
+{% block head %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/manufacturers.fetch.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 
 {% if import_only %}
@@ -18,6 +23,7 @@
       <p>{{ form.short_text.label }}<br>{{ form.short_text(size=80) }} *</p>
       <p>{{ form.gross_weight.label }}<br>{{ form.gross_weight() }} *</p>
       <p>{{ form.manufacturer.label }}<br>{{ form.manufacturer(size=80) }} *</p>
+      <div id="results"></div>
       <p>{{ form.box_qty.label }}<br>{{ form.box_qty(size=80) }} *</p>
       <p>{{ form.comment.label }}<br>{{ form.comment(size=80) }}</p>
       <p>{{ form.safety_stock.label }}<br>{{ form.safety_stock(size=80) }}</p>
@@ -34,4 +40,51 @@
     {% endfor %}
       
   {% endif %}
+
+<script>
+
+const API_BASE = window.location.origin;
+
+//manufacturer results
+const manufacturer = document.getElementById("manufacturer");
+const results = document.getElementById("results");
+
+const handleManufacturer = (e) => {
+
+  const a = e.target.value;
+
+  getManufacturers(a).then(data => {
+    results.innerHTML = '';
+    results.style.display = 'block';
+
+    if (!data || data.length === 0) {
+      let li = document.createElement("li");
+      li.textContent = "No manufacturers found.";
+      li.style.pointerEvents = "none";
+      results.appendChild(li);
+      return;
+    }
+
+    data.forEach(element => {
+      let li = document.createElement("li");
+      li.textContent = element.manufacturer;
+
+      li.addEventListener("mousedown", () => {
+        results.style.display = 'none';
+        manufacturer.value = element.manufacturer;
+      });
+
+      results.appendChild(li);
+    });
+  });
+
+};
+manufacturer.addEventListener("focus", handleManufacturer);
+manufacturer.addEventListener("input", handleManufacturer);
+
+manufacturer.addEventListener("blur", () => {
+    results.style.display = "none";
+});
+
+</script>
 {% endblock %}
